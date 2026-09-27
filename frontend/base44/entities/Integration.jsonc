@@ -1,0 +1,71 @@
+{
+  "name": "Integration",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "website_cms",
+        "analytics",
+        "email",
+        "whatsapp",
+        "social_facebook",
+        "social_instagram",
+        "social_tiktok",
+        "social_linkedin",
+        "crm",
+        "spreadsheet",
+        "webhook",
+        "payment",
+        "booking"
+      ]
+    },
+    "credentials_ref": {
+      "type": "string"
+    },
+    "connection_status": {
+      "type": "string",
+      "enum": [
+        "disconnected",
+        "connected",
+        "error",
+        "expired"
+      ],
+      "default": "disconnected"
+    },
+    "last_sync": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sync_error": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "webhook_secret": {
+      "type": "string"
+    },
+    "config": {
+      "type": "object"
+    },
+    "is_mock": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name",
+    "provider"
+  ]
+}

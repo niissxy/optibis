@@ -1,0 +1,81 @@
+{
+  "name": "Deal",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "lead_id": {
+      "type": "string"
+    },
+    "lead_name": {
+      "type": "string"
+    },
+    "pipeline_id": {
+      "type": "string"
+    },
+    "pipeline_name": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "new",
+        "cold",
+        "engaged",
+        "warm",
+        "qualified",
+        "proposal_sent",
+        "negotiation",
+        "won",
+        "lost",
+        "dormant",
+        "reactivated"
+      ],
+      "default": "new"
+    },
+    "value": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "IDR"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "expected_close_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "won",
+        "lost"
+      ],
+      "default": "open"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "lead_id"
+  ]
+}

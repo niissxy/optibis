@@ -1,0 +1,76 @@
+{
+  "name": "EvolutionAction",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "duplicate_winning_concept",
+        "create_new_branch",
+        "deepen_topic_cluster",
+        "localize_content",
+        "personalize_offer",
+        "suppress_weak_strategy",
+        "redistribute_channel_effort",
+        "refresh_weak_asset"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "source_entity_id": {
+      "type": "string"
+    },
+    "source_entity_name": {
+      "type": "string"
+    },
+    "target_entity_id": {
+      "type": "string"
+    },
+    "target_entity_name": {
+      "type": "string"
+    },
+    "sample_size": {
+      "type": "number",
+      "default": 0
+    },
+    "confidence_threshold": {
+      "type": "number",
+      "default": 95
+    },
+    "time_window_days": {
+      "type": "number",
+      "default": 30
+    },
+    "governance_check": {
+      "type": "boolean",
+      "default": false
+    },
+    "approval_rule": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "evaluating",
+        "validated",
+        "approved",
+        "expanded",
+        "suppressed"
+      ],
+      "default": "candidate"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "action_type",
+    "title"
+  ]
+}

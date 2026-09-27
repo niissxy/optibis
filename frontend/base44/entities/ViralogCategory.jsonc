@@ -1,0 +1,50 @@
+{
+  "name": "ViralogCategory",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "parent_slug": {
+      "type": "string"
+    },
+    "content_count": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "meta_description": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "id"
+    }
+  },
+  "required": [
+    "name",
+    "slug"
+  ]
+}

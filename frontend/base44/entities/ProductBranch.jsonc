@@ -1,0 +1,82 @@
+{
+  "name": "ProductBranch",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "branch_type": {
+      "type": "string",
+      "enum": [
+        "audience",
+        "location",
+        "season",
+        "purpose",
+        "price_tier",
+        "duration",
+        "feature",
+        "problem",
+        "use_case",
+        "intent",
+        "industry",
+        "funnel_stage"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "parent_branch_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "opportunity_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "asset_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "workspace_id",
+    "product_id",
+    "name"
+  ]
+}

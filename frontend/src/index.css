@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 213 80% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 80% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 80% 12%;
+    --primary: 340 82% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 60% 96%;
+    --secondary-foreground: 213 80% 12%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 215 20% 45%;
+    --accent: 291 64% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 20% 92%;
+    --input: 220 20% 92%;
+    --ring: 340 82% 52%;
+    --chart-1: 340 82% 52%;
+    --chart-2: 291 64% 42%;
+    --chart-3: 213 80% 12%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 173 58% 39%;
+    --radius: 0.75rem;
+    --font-heading: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 71% 7%;
+    --foreground: 210 40% 96%;
+    --card: 214 64% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 214 64% 11%;
+    --popover-foreground: 210 40% 96%;
+    --secondary: 215 42% 16%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 215 42% 16%;
+    --muted-foreground: 215 20% 68%;
+    --border: 215 32% 22%;
+    --input: 215 32% 22%;
+    --ring: 340 82% 58%;
+  }
+}
+
+@layer components {
+  .optibis-gradient-button,
+  :is(button, a)[class~="bg-magenta"],
+  :is(button, a)[class~="bg-amethyst"],
+  :is(button, a)[class~="bg-navy"],
+  :is(button, a)[class~="bg-green-500"],
+  :is(button, a)[class~="bg-emerald-600"],
+  :is(button, a)[class~="bg-gradient-to-r"],
+  :is(button, a)[class~="bg-gradient-to-br"] {
+    background-color: #e91e63 !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    border-radius: 0.75rem !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(233, 30, 99, 0.2);
+  }
+
+  /* Keep every button-style control consistently rounded, not pill-shaped. */
+  :is(button, a)[class~="rounded-full"] {
+    border-radius: 0.75rem !important;
+  }
+
+  .optibis-gradient-button:hover,
+  :is(button, a)[class~="bg-magenta"]:hover,
+  :is(button, a)[class~="bg-amethyst"]:hover,
+  :is(button, a)[class~="bg-navy"]:hover,
+  :is(button, a)[class~="bg-green-500"]:hover,
+  :is(button, a)[class~="bg-emerald-600"]:hover,
+  :is(button, a)[class~="bg-gradient-to-r"]:hover,
+  :is(button, a)[class~="bg-gradient-to-br"]:hover {
+    background-color: #c2185b !important;
+    background-image: none !important;
+    box-shadow: 0 12px 26px rgba(233, 30, 99, 0.28);
+  }
+
+  .optibis-gradient-button:focus-visible,
+  :is(button, a)[class~="bg-magenta"]:focus-visible,
+  :is(button, a)[class~="bg-amethyst"]:focus-visible,
+  :is(button, a)[class~="bg-navy"]:focus-visible,
+  :is(button, a)[class~="bg-green-500"]:focus-visible,
+  :is(button, a)[class~="bg-emerald-600"]:focus-visible,
+  :is(button, a)[class~="bg-gradient-to-r"]:focus-visible,
+  :is(button, a)[class~="bg-gradient-to-br"]:focus-visible {
+    outline: 2px solid #e91e63;
+    outline-offset: 3px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark [class~="bg-white"] {
+  background-color: #081425 !important;
+}
+.dark [class~="bg-slate-50/50"],
+.dark [class~="bg-slate-50/60"],
+.dark [class~="bg-gray-50"] {
+  background-color: rgba(10, 25, 47, 0.72) !important;
+}
+.dark [class~="text-navy"],
+.dark [class~="text-navy-300"],
+.dark [class~="text-navy-400"] {
+  color: #f1f5f9 !important;
+}
+.dark [class~="border-gray-100"],
+.dark [class~="border-gray-200"] {
+  border-color: #243652 !important;
+}
+.dark [class~="shadow-gray-200/50"] {
+  --tw-shadow-color: rgba(2, 5, 9, 0.55) !important;
+}
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f1f5f9;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

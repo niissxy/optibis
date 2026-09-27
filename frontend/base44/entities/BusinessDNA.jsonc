@@ -1,0 +1,212 @@
+{
+  "name": "BusinessDNA",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "business_name": {
+      "type": "string"
+    },
+    "legal_name": {
+      "type": "string"
+    },
+    "business_description": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "business_model": {
+      "type": "string"
+    },
+    "market_scope": {
+      "type": "string",
+      "enum": [
+        "local",
+        "regional",
+        "national",
+        "international"
+      ]
+    },
+    "target_region": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "id"
+    },
+    "website": {
+      "type": "string"
+    },
+    "contact_channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "brand_positioning": {
+      "type": "string"
+    },
+    "value_proposition": {
+      "type": "string"
+    },
+    "brand_promise": {
+      "type": "string"
+    },
+    "tone_of_voice": {
+      "type": "string"
+    },
+    "personality": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "preferred_words": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prohibited_words": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "visual_identity_notes": {
+      "type": "string"
+    },
+    "cta_philosophy": {
+      "type": "string"
+    },
+    "communication_style": {
+      "type": "string"
+    },
+    "primary_objective": {
+      "type": "string"
+    },
+    "secondary_objectives": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "target_kpi": {
+      "type": "string"
+    },
+    "priority_products": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "priority_audiences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "priority_regions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "priority_channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "growth_intensity": {
+      "type": "string",
+      "enum": [
+        "conservative",
+        "balanced",
+        "aggressive"
+      ],
+      "default": "balanced"
+    },
+    "supervision_mode": {
+      "type": "string",
+      "enum": [
+        "assisted",
+        "approval_based",
+        "guarded_automation",
+        "full_auto"
+      ],
+      "default": "approval_based"
+    },
+    "publishing_limit": {
+      "type": "string",
+      "enum": [
+        "unlimited",
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "weekly"
+    },
+    "approval_rules": {
+      "type": "object"
+    },
+    "excluded_topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "restricted_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "compliance_notes": {
+      "type": "string"
+    },
+    "forbidden_channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "automation_threshold": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "completeness_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "business_name"
+  ]
+}

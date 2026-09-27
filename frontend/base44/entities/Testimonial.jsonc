@@ -1,0 +1,39 @@
+{
+  "name": "Testimonial",
+  "type": "object",
+  "properties": {
+    "nama": {
+      "type": "string"
+    },
+    "jabatan": {
+      "type": "string"
+    },
+    "perusahaan": {
+      "type": "string"
+    },
+    "industri": {
+      "type": "string"
+    },
+    "teks": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "foto": {
+      "type": "string",
+      "format": "uri"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "nama",
+    "teks",
+    "rating"
+  ]
+}

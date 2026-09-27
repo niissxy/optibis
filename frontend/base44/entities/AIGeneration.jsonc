@@ -1,0 +1,92 @@
+{
+  "name": "AIGeneration",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "default": "base44"
+    },
+    "model": {
+      "type": "string",
+      "default": "automatic"
+    },
+    "prompt_version": {
+      "type": "string"
+    },
+    "system_instruction": {
+      "type": "string"
+    },
+    "business_dna_context": {
+      "type": "object"
+    },
+    "product_context": {
+      "type": "object"
+    },
+    "audience_context": {
+      "type": "object"
+    },
+    "campaign_context": {
+      "type": "object"
+    },
+    "asset_specification": {
+      "type": "object"
+    },
+    "governance_rules": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "output": {
+      "type": "string"
+    },
+    "output_json": {
+      "type": "object"
+    },
+    "token_usage": {
+      "type": "object"
+    },
+    "generation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "generating",
+        "success",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "user_feedback": {
+      "type": "string",
+      "enum": [
+        "none",
+        "positive",
+        "negative",
+        "neutral"
+      ],
+      "default": "none"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "asset_type": {
+      "type": "string"
+    },
+    "requested_by_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "model"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "Automation",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "new_lead_submitted",
+        "lead_score_changed",
+        "campaign_started",
+        "asset_approved",
+        "publishing_failed",
+        "conversion_dropped",
+        "cta_underperformed",
+        "lead_follow_up_overdue"
+      ]
+    },
+    "condition": {
+      "type": "object"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "last_run": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_run": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "success_count": {
+      "type": "number",
+      "default": 0
+    },
+    "failure_count": {
+      "type": "number",
+      "default": 0
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name",
+    "trigger"
+  ]
+}

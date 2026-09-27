@@ -1,0 +1,49 @@
+{
+  "name": "ViralogSubscriber",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "interest_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "language": {
+      "type": "string",
+      "default": "id"
+    },
+    "region": {
+      "type": "string"
+    },
+    "consent": {
+      "type": "boolean",
+      "default": false
+    },
+    "source": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "unsubscribed",
+        "bounced"
+      ],
+      "default": "active"
+    },
+    "subscribed_at": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

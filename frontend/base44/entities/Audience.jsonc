@@ -1,0 +1,80 @@
+{
+  "name": "Audience",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "persona_name": {
+      "type": "string"
+    },
+    "segment": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "demographics": {
+      "type": "string"
+    },
+    "psychographics": {
+      "type": "string"
+    },
+    "pain_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "objections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "buying_triggers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "preferred_channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "purchase_intent": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "persona_name"
+  ]
+}

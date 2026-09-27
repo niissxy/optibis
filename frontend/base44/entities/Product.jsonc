@@ -1,0 +1,62 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "customer_problem": {
+      "type": "string"
+    },
+    "solution": {
+      "type": "string"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "benefits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "differentiation": {
+      "type": "string"
+    },
+    "price": {
+      "type": "string"
+    },
+    "sales_mechanism": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name"
+  ]
+}

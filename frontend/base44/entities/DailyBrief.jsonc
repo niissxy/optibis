@@ -1,0 +1,89 @@
+{
+  "name": "DailyBrief",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "brief_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "system_status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "warning",
+        "critical"
+      ],
+      "default": "healthy"
+    },
+    "health_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "kpi_summary": {
+      "type": "object"
+    },
+    "activities_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "new_assets": {
+      "type": "number",
+      "default": 0
+    },
+    "published_assets": {
+      "type": "number",
+      "default": 0
+    },
+    "new_leads": {
+      "type": "number",
+      "default": 0
+    },
+    "qualified_leads": {
+      "type": "number",
+      "default": 0
+    },
+    "bottlenecks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk_alerts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "pending_approvals": {
+      "type": "number",
+      "default": 0
+    },
+    "what_happened": {
+      "type": "string"
+    },
+    "what_matters": {
+      "type": "string"
+    },
+    "what_needs_attention": {
+      "type": "string"
+    },
+    "recommended_actions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "expected_impact": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "brief_date"
+  ]
+}

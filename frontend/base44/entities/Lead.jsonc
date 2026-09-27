@@ -1,0 +1,154 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "nama": {
+      "type": "string"
+    },
+    "whatsapp": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "nama_bisnis": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "industri": {
+      "type": "string"
+    },
+    "product_interest": {
+      "type": "string"
+    },
+    "kebutuhan": {
+      "type": "string"
+    },
+    "pilar": {
+      "type": "string",
+      "enum": [
+        "Digital Asset",
+        "Website",
+        "Digital Growth Team",
+        "Total Solution",
+        "Belum Tahu"
+      ]
+    },
+    "paket": {
+      "type": "string"
+    },
+    "budget": {
+      "type": "string"
+    },
+    "timeline": {
+      "type": "string"
+    },
+    "pesan": {
+      "type": "string"
+    },
+    "sumber": {
+      "type": "string"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "asset_id": {
+      "type": "string"
+    },
+    "utm_source": {
+      "type": "string"
+    },
+    "utm_medium": {
+      "type": "string"
+    },
+    "utm_campaign": {
+      "type": "string"
+    },
+    "landing_page": {
+      "type": "string"
+    },
+    "consent": {
+      "type": "boolean",
+      "default": false
+    },
+    "lead_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "lead_category": {
+      "type": "string",
+      "enum": [
+        "cold",
+        "engaged",
+        "warm",
+        "qualified",
+        "high_intent"
+      ],
+      "default": "cold"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "lead_status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "cold",
+        "engaged",
+        "warm",
+        "qualified",
+        "proposal_sent",
+        "negotiation",
+        "won",
+        "lost",
+        "dormant",
+        "reactivated"
+      ],
+      "default": "new"
+    },
+    "next_follow_up": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Lead Baru",
+        "Belum Dihubungi",
+        "Sudah Dihubungi",
+        "Konsultasi",
+        "Penawaran",
+        "Negosiasi",
+        "Deal",
+        "Tidak Lanjut",
+        "Follow-up Nanti"
+      ],
+      "default": "Lead Baru"
+    },
+    "pic": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "opportunity_value": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "nama",
+    "whatsapp"
+  ]
+}

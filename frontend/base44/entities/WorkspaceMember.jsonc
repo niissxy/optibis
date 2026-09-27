@@ -1,0 +1,51 @@
+{
+  "name": "WorkspaceMember",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "super_admin",
+        "workspace_owner",
+        "strategist",
+        "content_manager",
+        "sales_crm",
+        "reviewer",
+        "viewer"
+      ],
+      "default": "viewer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "invited",
+        "removed"
+      ],
+      "default": "invited"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "workspace_id",
+    "user_id",
+    "role"
+  ]
+}

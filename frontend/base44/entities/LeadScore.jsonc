@@ -1,0 +1,63 @@
+{
+  "name": "LeadScore",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "lead_id": {
+      "type": "string"
+    },
+    "lead_name": {
+      "type": "string"
+    },
+    "profile_fit_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 40,
+      "default": 0
+    },
+    "behavior_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 35,
+      "default": 0
+    },
+    "intent_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 25,
+      "default": 0
+    },
+    "total_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "cold",
+        "engaged",
+        "warm",
+        "qualified",
+        "high_intent"
+      ],
+      "default": "cold"
+    },
+    "score_breakdown": {
+      "type": "object"
+    },
+    "rules_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "workspace_id",
+    "lead_id"
+  ]
+}

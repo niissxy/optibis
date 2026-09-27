@@ -1,0 +1,92 @@
+{
+  "name": "ViralogRSSSource",
+  "type": "object",
+  "properties": {
+    "source_name": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "rss_url": {
+      "type": "string"
+    },
+    "default_category_slug": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "id"
+    },
+    "region": {
+      "type": "string"
+    },
+    "fetch_frequency_hours": {
+      "type": "number",
+      "default": 6
+    },
+    "trusted_source": {
+      "type": "boolean",
+      "default": false
+    },
+    "auto_publish": {
+      "type": "boolean",
+      "default": false
+    },
+    "auto_summary": {
+      "type": "boolean",
+      "default": true
+    },
+    "approval_required": {
+      "type": "boolean",
+      "default": true
+    },
+    "keyword_whitelist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keyword_blacklist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "credibility_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "error",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "last_fetch": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_fetch": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_imported": {
+      "type": "number",
+      "default": 0
+    },
+    "error_log": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_name",
+    "rss_url"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "LeadActivity",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "lead_id": {
+      "type": "string"
+    },
+    "lead_name": {
+      "type": "string"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "form_submission",
+        "page_view",
+        "brochure_download",
+        "consultation_request",
+        "repeat_visit",
+        "email_click",
+        "whatsapp_entry",
+        "phone_call",
+        "meeting",
+        "note",
+        "status_change",
+        "follow_up",
+        "email_sent",
+        "proposal_sent"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "actor_name": {
+      "type": "string"
+    },
+    "actor_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "lead",
+        "automation",
+        "system"
+      ],
+      "default": "user"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "score_impact": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "workspace_id",
+    "lead_id",
+    "activity_type"
+  ]
+}

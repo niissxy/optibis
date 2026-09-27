@@ -1,0 +1,52 @@
+{
+  "name": "AutomationRun",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "automation_id": {
+      "type": "string"
+    },
+    "automation_name": {
+      "type": "string"
+    },
+    "trigger_entity_type": {
+      "type": "string"
+    },
+    "trigger_entity_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "success",
+        "failed",
+        "skipped"
+      ],
+      "default": "pending"
+    },
+    "actions_executed": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "actor_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "automation_id"
+  ]
+}

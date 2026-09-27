@@ -1,0 +1,62 @@
+{
+  "name": "PortfolioProject",
+  "type": "object",
+  "properties": {
+    "nama": {
+      "type": "string"
+    },
+    "klien": {
+      "type": "string"
+    },
+    "industri": {
+      "type": "string"
+    },
+    "lokasi": {
+      "type": "string"
+    },
+    "tahun": {
+      "type": "string"
+    },
+    "pilar": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "produk": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ringkasan": {
+      "type": "string"
+    },
+    "deskripsi": {
+      "type": "string"
+    },
+    "thumbnail": {
+      "type": "string",
+      "format": "uri"
+    },
+    "galeri": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "hasil": {
+      "type": "string"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "nama",
+    "klien",
+    "industri"
+  ]
+}

@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Optibis Admin API
+  version: 1.0.0
+  description: API autentikasi, admin, dan portofolio untuk dashboard Optibis.
+servers:
+  - url: http://localhost:8000/api/v1
+paths:
+  /auth/login:
+    post:
+      summary: Login admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Token berhasil dibuat }
+        '422': { description: Kredensial tidak valid }
+  /auth/me:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Profil admin aktif } }
+  /auth/logout:
+    post:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Logout berhasil } }
+  /portfolios:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Daftar portofolio } }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody: { $ref: '#/components/requestBodies/PortfolioForm' }
+      responses: { '201': { description: Portofolio dibuat } }
+  /portfolios/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Detail portofolio } }
+    put:
+      summary: Update portofolio
+      security: [{ bearerAuth: [] }]
+      requestBody: { $ref: '#/components/requestBodies/PortfolioForm' }
+      responses: { '200': { description: Portofolio diperbarui } }
+    delete:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Portofolio dihapus } }
+  /admins:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Daftar admin } }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/AdminRequest' } } } }
+      responses: { '201': { description: Admin dibuat } }
+  /admins/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Detail admin } }
+    put:
+      security: [{ bearerAuth: [] }]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/AdminUpdate' } } } }
+      responses: { '200': { description: Admin diperbarui } }
+    delete:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Admin dihapus } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  parameters:
+    id: { name: id, in: path, required: true, schema: { type: integer } }
+  requestBodies:
+    PortfolioForm:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [name, category, description, website_url]
+            properties:
+              name: { type: string }
+              category: { type: string }
+              description: { type: string }
+              website_url: { type: string, format: uri }
+              image: { type: string, format: binary }
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    AdminRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    AdminUpdate:
+      type: object
+      description: Semua field opsional saat update.
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }

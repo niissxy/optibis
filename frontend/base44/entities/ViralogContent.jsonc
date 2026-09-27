@@ -1,0 +1,244 @@
+{
+  "name": "ViralogContent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "thumbnail": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "article",
+        "blog",
+        "news",
+        "rss_item",
+        "short_video",
+        "long_video",
+        "social_post",
+        "podcast",
+        "gallery",
+        "report",
+        "sponsored_content",
+        "event_content",
+        "press_release",
+        "case_study",
+        "tutorial",
+        "editorial"
+      ],
+      "default": "article"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "contributor",
+        "partner",
+        "rss",
+        "social_embed",
+        "video_embed",
+        "ai_draft",
+        "evolis_generated",
+        "sponsored",
+        "external_curated"
+      ],
+      "default": "internal"
+    },
+    "category_slug": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_slug": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "id"
+    },
+    "region": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "idea",
+        "draft",
+        "need_revision",
+        "pending_ai_review",
+        "pending_editor",
+        "pending_seo",
+        "approved",
+        "scheduled",
+        "published",
+        "archived",
+        "rejected",
+        "flagged",
+        "expired"
+      ],
+      "default": "draft"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "sponsored": {
+      "type": "boolean",
+      "default": false
+    },
+    "sponsor_name": {
+      "type": "string"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "meta_description": {
+      "type": "string"
+    },
+    "og_image": {
+      "type": "string"
+    },
+    "cta_type": {
+      "type": "string"
+    },
+    "cta_url": {
+      "type": "string"
+    },
+    "cta_label": {
+      "type": "string"
+    },
+    "read_time_minutes": {
+      "type": "number",
+      "default": 1
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "shares": {
+      "type": "number",
+      "default": 0
+    },
+    "bookmarks": {
+      "type": "number",
+      "default": 0
+    },
+    "viral_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "seo_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "engagement_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "freshness_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "credibility_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "monetization_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "embed_url": {
+      "type": "string"
+    },
+    "embed_platform": {
+      "type": "string",
+      "enum": [
+        "youtube",
+        "youtube_shorts",
+        "tiktok",
+        "instagram",
+        "facebook",
+        "x",
+        "linkedin",
+        "threads",
+        "spotify",
+        "vimeo"
+      ],
+      "default": "youtube"
+    },
+    "related_content_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "editorial_notes": {
+      "type": "string"
+    },
+    "assigned_editor": {
+      "type": "string"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": false
+    },
+    "ai_provider": {
+      "type": "string"
+    },
+    "ai_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "canonical_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "slug"
+  ]
+}

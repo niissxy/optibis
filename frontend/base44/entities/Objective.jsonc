@@ -1,0 +1,78 @@
+{
+  "name": "Objective",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "awareness",
+        "traffic",
+        "authority",
+        "lead_generation",
+        "appointment",
+        "consultation",
+        "booking",
+        "conversion",
+        "repeat_purchase",
+        "retention",
+        "regional_expansion",
+        "content_domination",
+        "operational_efficiency"
+      ]
+    },
+    "target_metric": {
+      "type": "string"
+    },
+    "baseline": {
+      "type": "number",
+      "default": 0
+    },
+    "target": {
+      "type": "number"
+    },
+    "current_progress": {
+      "type": "number",
+      "default": 0
+    },
+    "period": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "data_source": {
+      "type": "string"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "completed",
+        "paused",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "title",
+    "type"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "name": "Signal",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "external"
+      ],
+      "default": "internal"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "page_traffic",
+        "conversion_rate",
+        "cta_click_rate",
+        "form_completion",
+        "lead_quality",
+        "lead_response_time",
+        "deal_closure",
+        "campaign_performance",
+        "asset_engagement",
+        "publishing_consistency",
+        "search_trend",
+        "keyword_trend",
+        "seasonal_demand",
+        "channel_trend",
+        "competitor_signal",
+        "market_event"
+      ]
+    },
+    "source": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "up",
+        "down",
+        "stable"
+      ],
+      "default": "stable"
+    },
+    "change_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "is_manual": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "alert",
+        "critical"
+      ],
+      "default": "info"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "category"
+  ]
+}

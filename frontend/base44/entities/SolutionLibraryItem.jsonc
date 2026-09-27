@@ -1,0 +1,181 @@
+{
+  "name": "SolutionLibraryItem",
+  "type": "object",
+  "properties": {
+    "nama_awam": {
+      "type": "string"
+    },
+    "nama_teknis": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "kategori": {
+      "type": "string",
+      "enum": [
+        "Website",
+        "Frontend",
+        "Backend",
+        "Database",
+        "UI",
+        "UX",
+        "Security",
+        "Cloud",
+        "AI",
+        "Integration",
+        "Business",
+        "Mobile"
+      ]
+    },
+    "subkategori": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "intermediate",
+        "advanced",
+        "enterprise"
+      ],
+      "default": "basic"
+    },
+    "jenis": {
+      "type": "string",
+      "enum": [
+        "frontend",
+        "backend",
+        "database",
+        "api",
+        "ui",
+        "ux",
+        "business",
+        "security",
+        "cloud",
+        "ai"
+      ],
+      "default": "backend"
+    },
+    "fungsi": {
+      "type": "string"
+    },
+    "tujuan_bisnis": {
+      "type": "string"
+    },
+    "cara_kerja": {
+      "type": "string"
+    },
+    "komponen": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input": {
+      "type": "string"
+    },
+    "output": {
+      "type": "string"
+    },
+    "digunakan_pada": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "integrasi": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tingkat_kesulitan": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 3
+    },
+    "estimasi_development": {
+      "type": "string"
+    },
+    "estimasi_biaya": {
+      "type": "string"
+    },
+    "contoh": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fitur_terkait": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "diagram": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "business_flow": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "penjelasan_awam": {
+      "type": "string"
+    },
+    "penjelasan_teknis": {
+      "type": "string"
+    },
+    "manfaat": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contoh_nyata": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ketergantungan": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rekomendasi_fitur": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "icon": {
+      "type": "string"
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "draft"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "nama_awam",
+    "nama_teknis",
+    "slug",
+    "kategori"
+  ]
+}

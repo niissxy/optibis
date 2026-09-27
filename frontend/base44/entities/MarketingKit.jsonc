@@ -1,0 +1,124 @@
+{
+  "name": "MarketingKit",
+  "type": "object",
+  "properties": {
+    "nama_asset": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "deskripsi": {
+      "type": "string"
+    },
+    "kategori": {
+      "type": "string",
+      "enum": [
+        "Sales Material",
+        "Marketing Material",
+        "Branding Assets",
+        "Digital Promotion",
+        "Event Materials",
+        "Product Media"
+      ]
+    },
+    "subkategori": {
+      "type": "string"
+    },
+    "format_file": {
+      "type": "string",
+      "enum": [
+        "PDF",
+        "PPTX",
+        "DOCX",
+        "XLSX",
+        "AI",
+        "EPS",
+        "SVG",
+        "PNG",
+        "JPG",
+        "WEBP",
+        "MP4",
+        "ZIP",
+        "PSD",
+        "FIG",
+        "Canva"
+      ]
+    },
+    "ukuran_file": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "thumbnail": {
+      "type": "string"
+    },
+    "preview_url": {
+      "type": "string"
+    },
+    "akses_tipe": {
+      "type": "string",
+      "enum": [
+        "Free Download",
+        "Login Required",
+        "Member Only",
+        "Premium Member",
+        "Paid Download",
+        "Bundle Download",
+        "Customer Exclusive",
+        "Partner Exclusive"
+      ],
+      "default": "Login Required"
+    },
+    "badge": {
+      "type": "string",
+      "enum": [
+        "none",
+        "New",
+        "Popular",
+        "Premium"
+      ],
+      "default": "none"
+    },
+    "industri": {
+      "type": "string"
+    },
+    "produk_terkait": {
+      "type": "string"
+    },
+    "layanan_terkait": {
+      "type": "string"
+    },
+    "bahasa": {
+      "type": "string",
+      "default": "id"
+    },
+    "download_count": {
+      "type": "number",
+      "default": 0
+    },
+    "preview_count": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "draft",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "nama_asset",
+    "slug",
+    "kategori"
+  ]
+}

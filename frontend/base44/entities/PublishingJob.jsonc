@@ -1,0 +1,91 @@
+{
+  "name": "PublishingJob",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "asset_id": {
+      "type": "string"
+    },
+    "asset_title": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "scheduled_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "scheduled_time": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "Asia/Jakarta"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "publishing_method": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual",
+        "export",
+        "copy_ready"
+      ],
+      "default": "copy_ready"
+    },
+    "integration_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "waiting",
+        "awaiting_approval",
+        "approved",
+        "scheduled",
+        "publishing",
+        "published",
+        "failed",
+        "cancelled"
+      ],
+      "default": "waiting"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "max_retries": {
+      "type": "number",
+      "default": 3
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "content_preview": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "asset_id",
+    "channel"
+  ]
+}

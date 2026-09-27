@@ -1,0 +1,56 @@
+{
+  "name": "ViralogAuthor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "editor",
+        "contributor",
+        "staff",
+        "guest",
+        "ai_agent"
+      ],
+      "default": "staff"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "social_links": {
+      "type": "object"
+    },
+    "content_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_views": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name",
+    "slug"
+  ]
+}

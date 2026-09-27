@@ -1,0 +1,168 @@
+{
+  "name": "Asset",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "landing_page",
+        "product_page",
+        "service_page",
+        "location_page",
+        "niche_page",
+        "article",
+        "pillar_page",
+        "faq",
+        "comparison_page",
+        "case_study",
+        "testimonial_page",
+        "cta_block",
+        "form",
+        "lead_magnet",
+        "consultation_page",
+        "offer_banner",
+        "booking_flow",
+        "email",
+        "whatsapp_message",
+        "follow_up",
+        "nurture_sequence",
+        "objection_handler",
+        "proposal_summary",
+        "caption",
+        "hook",
+        "carousel_outline",
+        "short_video_script",
+        "campaign_snippet",
+        "offer_sheet",
+        "proposal_draft",
+        "quotation_intro",
+        "package_comparison",
+        "sales_script"
+      ]
+    },
+    "content": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "campaign_id": {
+      "type": "string"
+    },
+    "campaign_name": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "branch_id": {
+      "type": "string"
+    },
+    "audience_id": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "funnel_stage": {
+      "type": "string",
+      "enum": [
+        "awareness",
+        "interest",
+        "consideration",
+        "decision",
+        "action",
+        "retention"
+      ]
+    },
+    "intent": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "cta": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "quality_details": {
+      "type": "object"
+    },
+    "compliance_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "compliant",
+        "warning",
+        "blocked"
+      ],
+      "default": "pending"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected",
+        "revision_requested",
+        "expired"
+      ],
+      "default": "not_required"
+    },
+    "publishing_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "generated",
+        "reviewing",
+        "revision_requested",
+        "approved",
+        "scheduled",
+        "published",
+        "measuring",
+        "optimizing",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "ai_model": {
+      "type": "string"
+    },
+    "prompt_version": {
+      "type": "string"
+    },
+    "ai_generation_id": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "title",
+    "type"
+  ]
+}

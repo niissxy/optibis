@@ -1,0 +1,109 @@
+{
+  "name": "Recommendation",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "refresh",
+        "repurpose",
+        "localize",
+        "personalize",
+        "split",
+        "merge",
+        "pause",
+        "archive",
+        "strengthen_cta",
+        "shorten_funnel",
+        "follow_up_lead",
+        "increase_distribution",
+        "reduce_publishing",
+        "create_branch"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "problem": {
+      "type": "string"
+    },
+    "recommended_action": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "supporting_metrics": {
+      "type": "object"
+    },
+    "expected_impact": {
+      "type": "string"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "low"
+    },
+    "auto_executable": {
+      "type": "boolean",
+      "default": false
+    },
+    "approval_required": {
+      "type": "boolean",
+      "default": true
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "reviewed",
+        "accepted",
+        "rejected",
+        "scheduled",
+        "executed",
+        "measured"
+      ],
+      "default": "new"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "title",
+    "type"
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "name": "Campaign",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "offer": {
+      "type": "string"
+    },
+    "audience_id": {
+      "type": "string"
+    },
+    "audience_name": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "funnel_stage": {
+      "type": "string",
+      "enum": [
+        "awareness",
+        "interest",
+        "consideration",
+        "decision",
+        "action",
+        "retention"
+      ]
+    },
+    "channel": {
+      "type": "string"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "budget": {
+      "type": "number",
+      "default": 0
+    },
+    "kpi": {
+      "type": "string"
+    },
+    "brief": {
+      "type": "string"
+    },
+    "angle": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "pain_point": {
+      "type": "string"
+    },
+    "promise": {
+      "type": "string"
+    },
+    "proof": {
+      "type": "string"
+    },
+    "cta": {
+      "type": "string"
+    },
+    "channel_plan": {
+      "type": "string"
+    },
+    "asset_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "distribution_schedule": {
+      "type": "string"
+    },
+    "measurement_plan": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "planning",
+        "awaiting_approval",
+        "approved",
+        "scheduled",
+        "active",
+        "paused",
+        "completed",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "approval_mode": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "auto_low_risk",
+        "guarded"
+      ],
+      "default": "manual"
+    },
+    "automation_mode": {
+      "type": "string",
+      "enum": [
+        "off",
+        "assisted",
+        "guarded",
+        "full_auto"
+      ],
+      "default": "off"
+    },
+    "owner_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name"
+  ]
+}
