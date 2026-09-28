@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
 
-const DA_IMG = "https://media.base44.com/images/public/6a509ada7e3a9418172110a5/78518a7f2_generated_dfb7c12e.png";
-const WEB_IMG = "https://media.base44.com/images/public/6a509ada7e3a9418172110a5/56292e899_generated_ffb905b3.png";
-const DGT_IMG = "https://media.base44.com/images/public/6a509ada7e3a9418172110a5/3448c14bb_generated_ca1e5c00.png";
+const DA_IMG = "/assets/paket-digital-asset/siap-usaha.jpg";
+const WEB_IMG = "/assets/paket-website/landing-page.png";
+const DGT_IMG = "/assets/paket-growth/admin-digital.png";
 
 const PILLARS = [
   {
@@ -23,7 +23,7 @@ const PILLARS = [
     color: "magenta",
     bgClass: "bg-magenta-50",
     textClass: "text-magenta",
-    btnClass: "bg-magenta hover:bg-magenta-500",
+    btnClass: "!bg-[#f51d6a] hover:!bg-[#e0185e]",
   },
   {
     icon: Globe,
@@ -57,6 +57,43 @@ const PILLARS = [
 
 export default function ThreePillars() {
   const { tr } = useLanguage();
+  const [pillarsData, setPillarsData] = React.useState(PILLARS);
+
+  React.useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/modules/service-pillars`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((items) => {
+        if (Array.isArray(items) && items.length > 0) {
+          const sorted = [...items].sort((a, b) => ((a.data?.order ?? 99) - (b.data?.order ?? 99)));
+          const mapped = sorted
+            .filter((item) => item.is_published)
+            .map((item) => {
+              const data = item.data || {};
+              const defaultStatic = PILLARS.find((p) => p.title.toLowerCase() === item.title.toLowerCase() || p.link.includes(item.slug));
+              const color = data.color || defaultStatic?.color || 'magenta';
+              const iconComp = defaultStatic?.icon || (item.slug === 'digital-asset' ? Palette : item.slug === 'website' ? Globe : Users);
+              return {
+                icon: iconComp,
+                tag: data.tag || defaultStatic?.tag || 'PILAR',
+                title: item.title,
+                link: data.link || defaultStatic?.link || `/${item.slug}`,
+                headline: data.headline || defaultStatic?.headline || '',
+                desc: item.summary || data.desc || defaultStatic?.desc || '',
+                highlights: Array.isArray(data.highlights) && data.highlights.length > 0 ? data.highlights : defaultStatic?.highlights || [],
+                img: item.image_url || data.img || defaultStatic?.img || '',
+                color: color,
+                bgClass: color === 'amethyst' ? 'bg-amethyst-50' : color === 'navy' ? 'bg-blue-50' : 'bg-magenta-50',
+                textClass: color === 'amethyst' ? 'text-amethyst' : color === 'navy' ? 'text-blue-600' : 'text-magenta',
+                btnClass: color === 'amethyst' ? 'bg-amethyst hover:bg-amethyst-600' : color === 'navy' ? 'bg-navy hover:bg-navy-400' : '!bg-[#f51d6a] hover:!bg-[#e0185e]',
+              };
+            });
+          if (mapped.length > 0) {
+            setPillarsData(mapped);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section className="py-14 lg:py-20 bg-white" id="pilar">
@@ -64,7 +101,7 @@ export default function ThreePillars() {
         <SectionHeading eyebrow="Pilar Optibis" title="3 Pilar Utama Optibis" description="Tiga kompetensi utama yang saling melengkapi untuk membantu bisnis Anda dari membangun identitas hingga mengelola pertumbuhan digital." className="mb-14" />
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {PILLARS.map((p, i) => (
+          {pillarsData.map((p, i) => (
             <motion.div
               key={p.title}
               initial={{ opacity: 0, y: 20 }}

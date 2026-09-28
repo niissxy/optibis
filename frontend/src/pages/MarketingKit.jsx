@@ -92,7 +92,7 @@ export default function MarketingKit() {
               key={cat.id}
               onClick={() => setActiveCategory(activeCategory === cat.id ? "all" : cat.id)}
               className={`text-left px-3 py-1.5 text-xs rounded-lg transition-all duration-200 ${
-                activeCategory === cat.id ? "bg-magenta text-white font-medium shadow-sm" : "text-navy-400 hover:bg-magenta-50 hover:text-magenta"
+                activeCategory === cat.id ? "bg-magenta text-white font-medium shadow-sm" : "text-navy-400 hover:bg-magenta-50 hover:text-magenta dark:hover:bg-magenta/20 dark:hover:text-magenta-200"
               }`}
             >
               {cat.label}

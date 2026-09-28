@@ -46,7 +46,49 @@ export default function ServiceDetail() {
   const nav = useSafeNav();
   const { language, tr } = useLanguage();
   const pillar = PILLARS[pillarSlug];
-  const service = pillar?.services.find((item) => getServiceSlug(item.name) === serviceSlug);
+  const staticService = pillar?.services.find((item) => getServiceSlug(item.name) === serviceSlug);
+
+  const [remoteService, setRemoteService] = React.useState(null);
+
+  React.useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/modules/services`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((items) => {
+        if (Array.isArray(items)) {
+          const match = items.find(
+            (item) =>
+              (item.slug === serviceSlug || getServiceSlug(item.title) === serviceSlug) &&
+              (!pillarSlug || item.data?.pillar === pillarSlug || !item.data?.pillar)
+          );
+          if (match && match.is_published) {
+            setRemoteService(match);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [pillarSlug, serviceSlug]);
+
+  const service = React.useMemo(() => {
+    if (!staticService && !remoteService) return null;
+    const base = staticService || {
+      name: remoteService?.title || '',
+      desc: remoteService?.summary || '',
+      image: remoteService?.image_url || '',
+      features: [],
+      icon: null,
+    };
+    if (remoteService) {
+      const data = remoteService.data || {};
+      return {
+        ...base,
+        name: remoteService.title || base.name,
+        desc: remoteService.summary || data.desc || base.desc,
+        image: remoteService.image_url || data.image || base.image,
+        features: Array.isArray(data.features) && data.features.length > 0 ? data.features : base.features,
+      };
+    }
+    return base;
+  }, [staticService, remoteService]);
 
   if (!pillar || !service) {
     return (
@@ -62,7 +104,7 @@ export default function ServiceDetail() {
     );
   }
 
-  const ServiceIcon = service.icon;
+  const ServiceIcon = staticService?.icon || Check;
 
   return (
     <PillarLayout>

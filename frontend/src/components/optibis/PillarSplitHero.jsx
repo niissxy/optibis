@@ -24,8 +24,8 @@ export default function PillarSplitHero({
   }[color];
 
   return (
-    <section className="relative pt-12 pb-12 lg:pt-20 lg:pb-20 overflow-hidden bg-gradient-to-br from-white to-slate-50/50">
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-gradient-to-br from-pink-100/40 to-transparent rounded-full blur-3xl pointer-events-none" />
+    <section className="relative pt-12 pb-12 lg:pt-20 lg:pb-20 overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-[#071321] dark:to-[#102842]">
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-gradient-to-br from-pink-100/40 to-transparent dark:from-magenta/15 rounded-full blur-3xl pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <Link to="/" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-navy transition-colors mb-8 lg:mb-12">
@@ -57,7 +57,7 @@ export default function PillarSplitHero({
               <Button onClick={() => nav("#konsultasi")} className={`${colorStyles.bg} ${colorStyles.hover} text-white rounded-full px-8 h-12 shadow-lg shadow-${color}/20 w-full sm:w-auto transition-all`}>
                 Konsultasi Sekarang <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              <Button variant="outline" onClick={() => nav("#portofolio")} className="rounded-full px-8 h-12 w-full sm:w-auto border-gray-200 text-navy hover:bg-gray-50 transition-all">
+              <Button variant="outline" onClick={() => nav("#portofolio")} className="rounded-full px-8 h-12 w-full sm:w-auto border-gray-200 text-navy hover:bg-gray-50 dark:text-white dark:hover:bg-magenta/20 dark:hover:text-white transition-all">
                 Lihat Portofolio
               </Button>
             </div>

@@ -46,17 +46,46 @@ const PACKAGES = getPackagesByPillar("website").map((p) => ({
 }));
 
 export default function WebsiteService() {
+  const [hero, setHero] = React.useState({
+    badgeText: "PILAR 2 — WEBSITE",
+    titlePrefix: "Kembangkan Bisnis Anda dengan ",
+    titleHighlight: "Website Modern",
+    description: "Website profesional yang responsif, cepat, dan dioptimasi untuk menghasilkan konversi serta merepresentasikan brand Anda di dunia digital.",
+    imageSrc: "/assets/paket-website/landing-page.png",
+    color: "amethyst"
+  });
+
+  React.useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/modules/service-pillars`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((items) => {
+        const item = Array.isArray(items) && items.find((i) => i.slug === 'website');
+        if (item) {
+          const d = item.data || {};
+          setHero({
+            badgeText: d.badge || "PILAR 2 — WEBSITE",
+            titlePrefix: d.title_prefix || "Kembangkan Bisnis Anda dengan ",
+            titleHighlight: d.title_highlight || "Website Modern",
+            description: item.summary || d.desc || "Website profesional yang responsif, cepat, dan dioptimasi untuk menghasilkan konversi serta merepresentasikan brand Anda di dunia digital.",
+            imageSrc: item.image_url || d.flyer_image || "/assets/paket-website/landing-page.png",
+            color: d.color || "amethyst"
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <PillarLayout showPageRecommendations={false}>
       {/* Hero */}
       <PillarSplitHero
         badgeIcon={Globe}
-        badgeText="PILAR 2 — WEBSITE"
-        titlePrefix="Kembangkan Bisnis Anda dengan "
-        titleHighlight="Website Modern"
-        description="Website profesional yang responsif, cepat, dan dioptimasi untuk menghasilkan konversi serta merepresentasikan brand Anda di dunia digital."
-        imageSrc="/assets/paket-website/landing-page.png"
-        color="amethyst"
+        badgeText={hero.badgeText}
+        titlePrefix={hero.titlePrefix}
+        titleHighlight={hero.titleHighlight}
+        description={hero.description}
+        imageSrc={hero.imageSrc}
+        color={hero.color}
         imageContainerClassName="max-w-sm"
       />
 

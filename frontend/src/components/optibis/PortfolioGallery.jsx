@@ -119,18 +119,18 @@ export default function PortfolioGallery() {
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
-                    className={`flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                    className={`group flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 ${
                       isActive 
                         ? "bg-magenta-50 text-magenta shadow-sm" 
-                        : "text-navy-400 hover:bg-gray-50 hover:text-navy"
+                        : "text-navy-400 hover:bg-gray-50 hover:text-navy dark:hover:!bg-magenta/20 dark:hover:!text-white"
                     }`}
                   >
-                    <Icon className={`w-5 h-5 mr-3 ${isActive ? "text-magenta" : "text-gray-400"}`} />
+                    <Icon className={`w-5 h-5 mr-3 ${isActive ? "text-magenta" : "text-gray-400 dark:group-hover:text-magenta"}`} />
                     <span className="font-semibold text-sm flex-1 text-left">{cat.label}</span>
-                    <span className={`text-xs font-bold mr-2 ${isActive ? "text-magenta" : "text-gray-400"}`}>
+                    <span className={`text-xs font-bold mr-2 ${isActive ? "text-magenta" : "text-gray-400 dark:group-hover:text-magenta"}`}>
                       {cat.count}
                     </span>
-                    <ChevronRight className={`w-4 h-4 ${isActive ? "text-magenta" : "text-gray-300"}`} />
+                    <ChevronRight className={`w-4 h-4 ${isActive ? "text-magenta" : "text-gray-300 dark:group-hover:text-magenta"}`} />
                   </button>
                 );
               })}

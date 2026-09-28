@@ -379,7 +379,6 @@ const TEXT_TRANSLATIONS = {
   "Siap Membangun Brand, Website, dan Pertumbuhan Digital Bisnis Anda?": "Ready to Build Your Brand, Website, and Digital Growth?",
   "Konsultasikan kebutuhan bisnis Anda secara gratis dan dapatkan rekomendasi solusi yang sesuai.": "Discuss your business needs for free and receive a solution recommendation that fits.",
   "Chat via WhatsApp": "Chat on WhatsApp",
-  "Insight Terbaru": "Latest Insights",
   "Lihat Semua": "View All",
   "Semua Trending": "View All Trending",
   views: "views",

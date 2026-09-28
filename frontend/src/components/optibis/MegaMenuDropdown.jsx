@@ -12,7 +12,7 @@ export default function MegaMenuDropdown({ label, href = "#", children: groups, 
       <button
         onClick={() => onNavClick(href)}
         className={`group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
-          dark ? "text-white/75 hover:bg-white/10 hover:text-white" : "text-navy-400 hover:bg-magenta-50/50 hover:text-magenta"
+          dark ? "text-white/75 hover:bg-magenta/20 hover:text-white" : "text-navy-400 hover:bg-magenta-50/50 hover:text-magenta"
         }`}
       >
         {translate(label)}
@@ -27,7 +27,7 @@ export default function MegaMenuDropdown({ label, href = "#", children: groups, 
             transition={{ duration: 0.15 }}
             className={`absolute top-full left-0 pt-2 ${width} z-50`}
           >
-            <div className="bg-white rounded-xl shadow-xl border border-gray-100 p-4 space-y-4">
+            <div className={`${dark ? "bg-navy border-navy-300" : "bg-white border-gray-100"} rounded-xl shadow-xl border p-4 space-y-4`}>
               {groups.map((group, idx) => (
                 <div key={group.group || idx}>
                   {group.group && <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{translate(group.group)}</p>}
@@ -36,7 +36,7 @@ export default function MegaMenuDropdown({ label, href = "#", children: groups, 
                       <button
                         key={sub.label}
                         onClick={() => onNavClick(sub.href)}
-                        className="block w-full text-left px-3 py-1.5 text-sm text-navy-400 hover:text-magenta hover:bg-magenta-50 rounded-md transition-colors"
+                        className={`block w-full text-left px-3 py-1.5 text-sm rounded-md transition-colors ${dark ? "text-white/75 hover:bg-magenta/20 hover:text-white" : "text-navy-400 hover:text-magenta hover:bg-magenta-50"}`}
                       >
                         {translate(sub.label)}
                       </button>

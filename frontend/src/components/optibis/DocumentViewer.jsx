@@ -47,7 +47,7 @@ export default function DocumentViewer({ documents, projectName }) {
             <Button
               onClick={() => openViewer(doc)}
               variant="outline"
-              className="w-full rounded-full text-xs font-semibold border-gray-200 text-navy hover:bg-magenta-50 hover:text-magenta hover:border-magenta/20 h-9"
+              className="w-full rounded-full text-xs font-semibold border-gray-200 text-navy hover:bg-magenta-50 hover:text-magenta hover:border-magenta/20 dark:hover:!bg-magenta/20 dark:hover:!text-white dark:hover:!border-magenta h-9"
             >
               <Eye className="w-3.5 h-3.5 mr-1.5" /> Lihat Dokumen
             </Button>

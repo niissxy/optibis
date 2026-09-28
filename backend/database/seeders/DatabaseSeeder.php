@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Portfolio;
+use Database\Seeders\FrontendContentSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -19,10 +19,6 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(['email' => 'admin@optibis.test'], [
             'name' => 'Optibis Admin', 'password' => 'password123',
         ]);
-        Portfolio::firstOrCreate(['name' => 'Optibis Studio'], [
-            'category' => 'Branding',
-            'description' => 'Website company profile modern untuk memperkuat identitas digital.',
-            'website_url' => 'https://example.com',
-        ]);
+        $this->call(FrontendContentSeeder::class);
     }
 }

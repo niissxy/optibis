@@ -68,7 +68,7 @@ export default function Tentang() {
             </p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="rounded-3xl bg-gradient-to-br from-magenta-50 to-amethyst-50 p-6 sm:p-8">
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="rounded-3xl bg-gradient-to-br from-magenta-50 to-amethyst-50 dark:from-[#102842] dark:to-[#182d4d] p-6 sm:p-8">
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-magenta shadow-sm">
               <HeartHandshake className="h-6 w-6" />
             </div>
@@ -137,7 +137,7 @@ export default function Tentang() {
                   href="https://wa.me/6287772577020"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group scroll-mt-24 rounded-2xl border border-green-100 bg-green-50/60 p-6 transition-all hover:-translate-y-1 hover:shadow-xl"
+                  className="group scroll-mt-24 rounded-2xl border border-green-100 bg-green-50/60 dark:border-green-700 dark:bg-[#103328] p-6 transition-all hover:-translate-y-1 hover:shadow-xl"
                   id="chat-whatsapp"
                 >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-500 text-white">
@@ -152,7 +152,7 @@ export default function Tentang() {
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="scroll-mt-24 rounded-2xl border border-magenta/10 bg-gradient-to-br from-magenta-50/70 to-amethyst-50/70 p-6"
+                  className="scroll-mt-24 rounded-2xl border border-magenta/10 bg-gradient-to-br from-magenta-50/70 to-amethyst-50/70 dark:border-magenta/40 dark:from-[#35152a] dark:to-[#2d193b] p-6"
                   id="lokasi-kantor"
                 >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-magenta text-white">

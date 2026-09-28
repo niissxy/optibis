@@ -46,16 +46,45 @@ const PACKAGES = getPackagesByPillar("digital-asset").map((p) => ({
 }));
 
 export default function DigitalAsset() {
+  const [hero, setHero] = React.useState({
+    badgeText: "PILAR 1 — DIGITAL ASSET",
+    titlePrefix: "Bangun Citra Bisnis yang ",
+    titleHighlight: "Profesional",
+    description: "Dari logo, brand guideline, company profile, hingga materi promosi — semua aset yang dibutuhkan bisnis Anda untuk tampil konsisten dan dipercaya.",
+    imageSrc: "/assets/paket-digital-asset/siap-usaha.jpg",
+    color: "magenta"
+  });
+
+  React.useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/modules/service-pillars`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((items) => {
+        const item = Array.isArray(items) && items.find((i) => i.slug === 'digital-asset');
+        if (item) {
+          const d = item.data || {};
+          setHero({
+            badgeText: d.badge || "PILAR 1 — DIGITAL ASSET",
+            titlePrefix: d.title_prefix || "Bangun Citra Bisnis yang ",
+            titleHighlight: d.title_highlight || "Profesional",
+            description: item.summary || d.desc || "Dari logo, brand guideline, company profile, hingga materi promosi — semua aset yang dibutuhkan bisnis Anda untuk tampil konsisten dan dipercaya.",
+            imageSrc: item.image_url || d.flyer_image || "/assets/paket-digital-asset/siap-usaha.jpg",
+            color: d.color || "magenta"
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <PillarLayout showPageRecommendations={false}>
       <PillarSplitHero
         badgeIcon={Palette}
-        badgeText="PILAR 1 — DIGITAL ASSET"
-        titlePrefix="Bangun Citra Bisnis yang "
-        titleHighlight="Profesional"
-        description="Dari logo, brand guideline, company profile, hingga materi promosi — semua aset yang dibutuhkan bisnis Anda untuk tampil konsisten dan dipercaya."
-        imageSrc="/assets/paket-digital-asset/siap-usaha.jpg"
-        color="magenta"
+        badgeText={hero.badgeText}
+        titlePrefix={hero.titlePrefix}
+        titleHighlight={hero.titleHighlight}
+        description={hero.description}
+        imageSrc={hero.imageSrc}
+        color={hero.color}
         imageContainerClassName="max-w-sm"
       />
 

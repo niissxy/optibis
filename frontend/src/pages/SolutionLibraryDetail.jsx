@@ -186,7 +186,7 @@ export default function SolutionLibraryDetail() {
 
       {/* Penjelasan Awam */}
       <Section icon={Lightbulb} title="Penjelasan Bahasa Awam" bg="bg-white">
-        <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-6">
+        <div className="bg-amber-50/50 border border-amber-100 dark:bg-[#3c2a12] dark:border-amber-700 rounded-2xl p-6">
           <p className="text-base text-navy leading-relaxed">{item.penjelasan_awam}</p>
         </div>
       </Section>
@@ -203,7 +203,7 @@ export default function SolutionLibraryDetail() {
         <Section icon={CheckCircle2} title="Manfaat" bg="bg-white">
           <div className="grid sm:grid-cols-2 gap-3">
             {item.manfaat.map((m, i) => (
-              <div key={i} className="flex items-center gap-2.5 bg-green-50/50 rounded-xl p-3 border border-green-100">
+              <div key={i} className="flex items-center gap-2.5 bg-green-50/50 dark:bg-[#103328] rounded-xl p-3 border border-green-100 dark:border-green-700">
                 <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
                 <span className="text-sm text-navy font-medium">{m}</span>
               </div>

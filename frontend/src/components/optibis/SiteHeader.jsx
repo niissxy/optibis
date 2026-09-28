@@ -181,7 +181,7 @@ export default function SiteHeader() {
                   <button
                     onClick={() => onNavClick(item.href)}
                     className={`group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                      darkNav ? "text-white/75 hover:bg-white/10 hover:text-white" : "text-navy-400 hover:bg-magenta-50/50 hover:text-magenta"
+                      darkNav ? "text-white/75 hover:bg-magenta/20 hover:text-white" : "text-navy-400 hover:bg-magenta-50/50 hover:text-magenta"
                     }`}
                   >
                     {tr(item.label)}

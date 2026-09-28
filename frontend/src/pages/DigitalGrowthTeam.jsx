@@ -46,17 +46,46 @@ const PACKAGES = getPackagesByPillar("digital-growth-team").map((p) => ({
 }));
 
 export default function DigitalGrowthTeam() {
+  const [hero, setHero] = React.useState({
+    badgeText: "PILAR 3 — DIGITAL GROWTH TEAM",
+    titlePrefix: "Tingkatkan Pertumbuhan Bisnis dengan ",
+    titleHighlight: "Tim Digital Ahli",
+    description: "Layanan pengelolaan digital secara komprehensif mulai dari social media, SEO, hingga iklan berbayar untuk memastikan bisnis Anda terus berkembang.",
+    imageSrc: "/assets/paket-growth/admin-digital.png",
+    color: "navy"
+  });
+
+  React.useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/modules/service-pillars`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((items) => {
+        const item = Array.isArray(items) && items.find((i) => i.slug === 'digital-growth-team');
+        if (item) {
+          const d = item.data || {};
+          setHero({
+            badgeText: d.badge || "PILAR 3 — DIGITAL GROWTH TEAM",
+            titlePrefix: d.title_prefix || "Tingkatkan Pertumbuhan Bisnis dengan ",
+            titleHighlight: d.title_highlight || "Tim Digital Ahli",
+            description: item.summary || d.desc || "Layanan pengelolaan digital secara komprehensif mulai dari social media, SEO, hingga iklan berbayar untuk memastikan bisnis Anda terus berkembang.",
+            imageSrc: item.image_url || d.flyer_image || "/assets/paket-growth/admin-digital.png",
+            color: d.color || "navy"
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <PillarLayout showPageRecommendations={false}>
       {/* Hero */}
       <PillarSplitHero
         badgeIcon={Users}
-        badgeText="PILAR 3 — DIGITAL GROWTH TEAM"
-        titlePrefix="Tingkatkan Pertumbuhan Bisnis dengan "
-        titleHighlight="Tim Digital Ahli"
-        description="Layanan pengelolaan digital secara komprehensif mulai dari social media, SEO, hingga iklan berbayar untuk memastikan bisnis Anda terus berkembang."
-        imageSrc="/assets/paket-growth/admin-digital.png"
-        color="navy"
+        badgeText={hero.badgeText}
+        titlePrefix={hero.titlePrefix}
+        titleHighlight={hero.titleHighlight}
+        description={hero.description}
+        imageSrc={hero.imageSrc}
+        color={hero.color}
         imageContainerClassName="max-w-sm"
       />
 

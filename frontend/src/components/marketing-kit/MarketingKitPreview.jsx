@@ -2,14 +2,40 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, Share2, FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function MarketingKitPreview({ item, onClose, onDownload }) {
+  const { toast } = useToast();
+
   useEffect(() => {
     if (item) {
       document.body.style.overflow = "hidden";
     }
     return () => { document.body.style.overflow = ""; };
   }, [item]);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: item.nama_asset,
+      text: item.deskripsi,
+      url: item.preview_url || window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast({ title: "Marketing kit dibagikan" });
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareData.url);
+      toast({ title: "Tautan disalin", description: "Tautan marketing kit telah disalin ke clipboard." });
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        toast({ title: "Gagal membagikan", description: "Silakan coba lagi.", variant: "destructive" });
+      }
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -35,10 +61,10 @@ export default function MarketingKitPreview({ item, onClose, onDownload }) {
                 <h3 className="text-sm font-bold text-navy truncate">{item.nama_asset}</h3>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <button className="p-2 text-muted-foreground hover:text-navy hover:bg-gray-50 rounded-lg transition-colors">
+                <button onClick={handleShare} className="p-2 text-muted-foreground hover:text-navy hover:bg-gray-50 dark:hover:text-magenta-200 dark:hover:bg-magenta/20 rounded-lg transition-colors" aria-label="Bagikan marketing kit">
                   <Share2 className="w-4 h-4" />
                 </button>
-                <button onClick={onClose} className="p-2 text-muted-foreground hover:text-navy hover:bg-gray-50 rounded-lg transition-colors">
+                <button onClick={onClose} className="p-2 text-muted-foreground hover:text-navy hover:bg-gray-50 dark:hover:text-magenta-200 dark:hover:bg-magenta/20 rounded-lg transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
