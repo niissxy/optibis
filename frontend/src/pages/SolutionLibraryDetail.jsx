@@ -69,8 +69,8 @@ export default function SolutionLibraryDetail() {
 
   const FlowDiagram = ({ steps, color = "magenta" }) => {
     const colorMap = {
-      magenta: { line: "bg-magenta/30", dot: "bg-magenta text-white", text: "text-navy" },
-      navy: { line: "bg-navy/30", dot: "bg-navy text-white", text: "text-navy" },
+      magenta: { line: "bg-magenta/30 dark:bg-magenta-200/70", dot: "bg-magenta text-white dark:border dark:border-magenta-200", text: "text-navy" },
+      navy: { line: "bg-navy/30 dark:bg-navy-300/70", dot: "bg-navy text-white dark:bg-navy-400 dark:border dark:border-navy-200", text: "text-navy" },
     };
     const c = colorMap[color] || colorMap.magenta;
     return (

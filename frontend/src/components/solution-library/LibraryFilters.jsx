@@ -42,6 +42,10 @@ export default function LibraryFilters({
   onReset,
   resultCount,
 }) {
+  const additionalJenis = JENIS.filter(
+    (jenis) => !categories.some((category) => category.label.toLowerCase() === jenis.label.toLowerCase())
+  );
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -58,18 +62,37 @@ export default function LibraryFilters({
       {/* Kategori */}
       <div>
         <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">Kategori</p>
-        <div className="flex flex-col gap-1">
+        <div className="grid grid-cols-2 gap-1">
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setActiveCategory(activeCategory === cat.id ? "all" : cat.id)}
-              className={`text-left px-3 py-1.5 text-xs rounded-lg transition-all duration-200 ${
+              onClick={() => {
+                setActiveCategory(activeCategory === cat.id ? "all" : cat.id);
+                setActiveJenis("");
+              }}
+              className={`${cat.id === "all" ? "col-span-2" : ""} text-left px-3 py-1.5 text-xs rounded-lg transition-all duration-200 ${
                 activeCategory === cat.id
                   ? "bg-magenta text-white font-medium shadow-sm"
-                  : "text-navy-400 hover:bg-magenta-50 hover:text-magenta"
+                  : "text-navy-400 hover:bg-magenta-50 dark:hover:bg-magenta-900/40 hover:text-magenta"
               }`}
             >
               {cat.label}
+            </button>
+          ))}
+          {additionalJenis.map((jns) => (
+            <button
+              key={`jenis-${jns.value}`}
+              onClick={() => {
+                setActiveJenis(activeJenis === jns.value ? "" : jns.value);
+                setActiveCategory("all");
+              }}
+              className={`text-left px-3 py-1.5 text-xs rounded-lg transition-all duration-200 ${
+                activeJenis === jns.value
+                  ? "bg-magenta text-white font-medium shadow-sm"
+                  : "text-navy-400 hover:bg-magenta-50 dark:hover:bg-magenta-900/40 hover:text-magenta"
+              }`}
+            >
+              {jns.label}
             </button>
           ))}
         </div>
@@ -90,26 +113,6 @@ export default function LibraryFilters({
               }`}
             >
               {lvl.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Jenis */}
-      <div>
-        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">Jenis</p>
-        <div className="flex flex-wrap gap-1.5">
-          {JENIS.map((jns) => (
-            <button
-              key={jns.value}
-              onClick={() => setActiveJenis(activeJenis === jns.value ? "" : jns.value)}
-              className={`px-2.5 py-1 text-[11px] rounded-full border transition-all duration-200 ${
-                activeJenis === jns.value
-                  ? "bg-amethyst text-white border-amethyst"
-                  : "bg-white text-navy-400 border-gray-200 hover:border-amethyst hover:text-amethyst"
-              }`}
-            >
-              {jns.label}
             </button>
           ))}
         </div>

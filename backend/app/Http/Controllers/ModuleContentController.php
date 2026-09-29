@@ -16,6 +16,8 @@ class ModuleContentController extends Controller
         'insights' => 'insight_items',
         'tools' => 'tool_items',
         'solution-library' => 'solution_library_items',
+        'solution-library-categories' => 'site_settings',
+        'solution-library-explore-categories' => 'site_settings',
         'viralog-content' => 'viralog_contents',
         'viralog-categories' => 'viralog_categories',
         'viralog-authors' => 'viralog_authors',
@@ -42,7 +44,22 @@ class ModuleContentController extends Controller
 
     public function index(string $module)
     {
-        $items = DB::table($this->table($module))
+        if ($module === 'solution-library-categories') {
+            $this->syncSolutionLibraryCategories();
+        }
+        if ($module === 'solution-library-explore-categories') {
+            $this->syncSolutionLibraryExploreCategories();
+        }
+
+        $query = DB::table($this->table($module));
+        if ($module === 'solution-library-categories') {
+            $query->where('slug', 'like', 'solution-library-category-%');
+        }
+        if ($module === 'solution-library-explore-categories') {
+            $query->where('slug', 'like', 'solution-library-explore-category-%');
+        }
+
+        $items = $query
             ->orderBy('id', 'desc')
             ->get()
             ->map(fn ($item) => $this->normalize($item));
@@ -70,11 +87,14 @@ class ModuleContentController extends Controller
 
     public function update(Request $request, string $module, $id)
     {
-        $this->item($module, $id);
+        $current = $this->item($module, $id);
         $updateData = $this->storageData($request, $module, (int) $id) + [
             'updated_at' => now()
         ];
         DB::table($this->table($module))->where('id', $id)->update($updateData);
+        if ($module === 'solution-library-categories' && $current->title !== $updateData['title']) {
+            $this->renameSolutionLibraryCategory($current->title, $updateData['title']);
+        }
         $item = DB::table($this->table($module))->find($id);
 
         return response()->json($this->normalize($item));
@@ -104,8 +124,83 @@ class ModuleContentController extends Controller
     private function storageData(Request $request, string $module, ?int $id = null): array
     {
         $data = $this->validated($request, $module, $id);
+        if ($module === 'solution-library-categories') {
+            $data['slug'] = 'solution-library-category-'.str($data['title'])->slug();
+        }
+        if ($module === 'solution-library-explore-categories') {
+            $data['slug'] = 'solution-library-explore-category-'.str($data['title'])->slug();
+        }
         $data['data'] = json_encode($data['data'] ?? []);
         return $data;
+    }
+
+    private function syncSolutionLibraryCategories(): void
+    {
+        if (DB::table('site_settings')->where('slug', 'solution-library-categories-synced-v3')->exists()) {
+            return;
+        }
+
+        $categories = [
+            'Website', 'Frontend', 'Backend', 'Database', 'UI', 'UX', 'Security',
+            'Cloud', 'AI', 'Integration', 'Business', 'Mobile', 'API',
+        ];
+
+        DB::table('site_settings')
+            ->where('slug', 'like', 'solution-library-category-%')
+            ->whereNotIn('title', $categories)
+            ->delete();
+
+        foreach ($categories as $category) {
+            DB::table('site_settings')->updateOrInsert(
+                ['slug' => 'solution-library-category-'.str($category)->slug()],
+                ['title' => $category, 'summary' => null, 'image_url' => null, 'data' => json_encode([]), 'is_published' => true, 'created_at' => now(), 'updated_at' => now()]
+            );
+        }
+
+        DB::table('site_settings')->updateOrInsert(
+            ['slug' => 'solution-library-categories-synced-v3'],
+            ['title' => 'Solution Library categories synced', 'summary' => null, 'image_url' => null, 'data' => json_encode([]), 'is_published' => false, 'created_at' => now(), 'updated_at' => now()]
+        );
+    }
+
+    private function renameSolutionLibraryCategory(string $previousCategory, string $nextCategory): void
+    {
+        DB::table('solution_library_items')->orderBy('id')->each(function ($item) use ($previousCategory, $nextCategory) {
+            $data = json_decode($item->data, true) ?: [];
+            if (($data['kategori'] ?? $data['category'] ?? null) !== $previousCategory) {
+                return;
+            }
+
+            $data['kategori'] = $nextCategory;
+            $data['category'] = $nextCategory;
+            DB::table('solution_library_items')->where('id', $item->id)->update([
+                'data' => json_encode($data),
+                'updated_at' => now(),
+            ]);
+        });
+    }
+
+    private function syncSolutionLibraryExploreCategories(): void
+    {
+        if (DB::table('site_settings')->where('slug', 'solution-library-explore-categories-initialized')->exists()) {
+            return;
+        }
+
+        foreach ([
+            'Website' => '🌐', 'E-Commerce' => '🛒', 'ERP' => '🏢', 'CRM' => '👥',
+            'HRIS' => '💼', 'POS' => '🧾', 'Booking' => '📅', 'Payment' => '💳',
+            'AI Chatbot' => '🤖', 'Login System' => '🔐', 'Cloud Hosting' => '☁️', 'Database' => '🗄️',
+        ] as $title => $icon) {
+            DB::table('site_settings')->updateOrInsert(
+                ['slug' => 'solution-library-explore-category-'.str($title)->slug()],
+                ['title' => $title, 'summary' => null, 'image_url' => null, 'data' => json_encode(['icon' => $icon]), 'is_published' => true, 'created_at' => now(), 'updated_at' => now()]
+            );
+        }
+
+        DB::table('site_settings')->updateOrInsert(
+            ['slug' => 'solution-library-explore-categories-initialized'],
+            ['title' => 'Solution Library explore categories initialized', 'summary' => null, 'image_url' => null, 'data' => json_encode([]), 'is_published' => false, 'created_at' => now(), 'updated_at' => now()]
+        );
     }
 
     private function table(string $module): string

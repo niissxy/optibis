@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Check, Eye, TrendingUp } from "lucide-react";
 import { getPackagesByPillar } from "@/data/packages";
@@ -46,8 +46,14 @@ function getPageContext(pathname) {
   if ((root === "paket" || root === "layanan") && PILLAR_META[segments[1]]) {
     return { pillarSlug: segments[1], currentPackageSlug: root === "paket" ? segments[2] : null };
   }
-  if (root === "marketing-kit") return { pillarSlug: "digital-asset" };
-  if (root === "tools" || root === "solution-library") return { pillarSlug: "website" };
+  if (root === "marketing-kit") return { pillarSlug: "digital-asset", currentPackageSlug: "page:marketing-kit" };
+  if (root === "tools") return { pillarSlug: "website", currentPackageSlug: "page:tools" };
+  if (root === "solution-library") return { pillarSlug: "website", currentPackageSlug: "solution-library" };
+  if (root === "content") return { pillarSlug: "website", currentPackageSlug: "page:content" };
+  if (root === "insight") return { pillarSlug: "website", currentPackageSlug: "page:insight" };
+  if (root === "portofolio") return { pillarSlug: "website", currentPackageSlug: "page:portofolio" };
+  if (root === "tentang") return { pillarSlug: "website", currentPackageSlug: "page:tentang" };
+  if (["trending", "short-video", "video", "kategori", "tag", "author", "search"].includes(root)) return { pillarSlug: "website", currentPackageSlug: "page:viralog" };
   if (root === "content" && segments[1]) {
     const content = getContentBySlug(segments[1]);
     return { pillarSlug: CONTENT_PILLARS[content?.category_slug] };
@@ -57,27 +63,57 @@ function getPageContext(pathname) {
   return { pillarSlug: null };
 }
 
-function getRecommendedPackages(pillarSlug, currentPackageSlug) {
-  if (pillarSlug) {
-    return getPackagesByPillar(pillarSlug)
-      .filter((pkg) => pkg.slug !== currentPackageSlug)
-      .slice(0, 3);
+function toPackage(item) {
+  const data = item.data || {};
+  return {
+    slug: item.slug,
+    pillarSlug: data.pillar_slug || data.pillar || "website",
+    name: item.title,
+    target: data.target || item.summary || "",
+    price: data.price || "",
+    priceShort: data.price_short || "",
+    included: Array.isArray(data.included) ? data.included : [],
+  };
+}
+
+function getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages) {
+  const packagesRecommendingCurrent = managedPackages
+    .filter((item) => Array.isArray(item.data?.recommended_packages) && item.data.recommended_packages.some((recommendation) => (typeof recommendation === "string" ? recommendation : recommendation?.slug) === currentPackageSlug))
+    .map(toPackage);
+
+  if ((currentPackageSlug === "solution-library" || currentPackageSlug?.startsWith("page:")) && packagesRecommendingCurrent.length) {
+    return packagesRecommendingCurrent;
   }
 
-  return Object.keys(PILLAR_META).map((slug) => {
-    const packages = getPackagesByPillar(slug);
-    return packages.find((pkg) => pkg.popular) || packages[0];
-  });
+  const automaticPackages = pillarSlug
+    ? getPackagesByPillar(pillarSlug)
+      .filter((pkg) => pkg.slug !== currentPackageSlug)
+      .slice(0, 3)
+    : Object.keys(PILLAR_META).map((slug) => {
+        const packages = getPackagesByPillar(slug);
+        return packages.find((pkg) => pkg.popular) || packages[0];
+      });
+
+  return [...packagesRecommendingCurrent, ...automaticPackages]
+    .filter((pkg, index, list) => list.findIndex((candidate) => candidate.slug === pkg.slug) === index);
 }
 
 export default function PageRecommendations() {
   const { pathname } = useLocation();
   const { language, t, tr } = useLanguage();
+  const [managedPackages, setManagedPackages] = useState([]);
   const { pillarSlug, currentPackageSlug } = getPageContext(pathname);
-  const packages = getRecommendedPackages(pillarSlug, currentPackageSlug);
+  const packages = getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages);
   const trending = getTrendingContent(3);
   const categoryName = pillarSlug ? PILLAR_META[pillarSlug].name : "pilihan Optibis";
   const showTrending = pathname === "/content";
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/packages`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => setManagedPackages(Array.isArray(items) ? items.filter((item) => item.is_published) : []))
+      .catch(() => {});
+  }, []);
 
   if (pathname === "/") return null;
 

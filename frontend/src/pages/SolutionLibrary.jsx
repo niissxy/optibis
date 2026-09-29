@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, MessageCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,17 +9,67 @@ import LibraryFilters from "@/components/solution-library/LibraryFilters";
 import { SOLUTION_ITEMS, SOLUTION_CATEGORIES } from "@/data/solutionLibrary";
 import { useSafeNav } from "@/hooks/useSafeNav";
 
+const DEFAULT_QUICK_CATS = [
+  { label: "Website", icon: "🌐" }, { label: "E-Commerce", icon: "🛒" }, { label: "ERP", icon: "🏢" }, { label: "CRM", icon: "👥" }, { label: "HRIS", icon: "💼" }, { label: "POS", icon: "🧾" }, { label: "Booking", icon: "📅" }, { label: "Payment", icon: "💳" }, { label: "AI Chatbot", icon: "🤖" }, { label: "Login System", icon: "🔐" }, { label: "Cloud Hosting", icon: "☁️" }, { label: "Database", icon: "🗄️" },
+];
+
 export default function SolutionLibrary() {
+  const [solutionItems, setSolutionItems] = useState(SOLUTION_ITEMS);
+  const [quickCats, setQuickCats] = useState(DEFAULT_QUICK_CATS);
+  const [libraryCategories, setLibraryCategories] = useState(SOLUTION_CATEGORIES);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [activeTopic, setActiveTopic] = useState("");
   const [activeLevel, setActiveLevel] = useState("");
   const [activeJenis, setActiveJenis] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
   const gridRef = useRef(null);
   const nav = useSafeNav();
 
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        if (!Array.isArray(items) || !items.length) return;
+        const managed = items.filter((item) => item.is_published);
+        const normalize = (item) => {
+          const data = item.data || {};
+          return { ...data, slug: item.slug, nama_awam: item.title, nama_teknis: data.nama_teknis || data.technical || "", fungsi: item.summary || data.fungsi || "", kategori: data.kategori || data.category || "", topik: data.topik || data.topics || [], image: item.image_url || data.image };
+        };
+        const managedBySlug = new Map(managed.map((item) => [item.slug, normalize(item)]));
+        const updated = SOLUTION_ITEMS.map((item) => managedBySlug.has(item.slug) ? { ...item, ...managedBySlug.get(item.slug) } : item);
+        const additional = managed.filter((item) => !SOLUTION_ITEMS.some((fallback) => fallback.slug === item.slug)).map(normalize);
+        setSolutionItems([...updated, ...additional]);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library-explore-categories`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        if (!Array.isArray(items) || !items.length) return;
+        const defaultOrder = new Map(DEFAULT_QUICK_CATS.map((topic, index) => [topic.label, index]));
+        setQuickCats(items.filter((item) => item.is_published).map((item) => ({ label: item.title, icon: item.data?.icon || "📁" })).sort((a, b) => (defaultOrder.get(a.label) ?? Number.MAX_SAFE_INTEGER) - (defaultOrder.get(b.label) ?? Number.MAX_SAFE_INTEGER)));
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library-categories`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        if (!Array.isArray(items) || !items.length) return;
+        setLibraryCategories([
+          { id: "all", label: "Semua", icon: "LayoutGrid" },
+          ...items.filter((item) => item.is_published).map((item) => ({ id: item.title, label: item.title, icon: "Folder" })),
+        ]);
+      })
+      .catch(() => {});
+  }, []);
+
   const filtered = useMemo(() => {
-    let result = SOLUTION_ITEMS.filter((item) => {
+    let result = solutionItems.filter((item) => {
       const matchQuery =
         !query ||
         item.nama_awam.toLowerCase().includes(query.toLowerCase()) ||
@@ -27,19 +77,24 @@ export default function SolutionLibrary() {
         item.fungsi.toLowerCase().includes(query.toLowerCase()) ||
         (item.kategori || "").toLowerCase().includes(query.toLowerCase());
       const matchCat = activeCategory === "all" || item.kategori === activeCategory;
+      const itemTopics = Array.isArray(item.topik || item.topics) ? (item.topik || item.topics) : [];
+      const matchTopic = !activeTopic || itemTopics.includes(activeTopic) || [item.nama_awam, item.nama_teknis, item.fungsi, ...(item.digunakan_pada || [])].some((value) => String(value || "").toLowerCase().includes(activeTopic.toLowerCase()));
       const matchLevel = !activeLevel || item.level === activeLevel;
       const matchJenis = !activeJenis || item.jenis === activeJenis;
-      return matchQuery && matchCat && matchLevel && matchJenis;
+      return matchQuery && matchCat && matchTopic && matchLevel && matchJenis;
     });
 
-    if (sortBy === "nama") {
+    if (sortBy === "relevance") {
+      const defaultOrder = new Map(SOLUTION_ITEMS.map((item, index) => [item.slug, index]));
+      result = [...result].sort((a, b) => (defaultOrder.get(a.slug) ?? Number.MAX_SAFE_INTEGER) - (defaultOrder.get(b.slug) ?? Number.MAX_SAFE_INTEGER));
+    } else if (sortBy === "nama") {
       result = [...result].sort((a, b) => a.nama_awam.localeCompare(b.nama_awam));
     } else if (sortBy === "level") {
       const order = { basic: 1, intermediate: 2, advanced: 3, enterprise: 4 };
       result = [...result].sort((a, b) => (order[a.level] || 0) - (order[b.level] || 0));
     }
     return result;
-  }, [query, activeCategory, activeLevel, activeJenis, sortBy]);
+  }, [solutionItems, query, activeCategory, activeTopic, activeLevel, activeJenis, sortBy]);
 
   const scrollToGrid = () => {
     gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -52,25 +107,11 @@ export default function SolutionLibrary() {
   const resetFilters = () => {
     setQuery("");
     setActiveCategory("all");
+    setActiveTopic("");
     setActiveLevel("");
     setActiveJenis("");
     setSortBy("relevance");
   };
-
-  const QUICK_CATS = [
-    { label: "Website", icon: "🌐" },
-    { label: "E-Commerce", icon: "🛒" },
-    { label: "ERP", icon: "🏢" },
-    { label: "CRM", icon: "👥" },
-    { label: "HRIS", icon: "💼" },
-    { label: "POS", icon: "🧾" },
-    { label: "Booking", icon: "📅" },
-    { label: "Payment", icon: "💳" },
-    { label: "AI Chatbot", icon: "🤖" },
-    { label: "Login System", icon: "🔐" },
-    { label: "Cloud Hosting", icon: "☁️" },
-    { label: "Database", icon: "🗄️" },
-  ];
 
   return (
     <PillarLayout>
@@ -80,11 +121,11 @@ export default function SolutionLibrary() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">Jelajahi Kategori</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">Jelajahi Topik</h2>
             <p className="text-sm text-muted-foreground">Pilih topik yang ingin Anda pelajari</p>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            {QUICK_CATS.map((cat, i) => (
+            {quickCats.map((cat, i) => (
               <motion.button
                 key={cat.label}
                 initial={{ opacity: 0, y: 10 }}
@@ -92,10 +133,11 @@ export default function SolutionLibrary() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.03 }}
                 onClick={() => {
-                  setQuery(cat.label);
+                  setQuery("");
+                  setActiveTopic(cat.label);
                   scrollToGrid();
                 }}
-                className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-magenta/30 hover:bg-magenta-50/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-200/50"
+                className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-magenta/30 hover:bg-magenta-50/30 dark:hover:bg-magenta-900/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-200/50"
               >
                 <span className="text-2xl group-hover:scale-125 transition-transform duration-300">{cat.icon}</span>
                 <span className="text-xs font-medium text-navy text-center leading-tight">{cat.label}</span>
@@ -113,7 +155,7 @@ export default function SolutionLibrary() {
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
                 <LibraryFilters
-                  categories={SOLUTION_CATEGORIES}
+                  categories={libraryCategories}
                   activeCategory={activeCategory}
                   setActiveCategory={setActiveCategory}
                   activeLevel={activeLevel}

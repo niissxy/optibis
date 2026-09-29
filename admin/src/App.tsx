@@ -38,7 +38,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 type Portfolio = { id:number; name:string; category:string; description:string; website_url:string; image_url:string|null; updated_at?:string }
 type Admin = { id:number; name:string; email:string; created_at:string }
 type User = { id:number; name:string; email:string }
-type ContentType = 'service-pillars'|'services'|'packages'|'marketing-kits'|'insights'|'tools'|'solution-library'|'viralog-content'|'viralog-categories'|'viralog-authors'|'viralog-tags'|'viralog-rss-sources'|'viralog-ad-campaigns'|'evolis-business-dna'|'evolis-products'|'evolis-audiences'|'evolis-objectives'|'evolis-campaigns'|'evolis-assets'|'evolis-publishing'|'evolis-leads'|'evolis-pipeline'|'evolis-analytics'|'evolis-recommendations'|'evolis-automations'|'evolis-governance'|'evolis-briefs'|'evolis-settings'|'site-settings'
+type ContentType = 'service-pillars'|'services'|'packages'|'marketing-kits'|'insights'|'tools'|'solution-library'|'solution-library-categories'|'solution-library-explore-categories'|'viralog-content'|'viralog-categories'|'viralog-authors'|'viralog-tags'|'viralog-rss-sources'|'viralog-ad-campaigns'|'evolis-business-dna'|'evolis-products'|'evolis-audiences'|'evolis-objectives'|'evolis-campaigns'|'evolis-assets'|'evolis-publishing'|'evolis-leads'|'evolis-pipeline'|'evolis-analytics'|'evolis-recommendations'|'evolis-automations'|'evolis-governance'|'evolis-briefs'|'evolis-settings'|'site-settings'
 type ContentItem = { id:number; type?:ContentType; slug:string; title:string; summary:string|null; image_url:string|null; data:Record<string, unknown>|null; is_published:boolean; updated_at?:string }
 type Section = 'portfolio'|'admins'|'viralog'|'evolis'|'settings'|ContentType
 
@@ -56,7 +56,9 @@ const CONTENT_SECTIONS:{id:ContentType;label:string;icon:typeof Package}[] = [
   {id:'insights',label:'Insight',icon:BookOpen},
   {id:'tools',label:'Tools',icon:Wrench},
   {id:'solution-library',label:'Solution Library',icon:Layers3},
+  {id:'solution-library-categories',label:'Kategori Solution Library',icon:Columns3},
 ]
+const HIDDEN_CONTENT_SECTIONS:ContentType[] = ['solution-library-categories']
 const VIRALOG_SECTIONS:{id:ContentType;label:string}[] = [
   {id:'viralog-content',label:'Konten'}, {id:'viralog-categories',label:'Kategori'}, {id:'viralog-authors',label:'Penulis'}, {id:'viralog-tags',label:'Tag'}, {id:'viralog-rss-sources',label:'RSS Source'}, {id:'viralog-ad-campaigns',label:'Iklan'},
 ]
@@ -85,7 +87,7 @@ function App() {
   if(!user) return <Login onLogin={(u,t)=>{localStorage.setItem('optibis_token',t);setUser(u)}}/>
   function logout(){ request('/auth/logout',{method:'POST'}).catch(()=>{}).finally(()=>{localStorage.removeItem('optibis_token');setUser(null)}) }
   const sectionLabel = section === 'portfolio' ? 'Portofolio' : section === 'admins' ? 'Admin' : section === 'service-pillars' ? 'Pilar Layanan' : section === 'services' ? 'Layanan' : section === 'packages' ? 'Paket' : section === 'viralog' ? 'Viralog' : section === 'evolis' ? 'Evolis' : section === 'settings' ? 'Pengaturan Website' : CONTENT_SECTIONS.find(item=>item.id===section)?.label
-  return <div className="shell"><aside className={menu?'open':''}><div className="side-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="workspace"><span className="avatar">{user.name[0]}</span><div><strong>{user.name}</strong><small>Administrator</small></div><ChevronDown size={15}/></div><nav><p className="nav-label">WORKSPACE</p><button className={section==='portfolio'?'active':''} onClick={()=>{setSection('portfolio');setMenu(false)}}><LayoutDashboard size={18}/> Portofolio</button><p className="nav-label">KONTEN FRONTEND</p>{CONTENT_SECTIONS.map(item=>{const Icon=item.icon;return <button key={item.id} className={section===item.id?'active':''} onClick={()=>{setSection(item.id);setMenu(false)}}><Icon size={18}/> {item.label}</button>})}<button className={section==='viralog'?'active':''} onClick={()=>{setSection('viralog');setMenu(false)}}><Newspaper size={18}/> Viralog</button><button className={section==='evolis'?'active':''} onClick={()=>{setSection('evolis');setMenu(false)}}><Layers3 size={18}/> Evolis</button><p className="nav-label">AKSES</p><button className={section==='admins'?'active':''} onClick={()=>{setSection('admins');setMenu(false)}}><Users size={18}/> Admin <span className="nav-dot">•</span></button><button className={section==='settings'?'active':''} onClick={()=>{setSection('settings');setMenu(false)}}><Wrench size={18}/> Pengaturan Website</button></nav><div className="sidebar-bottom"><div className="side-tip"><BarChart3 size={18}/><div><b>Keep creating</b><small>Ide bagus selalu layak dibuat.</small></div></div><button className="logout" onClick={logout}><LogOut size={17}/> Keluar</button></div></aside><div className="main"><header><button className="menu-btn" onClick={()=>setMenu(!menu)}><Menu/></button><div className="crumb"><span>Workspace</span><b>/</b><strong>{sectionLabel}</strong></div><div className="header-actions"><span className="status"><i/> Sistem online</span><button className="profile" onClick={logout}><span className="avatar">{user.name[0]}</span><ChevronDown size={15}/></button></div></header>{section==='portfolio'?<PortfolioView/>:section==='admins'?<AdminView currentUser={user}/>:section==='service-pillars'?<ServicePillarsView/>:section==='services'?<ServicesView/>:section==='packages'?<PackagesView/>:section==='viralog'?<ContentHub title="Viralog" sections={VIRALOG_SECTIONS}/>:section==='evolis'?<ContentHub title="Evolis" sections={EVOLIS_SECTIONS}/>:section==='settings'?<ContentView type="site-settings" label="Pengaturan Website"/>:<ContentView type={section} label={sectionLabel || 'Konten'}/>}</div></div>
+  return <div className="shell"><aside className={menu?'open':''}><div className="side-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="workspace"><span className="avatar">{user.name[0]}</span><div><strong>{user.name}</strong><small>Administrator</small></div><ChevronDown size={15}/></div><nav><p className="nav-label">WORKSPACE</p><button className={section==='portfolio'?'active':''} onClick={()=>{setSection('portfolio');setMenu(false)}}><LayoutDashboard size={18}/> Portofolio</button><p className="nav-label">KONTEN FRONTEND</p>{CONTENT_SECTIONS.filter(item=>!HIDDEN_CONTENT_SECTIONS.includes(item.id)).map(item=>{const Icon=item.icon;return <button key={item.id} className={section===item.id?'active':''} onClick={()=>{setSection(item.id);setMenu(false)}}><Icon size={18}/> {item.label}</button>})}<button className={section==='viralog'?'active':''} onClick={()=>{setSection('viralog');setMenu(false)}}><Newspaper size={18}/> Viralog</button><button className={section==='evolis'?'active':''} onClick={()=>{setSection('evolis');setMenu(false)}}><Layers3 size={18}/> Evolis</button><p className="nav-label">AKSES</p><button className={section==='admins'?'active':''} onClick={()=>{setSection('admins');setMenu(false)}}><Users size={18}/> Admin <span className="nav-dot">•</span></button><button className={section==='settings'?'active':''} onClick={()=>{setSection('settings');setMenu(false)}}><Wrench size={18}/> Pengaturan Website</button></nav><div className="sidebar-bottom"><div className="side-tip"><BarChart3 size={18}/><div><b>Keep creating</b><small>Ide bagus selalu layak dibuat.</small></div></div><button className="logout" onClick={logout}><LogOut size={17}/> Keluar</button></div></aside><div className="main"><header><button className="menu-btn" onClick={()=>setMenu(!menu)}><Menu/></button><div className="crumb"><span>Workspace</span><b>/</b><strong>{sectionLabel}</strong></div><div className="header-actions"><span className="status"><i/> Sistem online</span><button className="profile" onClick={logout}><span className="avatar">{user.name[0]}</span><ChevronDown size={15}/></button></div></header>{section==='portfolio'?<PortfolioView/>:section==='admins'?<AdminView currentUser={user}/>:section==='service-pillars'?<ServicePillarsView/>:section==='services'?<ServicesView/>:section==='packages'?<PackagesView/>:section==='viralog'?<ContentHub title="Viralog" sections={VIRALOG_SECTIONS}/>:section==='evolis'?<ContentHub title="Evolis" sections={EVOLIS_SECTIONS}/>:section==='settings'?<ContentView type="site-settings" label="Pengaturan Website"/>:<ContentView type={section} label={sectionLabel || 'Konten'}/>}</div></div>
 }
 
 function PortfolioView(){ const [items,setItems]=useState<Portfolio[]>([]), [query,setQuery]=useState(''), [editing,setEditing]=useState<Portfolio|null|false>(false), [refresh,setRefresh]=useState(0), [error,setError]=useState(''); useEffect(()=>{request('/portfolios').then(setItems).catch(e=>setError(e.message))},[refresh]); const filtered=items.filter(x=>(x.name+x.category).toLowerCase().includes(query.toLowerCase())); async function remove(id:number){if(!confirm('Hapus portofolio ini?'))return; try{await request('/portfolios/'+id,{method:'DELETE'});setRefresh(x=>x+1)}catch(e){setError((e as Error).message)}} return <section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>Portofolio</h1><p className="subtle">Tampilkan karya terbaik dan kisah di baliknya.</p></div><button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah portofolio</button></div><div className="stats"><div><span>Total karya</span><b>{items.length}</b><small>Semua portofolio</small></div><div><span>Kategori</span><b>{new Set(items.map(x=>x.category)).size}</b><small>Jenis layanan</small></div><div><span>Terakhir diperbarui</span><b className="date-stat">{items[0]?.updated_at?new Date(items[0].updated_at).toLocaleDateString('id-ID',{day:'2-digit',month:'short'}):'—'}</b><small>Update terbaru</small></div></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder="Cari portofolio…" value={query} onChange={e=>setQuery(e.target.value)}/></div><span className="result-count">{filtered.length} karya</span></div>{error&&<div className="error-box">{error}</div>}<div className="portfolio-grid">{filtered.map(item=><article className="portfolio-card" key={item.id}><div className="card-image">{item.image_url?<img src={item.image_url} alt=""/>:<div className="image-placeholder"><BriefcaseBusiness size={26}/><span>{item.category}</span></div>}<span className="category">{item.category}</span><div className="card-hover"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div><div className="card-body"><h3>{item.name}</h3><p>{item.description}</p><a href={item.website_url} target="_blank">Lihat website <ExternalLink size={14}/></a></div></article>)}{!filtered.length&&<div className="empty"><BriefcaseBusiness size={30}/><p>Belum ada portofolio.</p></div>}</div>{editing!==false&&<PortfolioModal item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(x=>x+1)}}/>}</section> }
@@ -756,7 +758,8 @@ function ServicesView() {
 
   const filtered = items.filter(item => {
     const data = (item.data || {}) as Record<string, any>
-    const pillar = (data.pillar || '').toString().toLowerCase()
+    const rawPillar = (data.pillar_slug || data.pillar || '').toString().trim().toLowerCase()
+    const pillar = SERVICE_PILLARS.find(p => p.id === rawPillar || p.name.toLowerCase() === rawPillar)?.id || rawPillar
     const features = Array.isArray(data.features) ? data.features.join(' ') : ''
     const matchQuery = `${item.title} ${item.slug} ${item.summary || ''} ${pillar} ${features}`.toLowerCase().includes(query.toLowerCase())
     const matchPillar = pillarFilter === 'all' || pillar === pillarFilter
@@ -855,7 +858,7 @@ function ServicesView() {
         {filtered.map(item => {
           const data = (item.data || {}) as Record<string, any>
           const features: string[] = Array.isArray(data.features) ? data.features : []
-          const pillar = data.pillar || 'website'
+          const pillar = data.pillar_slug || data.pillar || 'website'
           const pillarObj = SERVICE_PILLARS.find(p => p.id === pillar) || { name: pillar || 'Website' }
 
           return (
@@ -1259,7 +1262,8 @@ function PackagesView() {
 
   const filtered = items.filter(item => {
     const data = (item.data || {}) as Record<string, any>
-    const pillar = (data.pillar || '').toString().toLowerCase()
+    const rawPillar = (data.pillar_slug || data.pillar || '').toString().trim().toLowerCase()
+    const pillar = SERVICE_PILLARS.find(p => p.id === rawPillar || p.name.toLowerCase() === rawPillar)?.id || rawPillar
     const target = (data.target || '').toString().toLowerCase()
     const timeline = (data.timeline || '').toString().toLowerCase()
     const price = (data.price || '').toString().toLowerCase()
@@ -1467,6 +1471,7 @@ function PackagesView() {
       {editing !== false && (
         <PackageModal
           item={editing}
+          packages={items}
           onClose={() => setEditing(false)}
           onSaved={() => {
             setEditing(false)
@@ -1484,10 +1489,12 @@ type FaqItem = { q: string; a: string }
 
 function PackageModal({
   item,
+  packages,
   onClose,
   onSaved
 }: {
   item: ContentItem | null
+  packages: ContentItem[]
   onClose: () => void
   onSaved: () => void
 }) {
@@ -1508,14 +1515,15 @@ function PackageModal({
   const initialFaqs: FaqItem[] = Array.isArray(existingData.faqs)
     ? existingData.faqs.map((f: any) => ({ q: f.q || f.question || '', a: f.a || f.answer || '' }))
     : []
+  const initialPillar = SERVICE_PILLARS.find(p => p.id === existingData.pillar_slug || p.id === existingData.pillar || p.name.toLowerCase() === String(existingData.pillar || '').toLowerCase())?.id || 'website'
 
-  const [activeTab, setActiveTab] = useState<'info' | 'highlights' | 'included' | 'deliverables' | 'faqs'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'highlights' | 'included' | 'deliverables' | 'faqs' | 'recommendations'>('info')
 
   const [form, setForm] = useState({
     title: item?.title || '',
     slug: item?.slug || '',
     summary: item?.summary || existingData.tagline || '',
-    pillar: existingData.pillar || 'website',
+    pillar: initialPillar,
     tagline: existingData.tagline || '',
     badge: existingData.badge || '',
     popular: !!existingData.popular,
@@ -1545,6 +1553,25 @@ function PackageModal({
   const [faqs, setFaqs] = useState<FaqItem[]>(initialFaqs)
   const [newFaqQ, setNewFaqQ] = useState('')
   const [newFaqA, setNewFaqA] = useState('')
+  const savedRecommendations = Array.isArray(existingData.recommended_packages) ? existingData.recommended_packages : []
+  const packagePillar = existingData.pillar_slug || existingData.pillar
+  const automaticRecommendations = packages
+    .filter(pkg => pkg.slug !== item?.slug && (pkg.data?.pillar_slug || pkg.data?.pillar) === packagePillar)
+    .map(pkg => pkg.slug)
+  const initialRecommendations = existingData.recommendations_configured || savedRecommendations.length
+    ? savedRecommendations
+    : automaticRecommendations
+  const [recommendations, setRecommendations] = useState<string[]>(initialRecommendations)
+  const recommendationPageTargets = [
+    { slug: 'page:marketing-kit', label: 'Marketing Kit' },
+    { slug: 'page:tools', label: 'Tools' },
+    { slug: 'solution-library', label: 'Solution Library' },
+    { slug: 'page:content', label: 'Konten' },
+    { slug: 'page:insight', label: 'Insight' },
+    { slug: 'page:portofolio', label: 'Portofolio' },
+    { slug: 'page:tentang', label: 'Tentang' },
+    { slug: 'page:viralog', label: 'Viralog' },
+  ]
 
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -1690,7 +1717,8 @@ function PackageModal({
     const payloadData: Record<string, any> = {
       ...existingData,
       name: form.title,
-      pillar: form.pillar,
+      pillar: SERVICE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
+      pillar_slug: form.pillar,
       pillar_name: SERVICE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
       tagline: form.tagline || form.summary,
       badge: form.badge || (form.popular ? 'Paling Populer' : ''),
@@ -1705,6 +1733,8 @@ function PackageModal({
       included: cleanIncluded,
       deliverables: cleanDeliverables,
       faqs: cleanFaqs,
+      recommended_packages: recommendations,
+      recommendations_configured: true,
       cta_text: form.cta_text,
       consultation_text: form.consultation_text
     }
@@ -1779,6 +1809,13 @@ function PackageModal({
             onClick={() => setActiveTab('faqs')}
           >
             <HelpCircle size={14} /> FAQ ({faqs.length})
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'recommendations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recommendations')}
+          >
+            <Sparkles size={14} /> Rekomendasi ({recommendations.length})
           </button>
         </div>
 
@@ -2431,6 +2468,43 @@ function PackageModal({
             </div>
           )}
 
+          {activeTab === 'recommendations' && (
+            <div className="features-section">
+              <div className="features-section-header">
+                <div>
+                  <h3 className="features-section-title"><Sparkles size={16} className="icon-pink" /> Rekomendasi Paket Lainnya</h3>
+                  <p className="features-section-sub">Pilih halaman yang akan menampilkan paket ini sebagai rekomendasi.</p>
+                </div>
+                <span className="features-count-pill">{recommendations.length} Paket</span>
+              </div>
+              <div className="feature-items-list">
+                {recommendationPageTargets.map(target => {
+                  const selected = recommendations.includes(target.slug)
+                  return <label className="feature-item-row check" key={target.slug}>
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => setRecommendations(prev => selected ? prev.filter(slug => slug !== target.slug) : [...prev, target.slug])}
+                    />
+                    <span className="feature-text-input">{target.label}</span>
+                  </label>
+                })}
+                {packages.filter(pkg => pkg.slug !== item?.slug).map(pkg => {
+                  const selected = recommendations.includes(pkg.slug)
+                  return <label className="feature-item-row check" key={pkg.id}>
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => setRecommendations(prev => selected ? prev.filter(slug => slug !== pkg.slug) : [...prev, pkg.slug])}
+                    />
+                    <span className="feature-text-input">{pkg.title}</span>
+                  </label>
+                })}
+                {!packages.filter(pkg => pkg.slug !== item?.slug).length && <div className="feature-empty-state"><p>Belum ada paket lain yang tersedia.</p></div>}
+              </div>
+            </div>
+          )}
+
           <label className="check" style={{ marginTop: '16px' }}>
             <input
               type="checkbox"
@@ -2467,8 +2541,65 @@ function ContentView({type,label}:{type:ContentType;label:string}){
     return <PackagesView />
   }
 
-  const [items,setItems]=useState<ContentItem[]>([]),[query,setQuery]=useState(''),[editing,setEditing]=useState<ContentItem|null|false>(false),[refresh,setRefresh]=useState(0),[error,setError]=useState('');useEffect(()=>{request(`/modules/${type}`).then(setItems).catch(e=>setError(e.message))},[type,refresh]);const filtered=items.filter(item=>`${item.title} ${item.slug} ${item.summary||''}`.toLowerCase().includes(query.toLowerCase()));async function remove(id:number){if(!confirm(`Hapus ${label.toLowerCase()} ini?`))return;try{await request(`/modules/${type}/${id}`,{method:'DELETE'});setRefresh(value=>value+1)}catch(err){setError((err as Error).message)}}return <section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>{label}</h1><p className="subtle">Kelola konten {label.toLowerCase()} yang ditampilkan di frontend.</p></div><button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah {label}</button></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder={`Cari ${label.toLowerCase()}…`} value={query} onChange={event=>setQuery(event.target.value)}/></div><span className="result-count">{filtered.length} konten</span></div>{error&&<div className="error-box">{error}</div>}<div className="admin-table"><div className="table-head"><span>Konten</span><span>Slug</span><span>Status</span><span></span></div>{filtered.map(item=><div className="table-row" key={item.id}><div className="person">{item.image_url?<img className="avatar" src={item.image_url} alt=""/>:<span className="avatar">{item.title[0]}</span>}<div><b>{item.title}</b>{item.summary&&<small>{item.summary}</small>}</div></div><span>{item.slug}</span><span>{item.is_published?'Published':'Draft'}</span><div className="row-actions"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div>)}{!filtered.length&&<div className="empty">Belum ada konten {label.toLowerCase()}.</div>}</div>{editing!==false&&<ContentModal type={type} label={label} item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(value=>value+1)}}/>}</section>}
+  const [items,setItems]=useState<ContentItem[]>([]),[query,setQuery]=useState(''),[editing,setEditing]=useState<ContentItem|null|false>(false),[refresh,setRefresh]=useState(0),[error,setError]=useState(''),[managingCategories,setManagingCategories]=useState(false),[managingExploreCategories,setManagingExploreCategories]=useState(false);useEffect(()=>{request(`/modules/${type}`).then(setItems).catch(e=>setError(e.message))},[type,refresh]);const filtered=items.filter(item=>`${item.title} ${item.slug} ${item.summary||''}`.toLowerCase().includes(query.toLowerCase()));async function remove(id:number){if(!confirm(`Hapus ${label.toLowerCase()} ini?`))return;try{await request(`/modules/${type}/${id}`,{method:'DELETE'});setRefresh(value=>value+1)}catch(err){setError((err as Error).message)}}return <section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>{label}</h1><p className="subtle">Kelola konten {label.toLowerCase()} yang ditampilkan di frontend.</p></div><div className="page-title-actions">{type==='solution-library'&&<><button className="secondary" onClick={()=>setManagingCategories(true)}><Columns3 size={17}/> Atur kategori filter</button><button className="secondary" onClick={()=>setManagingExploreCategories(true)}><Columns3 size={17}/> Atur Jelajahi Topik</button></>}<button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah {label}</button></div></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder={`Cari ${label.toLowerCase()}…`} value={query} onChange={event=>setQuery(event.target.value)}/></div><span className="result-count">{filtered.length} konten</span></div>{error&&<div className="error-box">{error}</div>}<div className="admin-table"><div className="table-head"><span>Konten</span><span>Slug</span><span>Status</span><span></span></div>{filtered.map(item=><div className="table-row" key={item.id}><div className="person">{item.image_url?<img className="avatar" src={item.image_url} alt=""/>:<span className="avatar">{item.title[0]}</span>}<div><b>{item.title}</b>{item.summary&&<small>{item.summary}</small>}</div></div><span>{item.slug}</span><span>{item.is_published?'Published':'Draft'}</span><div className="row-actions"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div>)}{!filtered.length&&<div className="empty">Belum ada konten {label.toLowerCase()}.</div>}</div>{editing!==false&&<ContentModal type={type} label={label} item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(value=>value+1)}}/>}{managingCategories&&<SolutionLibraryCategoryManager onClose={()=>setManagingCategories(false)} onChanged={()=>setRefresh(value=>value+1)}/>} {managingExploreCategories&&<SolutionLibraryExploreCategoryManager onClose={()=>setManagingExploreCategories(false)}/>}</section>}
 
-function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:string;item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',image_url:item?.image_url||'',data:JSON.stringify(item?.data||{},null,2),is_published:item?.is_published??true}),[error,setError]=useState(''),[busy,setBusy]=useState(false);async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{let data:Record<string,unknown>={};if(form.data.trim())data=JSON.parse(form.data);await request(item?`/modules/${type}/${item.id}`:`/modules/${type}`,{method:item?'PUT':'POST',body:JSON.stringify({...form,data})});onSaved()}catch(err){setError(err instanceof SyntaxError?'Data tambahan harus berupa JSON yang valid.':(err as Error).message)}finally{setBusy(false)}}return <div className="modal-backdrop"><form className="modal" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT KONTEN':'KONTEN BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><label>Judul<input value={form.title} onChange={event=>setForm({...form,title:event.target.value})} required/></label><label>Slug<input value={form.slug} onChange={event=>setForm({...form,slug:event.target.value})} required/></label><label>Ringkasan<textarea rows={3} value={form.summary} onChange={event=>setForm({...form,summary:event.target.value})}/></label><label>URL gambar<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})}/></label><label>Data tambahan (JSON)<textarea rows={7} value={form.data} onChange={event=>setForm({...form,data:event.target.value})}/></label><label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>setForm({...form,is_published:event.target.checked})}/> Tampilkan di frontend</label>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan konten'}</button></div></form></div>}
+function SolutionLibraryExploreCategoryManager({onClose}:{onClose:()=>void}){
+  const [items,setItems]=useState<ContentItem[]>([]),[title,setTitle]=useState(''),[icon,setIcon]=useState('📁'),[editing,setEditing]=useState<ContentItem|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false)
+  const load=()=>request('/modules/solution-library-explore-categories').then(setItems).catch(err=>setError(err.message))
+  useEffect(()=>{load()},[])
+  const reset=()=>{setTitle('');setIcon('📁');setEditing(null)}
+  async function save(event:FormEvent){event.preventDefault();if(!title.trim())return;setBusy(true);setError('');try{await request(editing?`/modules/solution-library-explore-categories/${editing.id}`:'/modules/solution-library-explore-categories',{method:editing?'PUT':'POST',body:JSON.stringify({title:title.trim(),slug:`solution-library-explore-category-${title.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g,'-')}`,summary:null,image_url:null,data:{icon:icon.trim()||'📁'},is_published:true})});reset();load()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  async function remove(item:ContentItem){if(!confirm(`Hapus kategori ${item.title}?`))return;try{await request(`/modules/solution-library-explore-categories/${item.id}`,{method:'DELETE'});load()}catch(err){setError((err as Error).message)}}
+  return <div className="modal-backdrop"><div className="modal modal-lg"><div className="modal-head"><div><p className="eyebrow pink">SOLUTION LIBRARY</p><h2>Atur Jelajahi Topik</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><form className="category-manager-form" onSubmit={save}><input className="category-icon-input" aria-label="Ikon topik" placeholder="Ikon" value={icon} onChange={event=>setIcon(event.target.value)}/><input placeholder="Nama topik" value={title} onChange={event=>setTitle(event.target.value)} required/><button className="primary" disabled={busy}>{editing?'Update topik':'Tambah topik'}</button>{editing&&<button type="button" className="secondary" onClick={reset}>Batal</button>}</form>{error&&<div className="error-box">{error}</div>}<div className="category-manager-list">{items.map(item=><div className="category-manager-item" key={item.id}><span className="category-manager-title"><i>{String(item.data?.icon||'📁')}</i><b>{item.title}</b></span><div className="row-actions"><button type="button" onClick={()=>{setEditing(item);setTitle(item.title);setIcon(String(item.data?.icon||'📁'))}}><Pencil size={16}/></button><button type="button" onClick={()=>remove(item)}><Trash2 size={16}/></button></div></div>)}{!items.length&&<p className="subtle">Belum ada topik. Tambahkan topik sesuai kartu di frontend.</p>}</div></div></div>
+}
+
+function SolutionLibraryCategoryManager({onClose,onChanged}:{onClose:()=>void;onChanged:()=>void}){
+  const [items,setItems]=useState<ContentItem[]>([]),[title,setTitle]=useState(''),[editing,setEditing]=useState<ContentItem|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false)
+  const load=()=>request('/modules/solution-library-categories').then(setItems).catch(err=>setError(err.message))
+  useEffect(()=>{load()},[])
+  const reset=()=>{setTitle('');setEditing(null)}
+  async function save(event:FormEvent){event.preventDefault();if(!title.trim())return;setBusy(true);setError('');try{await request(editing?`/modules/solution-library-categories/${editing.id}`:'/modules/solution-library-categories',{method:editing?'PUT':'POST',body:JSON.stringify({title:title.trim(),slug:`solution-library-category-${title.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g,'-')}`,summary:null,image_url:null,data:editing?.data||{},is_published:true})});reset();load();onChanged()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  async function remove(item:ContentItem){if(!confirm(`Hapus kategori ${item.title}?`))return;try{await request(`/modules/solution-library-categories/${item.id}`,{method:'DELETE'});load();onChanged()}catch(err){setError((err as Error).message)}}
+  return <div className="modal-backdrop"><div className="modal modal-lg"><div className="modal-head"><div><p className="eyebrow pink">SOLUTION LIBRARY</p><h2>Atur kategori</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><form className="category-manager-form" onSubmit={save}><input placeholder="Nama kategori" value={title} onChange={event=>setTitle(event.target.value)} required/><button className="primary" disabled={busy}>{editing?'Update kategori':'Tambah kategori'}</button>{editing&&<button type="button" className="secondary" onClick={reset}>Batal</button>}</form>{error&&<div className="error-box">{error}</div>}<div className="category-manager-list">{items.map(item=><div className="category-manager-item" key={item.id}><b>{item.title}</b><div className="row-actions"><button type="button" onClick={()=>{setEditing(item);setTitle(item.title)}}><Pencil size={16}/></button><button type="button" onClick={()=>remove(item)}><Trash2 size={16}/></button></div></div>)}{!items.length&&<p className="subtle">Belum ada kategori.</p>}</div></div></div>
+}
+
+function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:string;item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){
+  if(type==='solution-library')return <SolutionLibraryModal item={item} label={label} onClose={onClose} onSaved={onSaved}/>
+  const itemData=item?.data||{}
+  const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',image_url:item?.image_url||'',is_published:item?.is_published??true})
+  const [marketingKit,setMarketingKit]=useState({
+    kategori:String(itemData.kategori||''),subkategori:String(itemData.subkategori||''),format_file:String(itemData.format_file||''),ukuran_file:String(itemData.ukuran_file||''),file_url:String(itemData.file_url||''),thumbnail:String(itemData.thumbnail||''),preview_url:String(itemData.preview_url||''),akses_tipe:String(itemData.akses_tipe||''),badge:String(itemData.badge||''),industri:String(itemData.industri||''),produk_terkait:String(itemData.produk_terkait||''),layanan_terkait:String(itemData.layanan_terkait||''),bahasa:String(itemData.bahasa||''),download_count:String(itemData.download_count??''),featured:Boolean(itemData.featured)
+  })
+  const [insight,setInsight]=useState({category:String(itemData.category||''),format:String(itemData.format||''),price:String(itemData.price??'')})
+  const [tool,setTool]=useState({url:String(itemData.url||''),category:String(itemData.category||''),tagline:String(itemData.tagline||'')})
+  const [viralog,setViralog]=useState({id:String(itemData.id||''),subtitle:String(itemData.subtitle||''),body:String(itemData.body||''),thumbnail:String(itemData.thumbnail||''),content_type:String(itemData.content_type||'article'),source_type:String(itemData.source_type||'internal'),category_slug:String(itemData.category_slug||''),tags:Array.isArray(itemData.tags)?itemData.tags.join(', '):String(itemData.tags||''),author_name:String(itemData.author_name||''),author_slug:String(itemData.author_slug||''),status:String(itemData.status||'published'),publish_date:String(itemData.publish_date||''),featured:Boolean(itemData.featured),sponsored:Boolean(itemData.sponsored),cta_type:String(itemData.cta_type||''),cta_label:String(itemData.cta_label||''),cta_url:String(itemData.cta_url||''),read_time_minutes:String(itemData.read_time_minutes??''),views:String(itemData.views??''),shares:String(itemData.shares??''),bookmarks:String(itemData.bookmarks??''),viral_score:String(itemData.viral_score??''),seo_score:String(itemData.seo_score??''),engagement_score:String(itemData.engagement_score??''),freshness_score:String(itemData.freshness_score??''),credibility_score:String(itemData.credibility_score??''),monetization_score:String(itemData.monetization_score??'')})
+  const [additionalFields,setAdditionalFields]=useState(()=>Object.entries(itemData).map(([key,value])=>({key,value:Array.isArray(value)?value.join(', '):String(value??''),isList:Array.isArray(value)})))
+  const [error,setError]=useState(''),[busy,setBusy]=useState(false)
+  const updateAdditionalField=(index:number,patch:Partial<{key:string;value:string;isList:boolean}>)=>setAdditionalFields(fields=>fields.map((field,fieldIndex)=>fieldIndex===index?{...field,...patch}:field))
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{let data:Record<string,unknown>={};if(type==='marketing-kits'){data={...itemData,...marketingKit,slug:form.slug,download_count:marketingKit.download_count===''?0:Number(marketingKit.download_count)}}else if(type==='insights'){data={...itemData,...insight,id:form.slug,title:form.title,desc:form.summary,image:form.image_url,price:insight.price===''?0:Number(insight.price)}}else if(type==='tools'){data={...itemData,...tool,name:form.title,description:form.summary}}else if(type==='viralog-content'){const numberKeys=['read_time_minutes','views','shares','bookmarks','viral_score','seo_score','engagement_score','freshness_score','credibility_score','monetization_score'] as const;data={...itemData,...viralog,id:viralog.id||form.slug,thumbnail:viralog.thumbnail||form.image_url,tags:viralog.tags.split(',').map(tag=>tag.trim()).filter(Boolean),...Object.fromEntries(numberKeys.map(key=>[key,viralog[key]===''?0:Number(viralog[key])]))}}else{data=Object.fromEntries(additionalFields.filter(field=>field.key.trim()).map(field=>[field.key.trim(),field.isList?field.value.split(',').map(value=>value.trim()).filter(Boolean):field.value]));}await request(item?`/modules/${type}/${item.id}`:`/modules/${type}`,{method:item?'PUT':'POST',body:JSON.stringify({...form,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  const input=(label:string,key:Exclude<keyof typeof marketingKit,'featured'>,type='text')=><label>{label}<input type={type} value={marketingKit[key]} onChange={event=>setMarketingKit({...marketingKit,[key]:event.target.value})}/></label>
+  const viralogInput=(label:string,key:Exclude<keyof typeof viralog,'featured'|'sponsored'>,type='text')=><label>{label}<input type={type} value={viralog[key]} onChange={event=>setViralog({...viralog,[key]:event.target.value})}/></label>
+  const basicFields=<><label>Judul<input value={form.title} onChange={event=>setForm({...form,title:event.target.value})} required/></label><label>Slug<input value={form.slug} onChange={event=>setForm({...form,slug:event.target.value})} required/></label><label>Ringkasan<textarea rows={3} value={form.summary} onChange={event=>setForm({...form,summary:event.target.value})}/></label><label>URL gambar<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})}/></label></>
+  const publishedField=<label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>setForm({...form,is_published:event.target.checked})}/> Tampilkan di frontend</label>
+  const additionalFieldsEditor=type==='viralog-content'?<div className="viralog-form-fields"><div className="form-row">{viralogInput('ID konten','id')}{viralogInput('Subjudul','subtitle')}</div><label>Isi artikel<textarea rows={12} value={viralog.body} onChange={event=>setViralog({...viralog,body:event.target.value})}/></label><div className="form-row">{viralogInput('URL thumbnail','thumbnail','url')}{viralogInput('Tipe konten','content_type')}</div><div className="form-row">{viralogInput('Sumber konten','source_type')}{viralogInput('Slug kategori','category_slug')}</div><div className="form-row">{viralogInput('Tag (pisahkan dengan koma)','tags')}{viralogInput('Tanggal publikasi','publish_date','date')}</div><div className="form-row">{viralogInput('Nama penulis','author_name')}{viralogInput('Slug penulis','author_slug')}</div><div className="form-row">{viralogInput('Status','status')}{viralogInput('Waktu baca (menit)','read_time_minutes','number')}</div><div className="form-row">{viralogInput('Tipe CTA','cta_type')}{viralogInput('Label CTA','cta_label')}</div>{viralogInput('URL CTA','cta_url','url')}<div className="form-row"><label className="check"><input type="checkbox" checked={viralog.featured} onChange={event=>setViralog({...viralog,featured:event.target.checked})}/> Konten unggulan</label><label className="check"><input type="checkbox" checked={viralog.sponsored} onChange={event=>setViralog({...viralog,sponsored:event.target.checked})}/> Konten bersponsor</label></div><div className="viralog-metrics"><b>Metrik konten</b><div className="form-row">{viralogInput('Dilihat','views','number')}{viralogInput('Dibagikan','shares','number')}</div><div className="form-row">{viralogInput('Disimpan','bookmarks','number')}{viralogInput('Skor viral','viral_score','number')}</div><div className="form-row">{viralogInput('Skor SEO','seo_score','number')}{viralogInput('Skor engagement','engagement_score','number')}</div><div className="form-row">{viralogInput('Skor kebaruan','freshness_score','number')}{viralogInput('Skor kredibilitas','credibility_score','number')}</div>{viralogInput('Skor monetisasi','monetization_score','number')}</div></div>:<div className="additional-fields"><div className="additional-fields-head"><b>Data tambahan</b><button type="button" className="secondary" onClick={()=>setAdditionalFields([...additionalFields,{key:'',value:'',isList:false}])}><Plus size={15}/> Tambah field</button></div>{additionalFields.map((field,index)=><div className="additional-field" key={`${field.key}-${index}`}><input aria-label="Nama field" placeholder="Nama field" value={field.key} onChange={event=>updateAdditionalField(index,{key:event.target.value})}/><input aria-label="Nilai field" placeholder={field.isList?'Pisahkan item dengan koma':'Nilai'} value={field.value} onChange={event=>updateAdditionalField(index,{value:event.target.value})}/><label className="check compact"><input type="checkbox" checked={field.isList} onChange={event=>updateAdditionalField(index,{isList:event.target.checked})}/> Daftar</label><button type="button" className="icon-btn" aria-label="Hapus field" onClick={()=>setAdditionalFields(fields=>fields.filter((_,fieldIndex)=>fieldIndex!==index))}><Trash2 size={15}/></button></div>)}{!additionalFields.length&&<p className="subtle">Belum ada data tambahan.</p>}</div>
+  return <div className="modal-backdrop"><form className={`modal ${type==='marketing-kits'||type==='insights'?'modal-lg':''}`} onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT KONTEN':'KONTEN BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div>{type==='marketing-kits'?<div className="modal-scroll-area">{basicFields}<div className="form-row">{input('Kategori','kategori')}{input('Subkategori','subkategori')}</div><div className="form-row">{input('Format file','format_file')}{input('Ukuran file','ukuran_file')}</div>{input('URL file','file_url','url')}{input('URL thumbnail','thumbnail','url')}{input('URL preview','preview_url','url')}<div className="form-row">{input('Tipe akses','akses_tipe')}{input('Badge','badge')}</div><div className="form-row">{input('Industri','industri')}{input('Bahasa','bahasa')}</div><div className="form-row">{input('Produk terkait','produk_terkait')}{input('Layanan terkait','layanan_terkait')}</div>{input('Total download','download_count','number')}<label className="check"><input type="checkbox" checked={marketingKit.featured} onChange={event=>setMarketingKit({...marketingKit,featured:event.target.checked})}/> Tampilkan sebagai unggulan</label>{publishedField}</div>:type==='insights'?<div className="modal-scroll-area">{basicFields}<div className="form-row"><label>Kategori<input value={insight.category} onChange={event=>setInsight({...insight,category:event.target.value})}/></label><label>Format<input value={insight.format} onChange={event=>setInsight({...insight,format:event.target.value})}/></label></div><label>Harga<input type="number" min="0" value={insight.price} onChange={event=>setInsight({...insight,price:event.target.value})}/></label>{publishedField}</div>:type==='tools'?<>{basicFields}<label>URL Tools<input type="url" value={tool.url} onChange={event=>setTool({...tool,url:event.target.value})}/></label><div className="form-row"><label>Kategori<input value={tool.category} onChange={event=>setTool({...tool,category:event.target.value})}/></label><label>Tagline<input value={tool.tagline} onChange={event=>setTool({...tool,tagline:event.target.value})}/></label></div>{publishedField}</>:type==='solution-library-categories'?<>{basicFields}{publishedField}</>:<div className="modal-scroll-area">{basicFields}{additionalFieldsEditor}{publishedField}</div>}{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan konten'}</button></div></form></div>
+}
+
+function SolutionLibraryModal({item,label,onClose,onSaved}:{item:ContentItem|null;label:string;onClose:()=>void;onSaved:()=>void}){
+  const source=(item?.data||{}) as Record<string,any>
+  const [form,setForm]=useState({title:item?.title||source.nama_awam||'',slug:item?.slug||source.slug||'',summary:item?.summary||source.fungsi||'',image_url:item?.image_url||source.image||'',technical:source.technical||source.nama_teknis||'',category:source.category||source.kategori||'',subcategory:source.subkategori||'',level:source.level||'basic',businessGoal:source.tujuan_bisnis||'',howItWorks:source.cara_kerja||'',input:source.input||'',output:source.output||'',development:source.estimasi_development||'',cost:source.estimasi_biaya||'',plainExplanation:source.penjelasan_awam||'',technicalExplanation:source.penjelasan_teknis||'',icon:source.icon||'',difficulty:String(source.tingkat_kesulitan??''),is_published:item?.is_published??true})
+  const listKeys=['komponen','digunakan_pada','integrasi','contoh','fitur_terkait','diagram','business_flow','manfaat','contoh_nyata','ketergantungan','rekomendasi_fitur'] as const
+  const [lists,setLists]=useState<Record<string,string>>(()=>Object.fromEntries(listKeys.map(key=>[key,Array.isArray(source[key])?source[key].join(', '):''])))
+  const [selectedTopics,setSelectedTopics]=useState<string[]>(()=>Array.isArray(source.topics||source.topik)?[...(source.topics||source.topik)]:[])
+  const [error,setError]=useState(''),[busy,setBusy]=useState(false)
+  const [categories,setCategories]=useState(['Website','Frontend','Backend','Database','UI','UX','Security','Cloud','AI','Integration','Business','Mobile'])
+  const [availableTopics,setAvailableTopics]=useState<string[]>([])
+  useEffect(()=>{request('/modules/solution-library-categories').then(items=>{const saved=items.filter((entry:ContentItem)=>entry.is_published).map((entry:ContentItem)=>entry.title);if(saved.length)setCategories(saved)}).catch(()=>{})},[])
+  useEffect(()=>{request('/modules/solution-library-explore-categories').then(items=>setAvailableTopics(items.filter((entry:ContentItem)=>entry.is_published).map((entry:ContentItem)=>entry.title))).catch(()=>{})},[])
+  useEffect(()=>{if(selectedTopics.length||!availableTopics.length)return;const values=[source.nama_awam,source.nama_teknis,source.fungsi,...(Array.isArray(source.digunakan_pada)?source.digunakan_pada:[])].map(value=>String(value||'').toLowerCase());setSelectedTopics(availableTopics.filter(topic=>values.some(value=>value.includes(topic.toLowerCase()))))},[availableTopics])
+  const field=(label:string,key:Exclude<keyof typeof form,'is_published'>,multiline=false)=>key==='category'?<label>{label}<select className="select-input" value={form.category} onChange={event=>setForm({...form,category:event.target.value})}><option value="">Pilih kategori</option>{categories.map(category=><option key={category} value={category}>{category}</option>)}</select></label>:<label>{label}{multiline?<textarea rows={3} value={String(form[key])} onChange={event=>setForm({...form,[key]:event.target.value})}/>:<input value={String(form[key])} onChange={event=>setForm({...form,[key]:event.target.value})}/>}</label>
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{const data={...source,nama_awam:form.title,nama_teknis:form.technical,slug:form.slug,kategori:form.category,category:form.category,subkategori:form.subcategory,level:form.level,topik:selectedTopics,topics:selectedTopics,fungsi:form.summary,tujuan_bisnis:form.businessGoal,cara_kerja:form.howItWorks,input:form.input,output:form.output,estimasi_development:form.development,estimasi_biaya:form.cost,penjelasan_awam:form.plainExplanation,penjelasan_teknis:form.technicalExplanation,icon:form.icon,tingkat_kesulitan:form.difficulty===''?null:Number(form.difficulty),...Object.fromEntries(listKeys.map(key=>[key,lists[key].split(',').map(value=>value.trim()).filter(Boolean)]))};await request(item?`/modules/solution-library/${item.id}`:'/modules/solution-library',{method:item?'PUT':'POST',body:JSON.stringify({title:form.title,slug:form.slug,summary:form.summary,image_url:form.image_url,is_published:form.is_published,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  return <div className="modal-backdrop"><form className="modal modal-lg" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT SOLUSI':'SOLUSI BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><div className="modal-scroll-area"><div className="form-row">{field('Nama awam','title')}{field('Nama teknis','technical')}</div><div className="form-row">{field('Slug','slug')}{field('Kategori','category')}</div><div className="solution-topics"><b>Topik Jelajahi</b><small>Pilih topik yang relevan untuk solusi ini.</small><div className="topic-options">{availableTopics.map(topic=><label className="check" key={topic}><input type="checkbox" checked={selectedTopics.includes(topic)} onChange={event=>setSelectedTopics(event.target.checked?[...selectedTopics,topic]:selectedTopics.filter(value=>value!==topic))}/>{topic}</label>)}</div>{!availableTopics.length&&<p className="subtle">Tambahkan topik melalui tombol Atur Jelajahi Topik.</p>}</div><div className="form-row">{field('Subkategori','subcategory')}{field('Level','level')}</div><div className="form-row">{field('Icon','icon')}{field('Tingkat kesulitan','difficulty')}</div>{field('Fungsi','summary',true)}{field('Tujuan bisnis','businessGoal',true)}{field('Cara kerja','howItWorks',true)}<div className="form-row">{field('Input','input')}{field('Output','output')}</div><div className="form-row">{field('Estimasi development','development')}{field('Estimasi biaya','cost')}</div>{field('URL gambar','image_url')} {field('Penjelasan awam','plainExplanation',true)}{field('Penjelasan teknis','technicalExplanation',true)}{listKeys.map(key=><label key={key}>{key.replaceAll('_',' ')}<input value={lists[key]} onChange={event=>setLists({...lists,[key]:event.target.value})} placeholder="Pisahkan setiap item dengan koma"/></label>)}<label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>setForm({...form,is_published:event.target.checked})}/> Tampilkan di frontend</label></div>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan solusi'}</button></div></form></div>
+}
 
 export default App
