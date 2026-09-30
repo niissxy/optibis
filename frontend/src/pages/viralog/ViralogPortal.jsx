@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, TrendingUp, Flame, ArrowRight, Clock, Eye, Sparkles, Newspaper, Play, ChevronRight } from "lucide-react";
+import { Search, TrendingUp, Flame, ArrowRight, Clock, Eye, Sparkles, Newspaper, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import ViralogContentCard from "@/components/viralog/ViralogContentCard";
 import ViralogAdSlot from "@/components/viralog/ViralogAdSlot";
 import ViralogNewsletter from "@/components/viralog/ViralogNewsletter";
+import { useViralogContent } from "@/hooks/useViralogContent";
 import {
   VIRALOG_CATEGORIES,
   VIRALOG_TAGS,
@@ -22,19 +23,26 @@ import {
 } from "@/data/viralog";
 
 export default function ViralogPortal() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const featured = getFeaturedContent(1)[0];
-  const trending = getTrendingContent(5);
-  const latest = getLatestContent(6);
-  const shortVideos = getShortVideos(6);
-  const longVideos = getLongVideos(3);
-  const sponsored = getSponsoredContent(2);
-  const editorsPick = getEditorsPick(4);
+  const [articlePage, setArticlePage] = useState(1);
+  const content = useViralogContent();
+  const featured = getFeaturedContent(1, content)[0];
+  const trending = getTrendingContent(5, content);
+  const latest = getLatestContent(content.length, content);
+  const articlesPerPage = 4;
+  const articlePageCount = Math.max(1, Math.ceil(latest.length / articlesPerPage));
+  const pagedArticles = latest.slice((articlePage - 1) * articlesPerPage, articlePage * articlesPerPage);
+  const pageNumbers = articlePageCount <= 5 ? Array.from({ length: articlePageCount }, (_, index) => index + 1) : Array.from(new Set([1, Math.max(2, articlePage - 1), articlePage, Math.min(articlePageCount - 1, articlePage + 1), articlePageCount])).sort((a, b) => a - b);
+  const shortVideos = getShortVideos(6, content);
+  const longVideos = getLongVideos(3, content);
+  const sponsored = getSponsoredContent(2, content);
+  const editorsPick = getEditorsPick(4, content);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -108,7 +116,7 @@ export default function ViralogPortal() {
           <h2 className="text-lg font-bold text-navy">Sedang Naik Daun</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {getLatestContent(4).map((item, i) => (
+          {getLatestContent(4, content).map((item, i) => (
             <ViralogContentCard key={item.id} content={item} variant="standard" index={i} />
           ))}
         </div>
@@ -168,24 +176,31 @@ export default function ViralogPortal() {
               <Newspaper className="w-5 h-5 text-navy" />
               <h2 className="text-lg font-bold text-navy">Artikel Terbaru</h2>
             </div>
-            <div className="space-y-4">
-              {latest.slice(0, 4).map((item, i) => (
-                <ViralogContentCard key={item.id} content={item} variant="compact" index={i} />
+            <div className="grid sm:grid-cols-2 gap-4">
+              {pagedArticles.map((item, i) => (
+                <ViralogContentCard key={item.id} content={item} variant="standard" index={i} />
               ))}
             </div>
-            {/* In-feed Ad */}
+            {articlePageCount > 1 && (
+              <nav className="flex items-center justify-center gap-2 mt-6" aria-label="Halaman artikel">
+                <button onClick={() => setArticlePage(Math.max(1, articlePage - 1))} disabled={articlePage === 1} className="w-9 h-9 rounded-lg bg-slate-100 text-navy disabled:cursor-not-allowed disabled:opacity-40 hover:bg-magenta/10 hover:text-magenta" aria-label="Halaman sebelumnya"><ChevronLeft className="w-4 h-4 mx-auto" /></button>
+                {pageNumbers.map((page, index) => (
+                  <React.Fragment key={page}>
+                    {index > 0 && pageNumbers[index - 1] !== page - 1 && <span className="text-sm text-muted-foreground">…</span>}
+                  <button
+                    onClick={() => setArticlePage(page)}
+                    className={`w-9 h-9 rounded-lg text-sm font-bold transition-colors ${articlePage === page ? "bg-magenta text-white" : "bg-slate-100 text-navy hover:bg-magenta/10 hover:text-magenta"}`}
+                    aria-current={articlePage === page ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                  </React.Fragment>
+                ))}
+                <button onClick={() => setArticlePage(Math.min(articlePageCount, articlePage + 1))} disabled={articlePage === articlePageCount} className="w-9 h-9 rounded-lg bg-slate-100 text-navy disabled:cursor-not-allowed disabled:opacity-40 hover:bg-magenta/10 hover:text-magenta" aria-label="Halaman berikutnya"><ChevronRight className="w-4 h-4 mx-auto" /></button>
+              </nav>
+            )}
             <div className="my-6">
               <ViralogAdSlot placement="in_feed" />
-            </div>
-            {latest.slice(4).map((item, i) => (
-              <div key={item.id} className="mb-4">
-                <ViralogContentCard content={item} variant="compact" index={i + 4} />
-              </div>
-            ))}
-            <div className="text-center mt-6">
-              <Link to="/content" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-navy text-white text-sm font-semibold hover:bg-navy-400 transition-colors">
-                Muat Lebih Banyak <ChevronRight className="w-4 h-4" />
-              </Link>
             </div>
           </div>
 
@@ -263,7 +278,7 @@ export default function ViralogPortal() {
         <h2 className="text-lg font-bold text-navy mb-4">Jelajah Kategori</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {VIRALOG_CATEGORIES.map((cat, i) => {
-            const count = getLatestContent().filter((c) => c.category_slug === cat.slug).length;
+            const count = getLatestContent(8, content).filter((c) => c.category_slug === cat.slug).length;
             return (
               <motion.div key={cat.slug} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                 <Link to={`/kategori/${cat.slug}`} className="group block bg-white rounded-xl border border-gray-100 p-4 hover:shadow-lg hover:border-magenta/30 transition-all">

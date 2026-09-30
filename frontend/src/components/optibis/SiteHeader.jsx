@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/AuthContext";
 import MegaMenuDropdown from "@/components/optibis/MegaMenuDropdown";
 import { useTheme } from "next-themes";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useServicePillars } from "@/hooks/useServicePillars";
 
 const LAYANAN_CHILDREN = [
   { group: "", items: [
@@ -111,7 +112,31 @@ export default function SiteHeader() {
   const { isAuthenticated: isAuthed } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const { language, setLanguage, t, tr } = useLanguage();
+  const { pillars } = useServicePillars();
   const darkNav = resolvedTheme === "dark";
+
+  const dynamicLayananChildren = [
+    {
+      group: "",
+      items: (pillars && pillars.length > 0 ? pillars : [
+        { title: "Digital Asset", link: "/digital-asset" },
+        { title: "Website", link: "/website" },
+        { title: "Digital Growth Team", link: "/digital-growth-team" },
+      ]).map((p) => ({
+        label: p.title,
+        href: p.link || `/pilar/${p.slug}`,
+      })),
+    },
+  ];
+
+  const navItems = [
+    { label: "Beranda", href: "/" },
+    { label: "Layanan", href: "/layanan", megaChildren: dynamicLayananChildren, megaWidth: "w-64" },
+    { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80" },
+    { label: "Portofolio", href: "/portofolio", megaChildren: PORTOFOLIO_CHILDREN, megaWidth: "w-64" },
+    { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-72" },
+    { label: "Tentang", href: "/tentang", megaChildren: TENTANG_CHILDREN, megaWidth: "w-72" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -153,7 +178,7 @@ export default function SiteHeader() {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               if (item.megaChildren) {
                 return (
                   <MegaMenuDropdown
@@ -353,7 +378,7 @@ export default function SiteHeader() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white border-t border-gray-100 overflow-hidden"
+            className="lg:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-t border-gray-100"
           >
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
               <div className="mb-3 flex items-center gap-2 border-b border-gray-100 pb-3">
@@ -388,7 +413,7 @@ export default function SiteHeader() {
                   <Search className="h-4 w-4" /> {tr("Cari Konten")}
                 </Link>
               </div>
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <div key={item.label}>
                   <button
                     onClick={() => {

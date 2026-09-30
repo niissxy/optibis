@@ -21,6 +21,7 @@ import {
   formatViews,
 } from "@/data/viralog";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { useViralogContent, VIRALOG_FALLBACK_THUMBNAIL } from "@/hooks/useViralogContent";
 
 export default function ViralogDetail() {
   const { slug } = useParams();
@@ -28,12 +29,13 @@ export default function ViralogDetail() {
   const nav = useSafeNav();
   const [bookmarked, setBookmarked] = useState(false);
   const [shared, setShared] = useState(false);
+  const allContent = useViralogContent();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [slug]);
 
-  const content = getContentBySlug(slug);
+  const content = getContentBySlug(slug, allContent);
 
   if (!content) {
     return (
@@ -51,9 +53,10 @@ export default function ViralogDetail() {
 
   const cat = getCategoryBySlug(content.category_slug);
   const author = getAuthorBySlug(content.author_slug);
-  const related = getRelatedContent(slug, 3);
-  const trendingSidebar = getTrendingContent(5);
+  const related = getRelatedContent(slug, 3, allContent);
+  const trendingSidebar = getTrendingContent(5, allContent);
   const isVideo = content.content_type === "short_video" || content.content_type === "long_video" || content.content_type === "podcast";
+  const originalSourceUrl = content.original_url || content.source_url || content.url;
 
   const handleShare = () => {
     if (navigator.share) {
@@ -169,7 +172,7 @@ export default function ViralogDetail() {
           </div>
         ) : (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="my-6 rounded-2xl overflow-hidden">
-            <img src={content.thumbnail} alt={content.title} className="w-full h-auto object-cover" />
+            <img src={content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL} alt={content.title} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = VIRALOG_FALLBACK_THUMBNAIL; }} className="w-full h-auto object-cover" />
           </motion.div>
         )}
 
@@ -197,13 +200,21 @@ export default function ViralogDetail() {
         </div>
 
         {/* CTA Block */}
-        {content.cta_label && (
+        {(content.cta_label || originalSourceUrl) && (
           <div className="my-8 bg-gradient-to-r from-navy to-navy-400 rounded-2xl p-6 text-center">
-            <h3 className="text-lg font-bold text-white mb-2">{content.cta_label}</h3>
+            <h3 className="text-lg font-bold text-white mb-2">{content.cta_label || "Baca sumber asli"}</h3>
             <p className="text-sm text-white/60 mb-4">Tim Optibis siap membantu bisnis Anda berkembang.</p>
-            {content.cta_type === "whatsapp" ? (
+            {originalSourceUrl && (content.cta_type === "original_source" || /sumber asli/i.test(content.cta_label || "")) ? (
+              <a href={originalSourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-magenta hover:bg-magenta-500 text-white rounded-full px-6 h-10 text-sm font-semibold transition-colors">
+                <Link2 className="w-4 h-4" /> Baca sumber asli
+              </a>
+            ) : content.cta_type === "whatsapp" ? (
               <a href={content.cta_url || "https://wa.me/6287772577020"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors">
                 <MessageCircle className="w-4 h-4" /> Chat WhatsApp
+              </a>
+            ) : originalSourceUrl && !content.cta_label ? (
+              <a href={originalSourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-magenta hover:bg-magenta-500 text-white rounded-full px-6 h-10 text-sm font-semibold transition-colors">
+                <Link2 className="w-4 h-4" /> Baca sumber asli
               </a>
             ) : (
               <Button onClick={() => nav(content.cta_url || "#konsultasi")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-6">

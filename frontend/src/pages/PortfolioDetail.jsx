@@ -1,45 +1,61 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, MapPin, Calendar, Building2, X, ChevronLeft, ChevronRight, TrendingUp, MessageCircle, Sparkles, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import DocumentViewer from "@/components/optibis/DocumentViewer";
-import { getPortfolioBySlug, getOtherPortfolios } from "@/data/portfolio";
+import { usePortfolios } from "@/hooks/usePortfolios";
 import { useSafeNav } from "@/hooks/useSafeNav";
+
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80";
 
 export default function PortfolioDetail() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const nav = useSafeNav();
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const { portfolios, loading } = usePortfolios();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [slug]);
 
-  const project = getPortfolioBySlug(slug);
+  const project = portfolios.find(
+    (p) => p.slug === slug || p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === slug
+  );
+
+  if (loading && !project) {
+    return (
+      <PillarLayout>
+        <div className="max-w-7xl mx-auto px-4 py-32 text-center">
+          <div className="w-8 h-8 border-4 border-slate-200 border-t-magenta rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">Memuat detail portofolio...</p>
+        </div>
+      </PillarLayout>
+    );
+  }
 
   if (!project) {
     return (
       <PillarLayout>
         <div className="max-w-2xl mx-auto px-4 py-32 text-center">
           <h1 className="text-2xl font-extrabold text-navy mb-4">Proyek tidak ditemukan</h1>
-          <p className="text-muted-foreground mb-6">Proyek portofolio yang Anda cari tidak tersedia.</p>
-          <Link to="/#portofolio">
-            <Button className="bg-magenta hover:bg-magenta-500 text-white rounded-full">
-              Kembali ke Portofolio
-            </Button>
-          </Link>
+          <p className="text-muted-foreground mb-6">Proyek portofolio yang Anda cari tidak tersedia atau belum dipublikasikan.</p>
+          <Button onClick={() => navigate("/portofolio")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full">
+            Kembali ke Portofolio
+          </Button>
         </div>
       </PillarLayout>
     );
   }
 
-  const otherProjects = getOtherPortfolios(slug, 3);
+  const otherProjects = portfolios.filter((p) => p.slug !== project.slug).slice(0, 3);
   const openLightbox = (i) => setLightboxIndex(i);
   const closeLightbox = () => setLightboxIndex(null);
-  const nextImage = () => setLightboxIndex((p) => (p === null ? null : (p + 1) % project.galeri.length));
-  const prevImage = () => setLightboxIndex((p) => (p === null ? null : (p - 1 + project.galeri.length) % project.galeri.length));
+  const galleryList = Array.isArray(project.galeri) && project.galeri.length > 0 ? project.galeri : [project.thumbnail || FALLBACK_IMG];
+  const nextImage = () => setLightboxIndex((p) => (p === null ? null : (p + 1) % galleryList.length));
+  const prevImage = () => setLightboxIndex((p) => (p === null ? null : (p - 1 + galleryList.length) % galleryList.length));
 
   return (
     <PillarLayout>
@@ -48,7 +64,7 @@ export default function PortfolioDetail() {
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Link to="/" className="hover:text-navy transition-colors">Beranda</Link>
           <span>/</span>
-          <Link to="/#portofolio" className="hover:text-navy transition-colors">Portofolio</Link>
+          <Link to="/portofolio" className="hover:text-navy transition-colors">Portofolio</Link>
           <span>/</span>
           <span className="text-navy font-medium">{project.name}</span>
         </nav>
@@ -58,7 +74,7 @@ export default function PortfolioDetail() {
       <section className="relative py-12 lg:py-16 overflow-hidden bg-gradient-to-b from-navy-50/30 to-white">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-magenta/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <Link to="/#portofolio" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-magenta mb-6 transition-colors">
+          <Link to="/portofolio" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-magenta mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4" /> Kembali ke Portofolio
           </Link>
           <div className="grid lg:grid-cols-5 gap-10 items-center">
@@ -69,7 +85,7 @@ export default function PortfolioDetail() {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold">
-                  <Sparkles className="w-3.5 h-3.5" /> {project.industry.toUpperCase()}
+                  <Sparkles className="w-3.5 h-3.5" /> {(project.industry || project.categoryLabel || "WEBSITE").toUpperCase()}
                 </span>
                 {project.featured && (
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-navy text-white text-xs font-bold">
@@ -81,18 +97,24 @@ export default function PortfolioDetail() {
                 {project.name}
               </h1>
               <p className="text-base lg:text-lg text-muted-foreground leading-relaxed">
-                {project.ringkasan}
+                {project.ringkasan || project.desc}
               </p>
               <div className="flex flex-wrap gap-5 pt-2">
-                <div className="flex items-center gap-2 text-sm text-navy">
-                  <Building2 className="w-4 h-4 text-magenta" /> {project.client}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-navy">
-                  <MapPin className="w-4 h-4 text-magenta" /> {project.location}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-navy">
-                  <Calendar className="w-4 h-4 text-magenta" /> {project.year}
-                </div>
+                {project.client && (
+                  <div className="flex items-center gap-2 text-sm text-navy">
+                    <Building2 className="w-4 h-4 text-magenta" /> {project.client}
+                  </div>
+                )}
+                {project.location && (
+                  <div className="flex items-center gap-2 text-sm text-navy">
+                    <MapPin className="w-4 h-4 text-magenta" /> {project.location}
+                  </div>
+                )}
+                {project.year && (
+                  <div className="flex items-center gap-2 text-sm text-navy">
+                    <Calendar className="w-4 h-4 text-magenta" /> {project.year}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
@@ -101,12 +123,12 @@ export default function PortfolioDetail() {
                 >
                   Konsultasi Proyek Serupa <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                {project.website_url && (
+                {project.website_url && project.website_url !== "#" && (
                   <a
                     href={project.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-navy hover:bg-navy-400 text-white text-sm font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-navy hover:bg-magenta text-white text-sm font-semibold transition-colors shadow-sm"
                   >
                     <ExternalLink className="w-4 h-4" /> Kunjungi Website
                   </a>
@@ -128,8 +150,16 @@ export default function PortfolioDetail() {
               transition={{ delay: 0.15 }}
               className="lg:col-span-2"
             >
-              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-navy/10">
-                <img src={project.thumbnail} alt={project.name} className="w-full h-64 lg:h-80 object-cover" />
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-navy/10 bg-gray-100">
+                <img
+                  src={project.thumbnail || FALLBACK_IMG}
+                  alt={project.name}
+                  className="w-full h-64 lg:h-80 object-cover"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_IMG;
+                  }}
+                />
               </div>
             </motion.div>
           </div>
@@ -137,65 +167,106 @@ export default function PortfolioDetail() {
       </section>
 
       {/* Stats */}
-      <section className="py-10 lg:py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {project.stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-                className="bg-gradient-to-b from-navy-50/50 to-white rounded-2xl border border-gray-100 p-5 text-center"
-              >
-                <div className="text-2xl lg:text-3xl font-extrabold text-magenta mb-1">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Project Description */}
-      <section className="py-12 lg:py-16 bg-slate-50/50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-10">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold mb-3">
-              TENTANG PROYEK
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-4">Cerita di Balik Proyek</h2>
-            <p className="text-base text-muted-foreground leading-relaxed">{project.deskripsi}</p>
-          </div>
-
-          {/* Services & Tags */}
-          <div className="grid sm:grid-cols-2 gap-6 mt-10">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <h3 className="text-sm font-bold text-navy mb-4">Layanan yang Diberikan</h3>
-              <div className="space-y-2.5">
-                {project.products.map((prod) => (
-                  <div key={prod} className="flex items-center gap-2 text-sm text-navy">
-                    <Check className="w-4 h-4 text-magenta shrink-0" /> {prod}
-                  </div>
-                ))}
-              </div>
+      {project.stats && project.stats.length > 0 && (
+        <section className="py-10 lg:py-14 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {project.stats.map((s, i) => (
+                <div key={i} className="bg-slate-50/70 rounded-2xl p-6 border border-gray-100 text-center">
+                  <div className="text-2xl lg:text-3xl font-extrabold text-magenta mb-1">{s.value}</div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{s.label}</div>
+                </div>
+              ))}
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <h3 className="text-sm font-bold text-navy mb-4">Pilar Layanan</h3>
-              <div className="flex flex-wrap gap-2">
-                {project.pilar.map((p) => (
-                  <span key={p} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-navy-50 text-navy border border-navy-100">
-                    {p}
-                  </span>
-                ))}
+          </div>
+        </section>
+      )}
+
+      {/* Description & Details */}
+      <section className="py-12 lg:py-16 bg-slate-50/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <h2 className="text-2xl font-extrabold text-navy mb-4">Tentang Proyek</h2>
+                <p className="text-base text-navy-400 leading-relaxed whitespace-pre-line">
+                  {project.deskripsi || project.desc || project.ringkasan}
+                </p>
               </div>
-              <h3 className="text-sm font-bold text-navy mb-3 mt-5">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {project.tags.map((t) => (
-                  <span key={t} className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gray-50 text-muted-foreground border border-gray-100">
-                    {t}
-                  </span>
-                ))}
+
+              {project.hasil && (
+                <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                  <div className="flex items-center gap-2 text-magenta font-bold text-sm mb-2">
+                    <TrendingUp className="w-4 h-4" /> Hasil & Dampak
+                  </div>
+                  <p className="text-sm font-semibold text-navy leading-relaxed">
+                    {project.hasil}
+                  </p>
+                </div>
+              )}
+
+              {/* Process Timeline */}
+              {project.process && project.process.length > 0 && (
+                <div className="pt-6">
+                  <h3 className="text-xl font-extrabold text-navy mb-6">Tahapan Pengerjaan</h3>
+                  <div className="space-y-4">
+                    {project.process.map((step, idx) => (
+                      <div key={idx} className="flex gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-magenta-50 text-magenta font-extrabold text-xs shrink-0">
+                          {step.num || idx + 1}
+                        </span>
+                        <div>
+                          <h4 className="text-sm font-bold text-navy mb-1">{step.title}</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar Details */}
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5">
+                {project.pilar && project.pilar.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Pilar Solusi</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {project.pilar.map((p) => (
+                        <span key={p} className="px-3 py-1 rounded-full bg-navy-50 text-navy text-xs font-semibold">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {project.products && project.products.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Produk / Layanan</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.products.map((prod) => (
+                        <span key={prod} className="px-2.5 py-1 rounded-md bg-magenta-50 text-magenta text-xs font-medium">
+                          {prod}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {project.tags && project.tags.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Tags</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tags.map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded bg-gray-100 text-navy-400 text-xs">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -203,120 +274,52 @@ export default function PortfolioDetail() {
       </section>
 
       {/* Gallery */}
-      <section className="py-12 lg:py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold mb-3">
-              GALERI PROYEK
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">Galeri Foto</h2>
-            <p className="text-sm text-muted-foreground max-w-xl mx-auto">Klik pada foto untuk melihat lebih detail.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {project.galeri.map((img, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                onClick={() => openLightbox(i)}
-                className={`group relative rounded-2xl overflow-hidden cursor-pointer ${i === 0 ? "sm:col-span-2 lg:col-span-2 lg:row-span-2" : ""}`}
-              >
-                <img
-                  src={img}
-                  alt={`${project.name} galeri ${i + 1}`}
-                  className={`w-full object-cover transition-transform duration-300 group-hover:scale-105 ${i === 0 ? "h-48 sm:h-64 lg:h-full min-h-[300px]" : "h-44"}`}
-                />
-                <div className="absolute inset-0 bg-navy/0 group-hover:bg-navy/20 transition-colors duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Documents */}
-      {project.documents && project.documents.length > 0 && (
+      {galleryList.length > 1 && (
         <section className="py-12 lg:py-16 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold mb-3">
-                <FileText className="w-3.5 h-3.5" /> DOKUMEN PROYEK
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">Dokumen & Deliverables</h2>
-              <p className="text-sm text-muted-foreground max-w-xl mx-auto">Lihat dokumen pendukung dan hasil deliverables dari proyek ini.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-8 text-center">Galeri Proyek</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryList.map((imgUrl, i) => (
+                <div
+                  key={i}
+                  onClick={() => openLightbox(i)}
+                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer bg-gray-100 shadow-sm"
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`${project.name} preview ${i + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = FALLBACK_IMG;
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-navy/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-navy text-xs font-bold shadow">
+                      Perbesar
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <DocumentViewer documents={project.documents} projectName={project.name} />
           </div>
         </section>
       )}
 
-      {/* Work Process */}
-      <section className="py-12 lg:py-16 bg-slate-50/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold mb-3">
-              PROSES KERJA
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">Bagaimana Kami Mengerjakannya</h2>
-            <p className="text-sm text-muted-foreground max-w-xl mx-auto">Setiap langkah dirancang untuk memastikan hasil yang maksimal dan transparan untuk klien.</p>
-          </div>
-          <div className="relative">
-            <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-magenta/20 via-magenta/10 to-transparent -translate-x-1/2" />
-            <div className="space-y-6 lg:space-y-0">
-              {project.process.map((step, i) => (
-                <motion.div
-                  key={step.num}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className={`relative lg:grid lg:grid-cols-2 lg:gap-12 ${i % 2 === 0 ? "" : "lg:[direction:rtl]"}`}
-                >
-                  <div className={`bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-lg transition-shadow ${i % 2 === 0 ? "lg:text-right" : "lg:[direction:ltr]"}`}>
-                    <div className="flex items-center gap-3 mb-3 lg:justify-start" style={i % 2 === 0 ? { justifyContent: "flex-end" } : {}}>
-                      <div className="w-10 h-10 rounded-xl bg-magenta text-white flex items-center justify-center font-extrabold text-sm shrink-0">
-                        {step.num}
-                      </div>
-                      <h3 className="text-base font-bold text-navy">{step.title}</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                  </div>
-                  <div className="hidden lg:block" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Results */}
-      <section className="py-12 lg:py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-navy via-navy-400 to-navy rounded-3xl p-8 lg:p-12 text-center text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(233,30,99,0.15),transparent_60%)]" />
-            <div className="relative z-10">
-              <TrendingUp className="w-10 h-10 mx-auto mb-4 text-magenta" />
-              <h2 className="text-2xl sm:text-3xl font-extrabold mb-4">Hasil yang Dicapai</h2>
-              <p className="text-white/80 text-base lg:text-lg leading-relaxed max-w-2xl mx-auto">{project.hasil}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Documents */}
+      {project.documents && project.documents.length > 0 && (
+        <DocumentViewer documents={project.documents} projectName={project.name} />
+      )}
 
       {/* CTA */}
-      <section className="py-12 lg:py-16 bg-slate-50/50">
-        <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-4">Ingin Hasil Serupa untuk Bisnis Anda?</h2>
-          <p className="text-muted-foreground mb-8">Konsultasikan kebutuhan bisnis Anda secara gratis. Tim kami akan membantu merancang solusi yang tepat.</p>
+      <section className="py-14 lg:py-20 bg-gradient-to-r from-navy via-navy-400 to-navy text-white text-center">
+        <div className="max-w-3xl mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4">
+            Ingin Membangun Proyek Seperti Ini?
+          </h2>
+          <p className="text-white/70 text-base mb-8 max-w-xl mx-auto">
+            Konsultasikan ide bisnis Anda bersama tim ahli Optibis secara gratis dan dapatkan rekomendasi solusi terbaik.
+          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               onClick={() => nav("#konsultasi")}
@@ -357,8 +360,16 @@ export default function PortfolioDetail() {
                     to={`/portofolio/${p.slug}`}
                     className="group block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
                   >
-                    <div className="h-40 overflow-hidden">
-                      <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="h-40 overflow-hidden bg-gray-100">
+                      <img
+                        src={p.thumbnail || FALLBACK_IMG}
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = FALLBACK_IMG;
+                        }}
+                      />
                     </div>
                     <div className="p-5">
                       <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{p.industry}</span>
@@ -395,7 +406,7 @@ export default function PortfolioDetail() {
             <ChevronLeft className="w-5 h-5" />
           </button>
           <img
-            src={project.galeri[lightboxIndex]}
+            src={galleryList[lightboxIndex]}
             alt={`${project.name} foto ${lightboxIndex + 1}`}
             className="max-w-full max-h-[85vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
@@ -407,7 +418,7 @@ export default function PortfolioDetail() {
             <ChevronRight className="w-5 h-5" />
           </button>
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-sm">
-            {lightboxIndex + 1} / {project.galeri.length}
+            {lightboxIndex + 1} / {galleryList.length}
           </div>
         </div>
       )}

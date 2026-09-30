@@ -11,6 +11,7 @@ import {
   Columns3,
   ExternalLink,
   FileCheck,
+  FileText,
   HelpCircle,
   ImagePlus,
   LayoutDashboard,
@@ -35,7 +36,51 @@ import {
 import './App.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
-type Portfolio = { id:number; name:string; category:string; description:string; website_url:string; image_url:string|null; updated_at?:string }
+const AD_PLACEMENTS = [
+  { value: 'top_leaderboard', label: 'Halaman konten — atas', size: '728 × 90' },
+  { value: 'section_separator', label: 'Halaman konten — antar bagian', size: '728 × 90' },
+  { value: 'in_feed', label: 'Halaman konten — dalam feed', size: 'Native Ad' },
+  { value: 'sidebar_sticky', label: 'Halaman konten — sidebar', size: '300 × 250' },
+  { value: 'footer_ads', label: 'Halaman konten — footer', size: '728 × 90' },
+  { value: 'article_top', label: 'Artikel — atas', size: '728 × 90' },
+  { value: 'article_middle', label: 'Artikel — tengah', size: '728 × 90' },
+  { value: 'article_bottom', label: 'Artikel — bawah', size: '728 × 90' },
+  { value: 'category_banner', label: 'Kategori — banner', size: '728 × 90' },
+] as const
+const adPlacementSize = (placement: string) => AD_PLACEMENTS.find((item) => item.value === placement)?.size || 'Banner'
+const PORTFOLIO_PILLAR_DEFAULTS:Record<string,string[]> = {
+  'MyTravelink': ['Digital Asset', 'Website', 'Digital Growth Team'],
+  'Samara Property': ['Digital Asset', 'Website'],
+  'Optik Clinic': ['Website', 'Digital Growth Team'],
+  'Kulina Rasa': ['Digital Asset', 'Digital Growth Team'],
+  'Nisa Konsultan': ['Digital Asset', 'Website'],
+  'Graha Cipta': ['Website'],
+}
+type Portfolio = {
+  id: number;
+  slug: string;
+  name: string;
+  client?: string;
+  industry?: string;
+  category: string;
+  location?: string;
+  year?: string;
+  ringkasan?: string;
+  description: string;
+  hasil?: string;
+  featured?: boolean;
+  website_url: string;
+  image_url: string | null;
+  thumbnail_url?: string;
+  pilar?: string[];
+  products?: string[];
+  galeri?: string[];
+  stats?: { label: string; value: string }[];
+  process?: { num: string; title: string; desc: string }[];
+  tags?: string[];
+  documents?: { title: string; type: string; desc: string; url: string }[];
+  updated_at?: string;
+}
 type Admin = { id:number; name:string; email:string; created_at:string }
 type User = { id:number; name:string; email:string }
 type ContentType = 'service-pillars'|'services'|'packages'|'marketing-kits'|'insights'|'tools'|'solution-library'|'solution-library-categories'|'solution-library-explore-categories'|'viralog-content'|'viralog-categories'|'viralog-authors'|'viralog-tags'|'viralog-rss-sources'|'viralog-ad-campaigns'|'evolis-business-dna'|'evolis-products'|'evolis-audiences'|'evolis-objectives'|'evolis-campaigns'|'evolis-assets'|'evolis-publishing'|'evolis-leads'|'evolis-pipeline'|'evolis-analytics'|'evolis-recommendations'|'evolis-automations'|'evolis-governance'|'evolis-briefs'|'evolis-settings'|'site-settings'
@@ -56,14 +101,17 @@ const CONTENT_SECTIONS:{id:ContentType;label:string;icon:typeof Package}[] = [
   {id:'insights',label:'Insight',icon:BookOpen},
   {id:'tools',label:'Tools',icon:Wrench},
   {id:'solution-library',label:'Solution Library',icon:Layers3},
+  {id:'viralog-content',label:'Viralog',icon:Newspaper},
+  {id:'evolis-leads',label:'Leads Masuk',icon:Users},
   {id:'solution-library-categories',label:'Kategori Solution Library',icon:Columns3},
 ]
 const HIDDEN_CONTENT_SECTIONS:ContentType[] = ['solution-library-categories']
+const ADMIN_SETTINGS_ENABLED = false
 const VIRALOG_SECTIONS:{id:ContentType;label:string}[] = [
-  {id:'viralog-content',label:'Konten'}, {id:'viralog-categories',label:'Kategori'}, {id:'viralog-authors',label:'Penulis'}, {id:'viralog-tags',label:'Tag'}, {id:'viralog-rss-sources',label:'RSS Source'}, {id:'viralog-ad-campaigns',label:'Iklan'},
+  {id:'viralog-content',label:'Konten'}, {id:'viralog-categories',label:'Kategori'}, {id:'viralog-authors',label:'Penulis'}, {id:'viralog-tags',label:'Tag'}, {id:'viralog-rss-sources',label:'RSS Source'}, {id:'viralog-ad-campaigns',label:'Ad Placement'},
 ]
 const EVOLIS_SECTIONS:{id:ContentType;label:string}[] = [
-  {id:'evolis-business-dna',label:'Business DNA'}, {id:'evolis-products',label:'Produk'}, {id:'evolis-audiences',label:'Audiens'}, {id:'evolis-objectives',label:'Objective'}, {id:'evolis-campaigns',label:'Campaign'}, {id:'evolis-assets',label:'Asset'}, {id:'evolis-publishing',label:'Publishing'}, {id:'evolis-leads',label:'Leads'}, {id:'evolis-pipeline',label:'Pipeline'}, {id:'evolis-analytics',label:'Analytics'}, {id:'evolis-recommendations',label:'Rekomendasi'}, {id:'evolis-automations',label:'Automation'}, {id:'evolis-governance',label:'Governance'}, {id:'evolis-briefs',label:'Brief'}, {id:'evolis-settings',label:'Pengaturan Workspace'},
+  {id:'evolis-business-dna',label:'Business DNA'}, {id:'evolis-products',label:'Produk'}, {id:'evolis-audiences',label:'Audiens'}, {id:'evolis-objectives',label:'Objective'}, {id:'evolis-campaigns',label:'Campaign'}, {id:'evolis-assets',label:'Asset'}, {id:'evolis-publishing',label:'Publishing'}, {id:'evolis-leads',label:'Leads'}, {id:'evolis-pipeline',label:'Pipeline'}, {id:'evolis-recommendations',label:'Rekomendasi'}, {id:'evolis-automations',label:'Automation'}, {id:'evolis-governance',label:'Governance'}, {id:'evolis-briefs',label:'Brief'}, {id:'evolis-settings',label:'Pengaturan Workspace'},
 ]
 
 async function request(path:string, options:RequestInit = {}) {
@@ -86,18 +134,787 @@ function App() {
   useEffect(()=>{ const token=localStorage.getItem('optibis_token'); if(token) request('/auth/me').then(d=>setUser(d.user)).catch(()=>localStorage.removeItem('optibis_token')) },[])
   if(!user) return <Login onLogin={(u,t)=>{localStorage.setItem('optibis_token',t);setUser(u)}}/>
   function logout(){ request('/auth/logout',{method:'POST'}).catch(()=>{}).finally(()=>{localStorage.removeItem('optibis_token');setUser(null)}) }
-  const sectionLabel = section === 'portfolio' ? 'Portofolio' : section === 'admins' ? 'Admin' : section === 'service-pillars' ? 'Pilar Layanan' : section === 'services' ? 'Layanan' : section === 'packages' ? 'Paket' : section === 'viralog' ? 'Viralog' : section === 'evolis' ? 'Evolis' : section === 'settings' ? 'Pengaturan Website' : CONTENT_SECTIONS.find(item=>item.id===section)?.label
-  return <div className="shell"><aside className={menu?'open':''}><div className="side-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="workspace"><span className="avatar">{user.name[0]}</span><div><strong>{user.name}</strong><small>Administrator</small></div><ChevronDown size={15}/></div><nav><p className="nav-label">WORKSPACE</p><button className={section==='portfolio'?'active':''} onClick={()=>{setSection('portfolio');setMenu(false)}}><LayoutDashboard size={18}/> Portofolio</button><p className="nav-label">KONTEN FRONTEND</p>{CONTENT_SECTIONS.filter(item=>!HIDDEN_CONTENT_SECTIONS.includes(item.id)).map(item=>{const Icon=item.icon;return <button key={item.id} className={section===item.id?'active':''} onClick={()=>{setSection(item.id);setMenu(false)}}><Icon size={18}/> {item.label}</button>})}<button className={section==='viralog'?'active':''} onClick={()=>{setSection('viralog');setMenu(false)}}><Newspaper size={18}/> Viralog</button><button className={section==='evolis'?'active':''} onClick={()=>{setSection('evolis');setMenu(false)}}><Layers3 size={18}/> Evolis</button><p className="nav-label">AKSES</p><button className={section==='admins'?'active':''} onClick={()=>{setSection('admins');setMenu(false)}}><Users size={18}/> Admin <span className="nav-dot">•</span></button><button className={section==='settings'?'active':''} onClick={()=>{setSection('settings');setMenu(false)}}><Wrench size={18}/> Pengaturan Website</button></nav><div className="sidebar-bottom"><div className="side-tip"><BarChart3 size={18}/><div><b>Keep creating</b><small>Ide bagus selalu layak dibuat.</small></div></div><button className="logout" onClick={logout}><LogOut size={17}/> Keluar</button></div></aside><div className="main"><header><button className="menu-btn" onClick={()=>setMenu(!menu)}><Menu/></button><div className="crumb"><span>Workspace</span><b>/</b><strong>{sectionLabel}</strong></div><div className="header-actions"><span className="status"><i/> Sistem online</span><button className="profile" onClick={logout}><span className="avatar">{user.name[0]}</span><ChevronDown size={15}/></button></div></header>{section==='portfolio'?<PortfolioView/>:section==='admins'?<AdminView currentUser={user}/>:section==='service-pillars'?<ServicePillarsView/>:section==='services'?<ServicesView/>:section==='packages'?<PackagesView/>:section==='viralog'?<ContentHub title="Viralog" sections={VIRALOG_SECTIONS}/>:section==='evolis'?<ContentHub title="Evolis" sections={EVOLIS_SECTIONS}/>:section==='settings'?<ContentView type="site-settings" label="Pengaturan Website"/>:<ContentView type={section} label={sectionLabel || 'Konten'}/>}</div></div>
+  const sectionLabel = section === 'portfolio' ? 'Portofolio' : section === 'evolis-analytics' ? 'Analytics' : section === 'admins' ? 'Admin' : section === 'service-pillars' ? 'Pilar Layanan' : section === 'services' ? 'Layanan' : section === 'packages' ? 'Paket' : section === 'viralog' ? 'Viralog' : section === 'evolis' ? 'Evolis' : section === 'settings' ? 'Setting Admin' : CONTENT_SECTIONS.find(item=>item.id===section)?.label
+  return <div className="shell"><aside className={menu?'open':''}><div className="side-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="workspace"><span className="avatar">{user.name[0]}</span><div><strong>{user.name}</strong><small>Administrator</small></div><ChevronDown size={15}/></div><nav><p className="nav-label">WORKSPACE</p><button className={section==='portfolio'?'active':''} onClick={()=>{setSection('portfolio');setMenu(false)}}><LayoutDashboard size={18}/> Portofolio</button><button className={section==='evolis-analytics'?'active':''} onClick={()=>{setSection('evolis-analytics');setMenu(false)}}><BarChart3 size={18}/> Analytics</button><p className="nav-label">KONTEN FRONTEND</p>{CONTENT_SECTIONS.filter(item=>!HIDDEN_CONTENT_SECTIONS.includes(item.id)).map(item=>{const Icon=item.icon;return <button key={item.id} className={section===item.id?'active':''} onClick={()=>{setSection(item.id);setMenu(false)}}><Icon size={18}/> {item.label}</button>})}<button className={section==='viralog'?'active':''} onClick={()=>{setSection('viralog');setMenu(false)}}><Newspaper size={18}/> Viralog</button><button className={section==='evolis'?'active':''} onClick={()=>{setSection('evolis');setMenu(false)}}><Layers3 size={18}/> Evolis</button><p className="nav-label">AKSES</p><button className={section==='admins'?'active':''} onClick={()=>{setSection('admins');setMenu(false)}}><Users size={18}/> Admin <span className="nav-dot">•</span></button>{ADMIN_SETTINGS_ENABLED&&<button className={section==='settings'?'active':''} onClick={()=>{setSection('settings');setMenu(false)}}><Users size={18}/> Setting Admin</button>}</nav><div className="sidebar-bottom"><div className="side-tip"><BarChart3 size={18}/><div><b>Keep creating</b><small>Ide bagus selalu layak dibuat.</small></div></div><button className="logout" onClick={logout}><LogOut size={17}/> Keluar</button></div></aside><div className="main"><header><button className="menu-btn" onClick={()=>setMenu(!menu)}><Menu/></button><div className="crumb"><span>Workspace</span><b>/</b><strong>{sectionLabel}</strong></div><div className="header-actions"><span className="status"><i/> Sistem online</span><button className="profile" onClick={logout}><span className="avatar">{user.name[0]}</span><ChevronDown size={15}/></button></div></header>{section==='portfolio'?<PortfolioView/>:section==='admins'?<AdminView currentUser={user}/>:section==='service-pillars'?<ServicePillarsView/>:section==='services'?<ServicesView/>:section==='packages'?<PackagesView/>:section==='viralog'?<ContentHub title="Viralog" sections={VIRALOG_SECTIONS}/>:section==='evolis'?<ContentHub title="Evolis" sections={EVOLIS_SECTIONS}/>:section==='settings'?ADMIN_SETTINGS_ENABLED?<ProfileSettingsView currentUser={user} onUpdated={setUser}/>:null:<ContentView type={section} label={sectionLabel || 'Konten'}/>}</div></div>
 }
 
-function PortfolioView(){ const [items,setItems]=useState<Portfolio[]>([]), [query,setQuery]=useState(''), [editing,setEditing]=useState<Portfolio|null|false>(false), [refresh,setRefresh]=useState(0), [error,setError]=useState(''); useEffect(()=>{request('/portfolios').then(setItems).catch(e=>setError(e.message))},[refresh]); const filtered=items.filter(x=>(x.name+x.category).toLowerCase().includes(query.toLowerCase())); async function remove(id:number){if(!confirm('Hapus portofolio ini?'))return; try{await request('/portfolios/'+id,{method:'DELETE'});setRefresh(x=>x+1)}catch(e){setError((e as Error).message)}} return <section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>Portofolio</h1><p className="subtle">Tampilkan karya terbaik dan kisah di baliknya.</p></div><button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah portofolio</button></div><div className="stats"><div><span>Total karya</span><b>{items.length}</b><small>Semua portofolio</small></div><div><span>Kategori</span><b>{new Set(items.map(x=>x.category)).size}</b><small>Jenis layanan</small></div><div><span>Terakhir diperbarui</span><b className="date-stat">{items[0]?.updated_at?new Date(items[0].updated_at).toLocaleDateString('id-ID',{day:'2-digit',month:'short'}):'—'}</b><small>Update terbaru</small></div></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder="Cari portofolio…" value={query} onChange={e=>setQuery(e.target.value)}/></div><span className="result-count">{filtered.length} karya</span></div>{error&&<div className="error-box">{error}</div>}<div className="portfolio-grid">{filtered.map(item=><article className="portfolio-card" key={item.id}><div className="card-image">{item.image_url?<img src={item.image_url} alt=""/>:<div className="image-placeholder"><BriefcaseBusiness size={26}/><span>{item.category}</span></div>}<span className="category">{item.category}</span><div className="card-hover"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div><div className="card-body"><h3>{item.name}</h3><p>{item.description}</p><a href={item.website_url} target="_blank">Lihat website <ExternalLink size={14}/></a></div></article>)}{!filtered.length&&<div className="empty"><BriefcaseBusiness size={30}/><p>Belum ada portofolio.</p></div>}</div>{editing!==false&&<PortfolioModal item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(x=>x+1)}}/>}</section> }
+function PortfolioView() {
+  const [items, setItems] = useState<Portfolio[]>([])
+  const [query, setQuery] = useState('')
+  const [editing, setEditing] = useState<Portfolio | null | false>(false)
+  const [refresh, setRefresh] = useState(0)
+  const [error, setError] = useState('')
 
-function PortfolioModal({item,onClose,onSaved}:{item:Portfolio|null,onClose:()=>void,onSaved:()=>void}){const [form,setForm]=useState({name:item?.name||'',category:item?.category||'',description:item?.description||'',website_url:item?.website_url||''}), [image,setImage]=useState<File|null>(null), [error,setError]=useState(''), [busy,setBusy]=useState(false);async function save(e:FormEvent){e.preventDefault();setBusy(true);const data=new FormData();Object.entries(form).forEach(([k,v])=>data.append(k,v));if(image)data.append('image',image);if(item)data.append('_method','PUT');try{await request(item?`/portfolios/${item.id}`:'/portfolios',{method:'POST',body:data});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}return <div className="modal-backdrop"><form className="modal" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT':'NEW ENTRY'}</p><h2>{item?'Edit portofolio':'Tambah portofolio'}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><label>Nama website<input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required/></label><div className="form-row"><label>Kategori<input value={form.category} onChange={e=>setForm({...form,category:e.target.value})} required/></label><label>Link website<input type="url" value={form.website_url} onChange={e=>setForm({...form,website_url:e.target.value})} required/></label></div><label>Deskripsi<textarea rows={4} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} required/></label><label className="upload">Gambar <span><ImagePlus size={18}/> {image?.name||'Pilih gambar (maks. 5 MB)'}<input type="file" accept="image/*" onChange={e=>setImage(e.target.files?.[0]||null)}/></span></label>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan portofolio'}</button></div></form></div>}
+  useEffect(() => {
+    request('/portfolios').then(setItems).catch((e) => setError(e.message))
+  }, [refresh])
+
+  const filtered = items.filter((x) =>
+    (x.name + ' ' + (x.client || '') + ' ' + (x.category || '') + ' ' + (x.industry || '') + ' ' + (x.tags || []).join(' '))
+      .toLowerCase()
+      .includes(query.toLowerCase())
+  )
+
+  async function remove(id: number) {
+    if (!confirm('Hapus portofolio ini secara permanen?')) return
+    try {
+      await request('/portfolios/' + id, { method: 'DELETE' })
+      setRefresh((x) => x + 1)
+    } catch (e) {
+      setRefresh((x) => x + 1)
+      setError((e as Error).message)
+    }
+  }
+
+  const featuredCount = items.filter((x) => x.featured).length
+
+  return (
+    <section className="content">
+      <div className="page-title">
+        <div>
+          <p className="eyebrow pink">CONTENT LIBRARY</p>
+          <h1>Portofolio</h1>
+          <p className="subtle">Kelola seluruh proyek portofolio, detail teknis, dokumen lampiran, dan hasil pengerjaan.</p>
+        </div>
+        <button className="primary" onClick={() => setEditing(null)}>
+          <Plus size={18} /> Tambah portofolio
+        </button>
+      </div>
+
+      <div className="stats">
+        <div>
+          <span>Total karya</span>
+          <b>{items.length}</b>
+          <small>Semua portofolio</small>
+        </div>
+        <div>
+          <span>Kategori & Pilar</span>
+          <b>{new Set(items.map((x) => x.category)).size}</b>
+          <small>{featuredCount} karya unggulan</small>
+        </div>
+        <div>
+          <span>Terakhir diperbarui</span>
+          <b className="date-stat">
+            {items[0]?.updated_at
+              ? new Date(items[0].updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+              : '—'}
+          </b>
+          <small>Sinkron dengan database</small>
+        </div>
+      </div>
+
+      <div className="toolbar">
+        <div className="search">
+          <Search size={17} />
+          <input
+            placeholder="Cari nama, klien, industri, tag…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <span className="result-count">{filtered.length} karya ditemukan</span>
+      </div>
+
+      {error && <div className="error-box">{error}</div>}
+
+      <div className="portfolio-grid">
+        {filtered.map((item) => (
+          <article className="portfolio-card" key={item.id}>
+            <div className="card-image">
+              {item.image_url ? (
+                <img
+                  src={item.image_url}
+                  alt={item.name}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              ) : (
+                <div className="image-placeholder">
+                  <BriefcaseBusiness size={26} />
+                  <span>{item.category}</span>
+                </div>
+              )}
+              <span className="category">{item.category}</span>
+              {item.featured && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '12px',
+                    padding: '4px 8px',
+                    background: '#e91e63',
+                    color: '#fff',
+                    borderRadius: '5px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '3px',
+                  }}
+                >
+                  <Star size={11} fill="#fff" /> Unggulan
+                </span>
+              )}
+              <div className="card-hover">
+                <button title="Edit portofolio" onClick={() => setEditing(item)}>
+                  <Pencil size={16} />
+                </button>
+                <button title="Hapus portofolio" onClick={() => remove(item.id)}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="card-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                <h3>{item.name}</h3>
+                {item.year && <small style={{ color: '#999', fontWeight: 600 }}>{item.year}</small>}
+              </div>
+              {item.client && (
+                <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px', fontWeight: 500 }}>
+                  {item.client} {item.location ? `• ${item.location}` : ''}
+                </div>
+              )}
+              <p>{item.ringkasan || item.description}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                <a href={item.website_url || '#'} target="_blank" rel="noopener noreferrer">
+                  Lihat website <ExternalLink size={13} />
+                </a>
+                {item.documents && item.documents.length > 0 && (
+                  <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <FileText size={12} /> {item.documents.length} Dokumen
+                  </span>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+        {!filtered.length && (
+          <div className="empty">
+            <BriefcaseBusiness size={30} />
+            <p>Belum ada portofolio yang cocok.</p>
+          </div>
+        )}
+      </div>
+
+      {editing !== false && (
+        <PortfolioModal
+          item={editing}
+          onClose={() => setEditing(false)}
+          onSaved={() => {
+            setEditing(false)
+            setRefresh((x) => x + 1)
+          }}
+        />
+      )}
+    </section>
+  )
+}
+
+function PortfolioModal({
+  item,
+  onClose,
+  onSaved,
+}: {
+  item: Portfolio | null
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [tab, setTab] = useState<'info' | 'pilar' | 'desc' | 'media' | 'stats' | 'docs'>('info')
+  const [form, setForm] = useState({
+    name: item?.name || '',
+    slug: item?.slug || '',
+    client: item?.client || '',
+    category: item?.category || '',
+    industry: item?.industry || item?.category || '',
+    location: item?.location || 'Jakarta',
+    year: item?.year || new Date().getFullYear().toString(),
+    pilar: item?.pilar?.length ? item.pilar : PORTFOLIO_PILLAR_DEFAULTS[item?.name || ''] || ['Website'],
+    products: (item?.products || []).join(', '),
+    tags: (item?.tags || []).join(', '),
+    ringkasan: item?.ringkasan || '',
+    description: item?.description || '',
+    hasil: item?.hasil || '',
+    featured: Boolean(item?.featured),
+    website_url: item?.website_url || '',
+    thumbnail_url: item?.thumbnail_url || item?.image_url || '',
+    galeri_text: (item?.galeri || []).join('\n'),
+  })
+
+  const [stats, setStats] = useState<{ label: string; value: string }[]>(
+    item?.stats && item.stats.length > 0
+      ? item.stats
+      : [
+          { label: 'Peningkatan Leads', value: '+150%' },
+          { label: 'Durasi Proyek', value: '4 minggu' },
+        ]
+  )
+
+  const [process, setProcess] = useState<{ num: string; title: string; desc: string }[]>(
+    item?.process && item.process.length > 0
+      ? item.process
+      : [
+          { num: '01', title: 'Discovery & Analysis', desc: 'Riset kebutuhan target pasar dan model bisnis klien.' },
+          { num: '02', title: 'UI/UX Design', desc: 'Perancangan visual interface yang modern dan responsif.' },
+          { num: '03', title: 'Development & Launch', desc: 'Pengembangan sistem, integrasi leads, dan testing performa.' },
+        ]
+  )
+
+  const [documents, setDocuments] = useState<{ title: string; type: string; desc: string; url: string }[]>(
+    item?.documents && item.documents.length > 0 ? item.documents : []
+  )
+
+  const [image, setImage] = useState<File | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const pillars = ['Digital Asset', 'Website', 'Digital Growth Team']
+
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+
+    const data = new FormData()
+    data.append('name', form.name)
+    data.append('slug', form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
+    data.append('client', form.client || form.name)
+    data.append('category', form.category)
+    data.append('industry', form.industry || form.category)
+    data.append('location', form.location)
+    data.append('year', form.year)
+    data.append('ringkasan', form.ringkasan || form.description.slice(0, 160))
+    data.append('description', form.description)
+    data.append('hasil', form.hasil)
+    data.append('featured', form.featured ? '1' : '0')
+    data.append('website_url', form.website_url)
+    data.append('thumbnail_url', form.thumbnail_url)
+    data.append('pilar', JSON.stringify(form.pilar))
+    data.append('products', JSON.stringify(form.products.split(',').map((s) => s.trim()).filter(Boolean)))
+    data.append('tags', JSON.stringify(form.tags.split(',').map((s) => s.trim()).filter(Boolean)))
+
+    const galeriList = form.galeri_text.split('\n').map((s) => s.trim()).filter(Boolean)
+    data.append('galeri', JSON.stringify(galeriList))
+    data.append('stats', JSON.stringify(stats.filter((s) => s.label.trim())))
+    data.append('process', JSON.stringify(process.filter((p) => p.title.trim())))
+    data.append('documents', JSON.stringify(documents.filter((d) => d.title.trim())))
+
+    if (image) data.append('image', image)
+    if (item) data.append('_method', 'PUT')
+
+    try {
+      await request(item ? `/portfolios/${item.id}` : '/portfolios', {
+        method: 'POST',
+        body: data,
+      })
+      onSaved()
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="modal-backdrop">
+      <form className="modal modal-lg" onSubmit={save}>
+        <div className="modal-head">
+          <div>
+            <p className="eyebrow pink">{item ? 'EDIT ENTRY' : 'NEW ENTRY'}</p>
+            <h2>{item ? 'Edit Portofolio' : 'Tambah Portofolio'}</h2>
+          </div>
+          <button type="button" className="icon-btn" onClick={onClose}>
+            <X />
+          </button>
+        </div>
+
+        {/* Modal Navigation Tabs */}
+        <div className="modal-tabs">
+          <button
+            type="button"
+            className={`modal-tab-btn ${tab === 'info' ? 'active' : ''}`}
+            onClick={() => setTab('info')}
+          >
+            Info Utama
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${tab === 'pilar' ? 'active' : ''}`}
+            onClick={() => setTab('pilar')}
+          >
+            Pilar & Tags
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${tab === 'desc' ? 'active' : ''}`}
+            onClick={() => setTab('desc')}
+          >
+            Deskripsi & Hasil
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${tab === 'media' ? 'active' : ''}`}
+            onClick={() => setTab('media')}
+          >
+            Gambar & Galeri
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${tab === 'stats' ? 'active' : ''}`}
+            onClick={() => setTab('stats')}
+          >
+            Statistik & Tahapan
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${tab === 'docs' ? 'active' : ''}`}
+            onClick={() => setTab('docs')}
+          >
+            Dokumen ({documents.length})
+          </button>
+        </div>
+
+        <div className="modal-scroll-area">
+          {tab === 'info' && (
+            <>
+              <label>
+                Nama proyek
+                <input
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      name: e.target.value,
+                      slug: form.slug || e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                    })
+                  }
+                  required
+                  placeholder="Contoh: Smart GPS Tracker"
+                />
+              </label>
+
+              <div className="form-row">
+                <label>
+                  Slug URL
+                  <input
+                    value={form.slug}
+                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    placeholder="smart-gps-tracker"
+                  />
+                </label>
+                <label>
+                  Klien / Nama Perusahaan
+                  <input
+                    value={form.client}
+                    onChange={(e) => setForm({ ...form, client: e.target.value })}
+                    placeholder="PT Indo Tracker Solusi"
+                  />
+                </label>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  Industri / Kategori
+                  <input
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value, industry: e.target.value })}
+                    required
+                    placeholder="Website Company Profile"
+                  />
+                </label>
+                <label>
+                  Lokasi
+                  <input
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    placeholder="Jakarta, Bandung, Bali..."
+                  />
+                </label>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  Tahun Pengerjaan
+                  <input
+                    value={form.year}
+                    onChange={(e) => setForm({ ...form, year: e.target.value })}
+                    placeholder="2024"
+                  />
+                </label>
+                <label>
+                  Link Website / Live URL
+                  <input
+                    type="url"
+                    value={form.website_url}
+                    onChange={(e) => setForm({ ...form, website_url: e.target.value })}
+                    placeholder="https://contoh.com"
+                  />
+                </label>
+              </div>
+
+              <label className="check" style={{ marginTop: '12px' }}>
+                <input
+                  type="checkbox"
+                  checked={form.featured}
+                  onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                />
+                Tandai sebagai Proyek Unggulan (Featured Project)
+              </label>
+            </>
+          )}
+
+          {tab === 'pilar' && (
+            <>
+              <div className="additional-fields">
+                <b>Pilar Layanan Optibis</b>
+                <div className="topic-options">
+                  {pillars.map((pillar) => (
+                    <label className="check" key={pillar}>
+                      <input
+                        type="checkbox"
+                        checked={form.pilar.includes(pillar)}
+                        onChange={(event) =>
+                          setForm({
+                            ...form,
+                            pilar: event.target.checked
+                              ? [...form.pilar, pillar]
+                              : form.pilar.filter((value) => value !== pillar),
+                          })
+                        }
+                      />
+                      {pillar}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <label>
+                Produk / Layanan Terkait
+                <input
+                  value={form.products}
+                  onChange={(e) => setForm({ ...form, products: e.target.value })}
+                  placeholder="Contoh: Company Website, Tracking System, SEO (pisahkan koma)"
+                />
+              </label>
+
+              <label>
+                Tags / Kata Kunci
+                <input
+                  value={form.tags}
+                  onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                  placeholder="Contoh: IoT, Tracking, B2B, SEO, Company Profile (pisahkan koma)"
+                />
+              </label>
+            </>
+          )}
+
+          {tab === 'desc' && (
+            <>
+              <label>
+                Ringkasan Singkat (Lead / Excerpt)
+                <textarea
+                  rows={2}
+                  value={form.ringkasan}
+                  onChange={(e) => setForm({ ...form, ringkasan: e.target.value })}
+                  placeholder="Ringkasan 1-2 kalimat untuk preview card..."
+                />
+              </label>
+
+              <label>
+                Deskripsi Lengkap Proyek
+                <textarea
+                  rows={5}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  required
+                  placeholder="Jelaskan latar belakang, tantangan, dan solusi yang dibangun..."
+                />
+              </label>
+
+              <label>
+                Hasil & Dampak (Key Impact)
+                <textarea
+                  rows={3}
+                  value={form.hasil}
+                  onChange={(e) => setForm({ ...form, hasil: e.target.value })}
+                  placeholder="Contoh: +210% peningkatan qualified leads dalam 3 bulan pertama..."
+                />
+              </label>
+            </>
+          )}
+
+          {tab === 'media' && (
+            <>
+              <label>
+                URL Thumbnail Utama (Web URL)
+                <input
+                  value={form.thumbnail_url}
+                  onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                />
+              </label>
+
+              <label className="upload">
+                Upload File Gambar Utama
+                <span>
+                  <ImagePlus size={18} /> {image?.name || 'Pilih gambar dari komputer (maks. 5 MB)'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImage(e.target.files?.[0] || null)}
+                  />
+                </span>
+              </label>
+
+              <label>
+                URL Galeri Tambahan (Satu URL per baris)
+                <textarea
+                  rows={4}
+                  value={form.galeri_text}
+                  onChange={(e) => setForm({ ...form, galeri_text: e.target.value })}
+                  placeholder="https://images.unsplash.com/...&#10;https://images.unsplash.com/..."
+                />
+              </label>
+            </>
+          )}
+
+          {tab === 'stats' && (
+            <>
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <b>Statistik / Key Metrics</b>
+                  <button
+                    type="button"
+                    className="secondary"
+                    style={{ padding: '6px 12px', fontSize: '11px' }}
+                    onClick={() => setStats([...stats, { label: '', value: '' }])}
+                  >
+                    <Plus size={14} /> Tambah Metrik
+                  </button>
+                </div>
+                {stats.map((st, i) => (
+                  <div key={i} className="form-row" style={{ alignItems: 'center', marginBottom: '8px' }}>
+                    <input
+                      placeholder="Label (contoh: Page Speed)"
+                      value={st.label}
+                      onChange={(e) => {
+                        const next = [...stats]
+                        next[i].label = e.target.value
+                        setStats(next)
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        placeholder="Nilai (contoh: 98/100)"
+                        value={st.value}
+                        onChange={(e) => {
+                          const next = [...stats]
+                          next[i].value = e.target.value
+                          setStats(next)
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        onClick={() => setStats(stats.filter((_, idx) => idx !== i))}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <b>Tahapan Pengerjaan (Timeline)</b>
+                  <button
+                    type="button"
+                    className="secondary"
+                    style={{ padding: '6px 12px', fontSize: '11px' }}
+                    onClick={() =>
+                      setProcess([
+                        ...process,
+                        { num: `0${process.length + 1}`, title: '', desc: '' },
+                      ])
+                    }
+                  >
+                    <Plus size={14} /> Tambah Tahap
+                  </button>
+                </div>
+                {process.map((pr, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      border: '1px solid #f0eef0',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      marginBottom: '10px',
+                      background: '#fcfbfc',
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <input
+                        style={{ width: '60px' }}
+                        placeholder="No"
+                        value={pr.num}
+                        onChange={(e) => {
+                          const next = [...process]
+                          next[i].num = e.target.value
+                          setProcess(next)
+                        }}
+                      />
+                      <input
+                        style={{ flex: 1 }}
+                        placeholder="Judul Tahap (contoh: UI/UX Architecture)"
+                        value={pr.title}
+                        onChange={(e) => {
+                          const next = [...process]
+                          next[i].title = e.target.value
+                          setProcess(next)
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        onClick={() => setProcess(process.filter((_, idx) => idx !== i))}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <textarea
+                      rows={2}
+                      placeholder="Penjelasan tahapan..."
+                      value={pr.desc}
+                      onChange={(e) => {
+                        const next = [...process]
+                        next[i].desc = e.target.value
+                        setProcess(next)
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {tab === 'docs' && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div>
+                  <b>Dokumen & Deliverables Terkait</b>
+                  <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>
+                    Materi PDF/dokumen yang dapat dipratinjau & diunduh oleh pengunjung di halaman detail.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="secondary"
+                  style={{ padding: '6px 12px', fontSize: '11px' }}
+                  onClick={() =>
+                    setDocuments([
+                      ...documents,
+                      { title: '', type: 'PDF', desc: '', url: '' },
+                    ])
+                  }
+                >
+                  <Plus size={14} /> Tambah Dokumen
+                </button>
+              </div>
+
+              {documents.map((doc, i) => (
+                <div
+                  key={i}
+                  style={{
+                    border: '1px solid #f0eef0',
+                    borderRadius: '9px',
+                    padding: '12px',
+                    marginBottom: '10px',
+                    background: '#fcfbfc',
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input
+                      style={{ flex: 2 }}
+                      placeholder="Judul Dokumen (contoh: Brand Guideline)"
+                      value={doc.title}
+                      onChange={(e) => {
+                        const next = [...documents]
+                        next[i].title = e.target.value
+                        setDocuments(next)
+                      }}
+                    />
+                    <input
+                      style={{ width: '90px' }}
+                      placeholder="Tipe (PDF)"
+                      value={doc.type}
+                      onChange={(e) => {
+                        const next = [...documents]
+                        next[i].type = e.target.value
+                        setDocuments(next)
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      onClick={() => setDocuments(documents.filter((_, idx) => idx !== i))}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <input
+                    style={{ width: '100%', marginBottom: '8px' }}
+                    placeholder="URL Dokumen / File (https://example.com/docs/...)"
+                    value={doc.url}
+                    onChange={(e) => {
+                      const next = [...documents]
+                      next[i].url = e.target.value
+                      setDocuments(next)
+                    }}
+                  />
+                  <textarea
+                    rows={2}
+                    placeholder="Deskripsi singkat isi dokumen..."
+                    value={doc.desc}
+                    onChange={(e) => {
+                      const next = [...documents]
+                      next[i].desc = e.target.value
+                      setDocuments(next)
+                    }}
+                  />
+                </div>
+              ))}
+
+              {!documents.length && (
+                <div style={{ textAlign: 'center', padding: '30px', color: '#999', background: '#faf9fa', borderRadius: '8px' }}>
+                  <FileText size={24} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.5 }} />
+                  Belum ada dokumen lampiran. Klik tombol "Tambah Dokumen" di atas.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {error && <div className="error-box">{error}</div>}
+
+        <div className="modal-actions">
+          <button type="button" className="secondary" onClick={onClose}>
+            Batal
+          </button>
+          <button className="primary" disabled={busy}>
+            {busy ? 'Menyimpan…' : 'Simpan Portofolio'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
 
 function AdminView({currentUser}:{currentUser:User}){const [items,setItems]=useState<Admin[]>([]), [editing,setEditing]=useState<Admin|null|false>(false), [refresh,setRefresh]=useState(0), [error,setError]=useState('');useEffect(()=>{request('/admins').then(setItems).catch(e=>setError(e.message))},[refresh]);async function remove(id:number){if(!confirm('Hapus admin ini?'))return;try{await request('/admins/'+id,{method:'DELETE'});setRefresh(x=>x+1)}catch(e){setError((e as Error).message)}}return <section className="content"><div className="page-title"><div><p className="eyebrow pink">TEAM ACCESS</p><h1>Admin</h1><p className="subtle">Kelola siapa saja yang punya akses ke workspace.</p></div><button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah admin</button></div><div className="admin-table"><div className="table-head"><span>Nama</span><span>Email</span><span>Bergabung</span><span></span></div>{items.map(item=><div className="table-row" key={item.id}><div className="person"><span className="avatar">{item.name[0]}</span><div><b>{item.name}</b>{item.id===currentUser.id&&<small>Anda</small>}</div></div><span>{item.email}</span><span>{new Date(item.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</span><div className="row-actions"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div>)}{!items.length&&<div className="empty">Belum ada admin.</div>}</div>{error&&<div className="error-box">{error}</div>}{editing!==false&&<AdminModal item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(x=>x+1)}}/>}</section>}
 function AdminModal({item,onClose,onSaved}:{item:Admin|null,onClose:()=>void,onSaved:()=>void}){const [form,setForm]=useState({name:item?.name||'',email:item?.email||'',password:''}), [error,setError]=useState(''), [busy,setBusy]=useState(false);async function save(e:FormEvent){e.preventDefault();setBusy(true);try{const body={...form};if(!body.password)delete (body as Partial<typeof body>).password;await request(item?`/admins/${item.id}`:'/admins',{method:item?'PUT':'POST',body:JSON.stringify(body)});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}return <div className="modal-backdrop"><form className="modal small-modal" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT ADMIN':'TEAM ACCESS'}</p><h2>{item?'Edit admin':'Tambah admin'}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><label>Nama lengkap<input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required/></label><label>Email<input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} required/></label><label>Password<input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder={item?'Kosongkan jika tidak berubah':'Min. 8 karakter'} required={!item}/></label>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan admin'}</button></div></form></div>}
 
-function ContentHub({title,sections}:{title:string;sections:{id:ContentType;label:string}[]}){const [active,setActive]=useState<ContentType>(sections[0].id);const label=sections.find(item=>item.id===active)?.label||'';return <><section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT HUB</p><h1>{title}</h1><p className="subtle">Kelola seluruh data {title} dari satu menu.</p></div></div><div className="toolbar">{sections.map(item=><button key={item.id} className={active===item.id?'primary':'secondary'} onClick={()=>setActive(item.id)}>{item.label}</button>)}</div></section><ContentView type={active} label={`${title}: ${label}`}/></>}
+function ProfileSettingsView({currentUser,onUpdated}:{currentUser:User;onUpdated:(user:User)=>void}){const [form,setForm]=useState({name:currentUser.name,email:currentUser.email,password:''}),[error,setError]=useState(''),[success,setSuccess]=useState(''),[busy,setBusy]=useState(false);async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');setSuccess('');try{const body={...form};if(!body.password)delete (body as Partial<typeof body>).password;const updated=await request(`/admins/${currentUser.id}`,{method:'PUT',body:JSON.stringify(body)});onUpdated(updated);setForm({...form,password:''});setSuccess('Setting admin berhasil diperbarui.')}catch(err){setError((err as Error).message)}finally{setBusy(false)}}return <section className="content"><div className="page-title"><div><p className="eyebrow pink">SETTING ADMIN</p><h1>Setting Admin Page</h1><p className="subtle">Kelola informasi dan keamanan akun admin.</p></div></div><form className="modal" onSubmit={save}><label>Nama lengkap<input value={form.name} onChange={event=>setForm({...form,name:event.target.value})} required/></label><label>Email<input type="email" value={form.email} onChange={event=>setForm({...form,email:event.target.value})} required/></label><label>Password baru<input type="password" value={form.password} onChange={event=>setForm({...form,password:event.target.value})} placeholder="Kosongkan jika tidak ingin mengubah password"/></label>{error&&<div className="error-box">{error}</div>}{success&&<div className="success-box">{success}</div>}<div className="modal-actions"><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan perubahan'}</button></div></form></section>}
+
+function ContentHub({title,sections}:{title:string;sections:{id:ContentType;label:string}[]}){const [active,setActive]=useState<ContentType>(sections[0].id);const label=sections.find(item=>item.id===active)?.label||'';return <><section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT HUB</p><h1>{title}</h1><p className="subtle">Kelola seluruh data {title} dari satu menu.</p></div></div><div className={`toolbar${title==='Viralog'?' viralog-selector':''}`}>{sections.map(item=><button key={item.id} className={active===item.id?'primary':'secondary'} onClick={()=>setActive(item.id)}>{item.label}</button>)}</div></section><ContentView type={active} label={`${title}: ${label}`}/></>}
 
 const FLYER_PRESETS = [
   { label: 'Flyer Paket Siap Usaha (Digital Asset)', value: '/assets/paket-digital-asset/siap-usaha.jpg' },
@@ -2530,6 +3347,43 @@ function PackageModal({
   )
 }
 
+function DashboardAnalyticsView(){
+  return <ContentAndVisitorDashboard/>
+}
+
+function ContentAndVisitorDashboard(){
+  const [data,setData]=useState<any>(null),[period,setPeriod]=useState(7)
+  useEffect(()=>{setData(null);request(`/dashboard-analytics?period=${period}`).then(setData).catch(()=>{})},[period])
+  const days=data?.visitor_by_day||[]
+  const chartDays:any[]=period===365?Object.values(days.reduce((months:Record<string,{date:string;visits:number;visitors:number}>,day:any)=>{const key=day.date.slice(0,7);if(!months[key])months[key]={date:`${key}-01`,visits:0,visitors:0};months[key].visits+=day.visits;months[key].visitors+=day.visitors;return months},{})):days
+  const max=Math.max(...chartDays.map((day:any)=>day.visits),1)
+  const hasVisitData=chartDays.some((day:any)=>day.visits>0)
+  const showLabel=(index:number)=>period===7||period===365||index===0||index===chartDays.length-1||index%5===0
+  const formatDate=(date:string)=>new Date(`${date}T00:00:00`).toLocaleDateString('id-ID',period===365?{month:'short'}:{day:'numeric',month:'short'})
+  const systemMetrics=[['Portofolio','portfolios'],['Konten terbit','published_content'],['Artikel RSS','rss_articles'],['Sumber RSS aktif','active_rss_sources'],['Iklan aktif','active_ads']] as const
+  const periodLabel=period===365?'1 tahun':`${period} hari terakhir`
+  return <section className="content analytics-dashboard"><div className="page-title"><div><p className="eyebrow pink">AKTIVITAS PENGUNJUNG</p><h1>Dashboard Analitik</h1><p className="subtle">Data aktual website dan konten terbaru.</p></div></div>{!data?<div className="empty">Memuat data analitik…</div>:<><div className="stats analytics-stats"><div><span>Pengunjung</span><b>{data.metrics.visitors||0}</b><small>{periodLabel}</small></div><div><span>Page view</span><b>{data.metrics.pageviews||0}</b><small>{periodLabel}</small></div><div><span>Leads masuk</span><b>{data.metrics.leads||0}</b><small>Data tersimpan</small></div></div><div className="analytics-panel" style={{marginTop:20}}><div className="analytics-panel-head"><div><b>Ringkasan konten & sistem</b><small>Data aktual yang tersedia di dashboard.</small></div></div><div className="stats analytics-stats" style={{marginBottom:0}}>{systemMetrics.map(([label,key])=><div key={key}><span>{label}</span><b>{data.metrics[key]||0}</b><small>Data tersimpan</small></div>)}</div></div><div className="analytics-layout"><div className="analytics-panel"><div className="analytics-panel-head"><div><b>Kunjungan {periodLabel}</b><small>Aktivitas pengunjung per hari.</small></div><div className="page-title-actions">{[7,30,365].map(value=><button key={value} className={period===value?'primary':'secondary'} onClick={()=>setPeriod(value)}>{value===365?'1 Tahun':`${value} Hari`}</button>)}</div></div><div className="analytics-chart">{!hasVisitData?<div className="analytics-empty-chart">Belum ada data kunjungan pada periode ini.</div>:chartDays.map((day:any,index:number)=><div className="analytics-bar" key={day.date}><div className="analytics-bar-value">{day.visits}</div><i style={{height:`${Math.max(day.visits/max*100,4)}%`}}/><small>{showLabel(index)?formatDate(day.date):''}</small></div>)}</div></div><div className="analytics-panel"><div className="analytics-panel-head"><div><b>Aktivitas terbaru</b><small>Halaman terakhir dikunjungi.</small></div></div><div className="analytics-recent">{data.recent_visitor_activity.map((item:any,index:number)=><div key={`${item.path}-${index}`}><span className="analytics-status live">{item.device==='mobile'?'Mobile':'Desktop'}</span><b>{item.path}</b><small>{new Date(item.visited_at).toLocaleString('id-ID')}</small></div>)}</div></div></div><div className="analytics-panel" style={{marginTop:20}}><div className="analytics-panel-head"><div><b>Konten terbaru</b><small>Artikel terakhir yang disimpan di Viralog.</small></div></div><div className="analytics-recent">{data.recent_content.map((item:any)=><div key={item.id}><span className={item.is_published?'analytics-status live':'analytics-status'}>{item.is_published?'Terbit':'Draft'}</span><b>{item.title}</b><small>{new Date(item.created_at).toLocaleDateString('id-ID',{dateStyle:'medium'})}</small></div>)}</div></div></>}</section>
+}
+
+export function VisitorAnalyticsDashboard(){
+  const [data,setData]=useState<any>(null),[error,setError]=useState('')
+  const load=()=>request('/dashboard-analytics').then(setData).catch(err=>setError(err.message))
+  useEffect(()=>{load()},[])
+  const visitorDays=data?.visitor_last_7_days||[]
+  const max=Math.max(...visitorDays.map((item:any)=>item.visits),1)
+  const metrics=[['Pengunjung (7 hari)','visitors_last_7_days'],['Tampilan halaman','pageviews_last_7_days'],['Konten terbit','published_content'],['Portofolio','portfolios'],['Iklan aktif','active_ads'],['Leads','leads']] as const
+  return <section className="content analytics-dashboard"><div className="page-title"><div><p className="eyebrow pink">AKTIVITAS PENGUNJUNG</p><h1>Dashboard Analitik</h1><p className="subtle">Data kunjungan website yang tercatat secara langsung.</p></div><button className="secondary" onClick={load}><BarChart3 size={17}/> Perbarui data</button></div>{error&&<div className="error-box">{error}</div>}{!data?<div className="empty">Memuat data analitik…</div>:<><div className="stats analytics-stats">{metrics.map(([label,key])=><div key={key}><span>{label}</span><b>{data.metrics[key]||0}</b><small>7 hari terakhir</small></div>)}</div><div className="analytics-layout"><div className="analytics-panel"><div className="analytics-panel-head"><div><b>Kunjungan website 7 hari terakhir</b><small>Page view dan pengunjung unik per hari.</small></div><span>{data.metrics.pageviews_last_7_days||0} kunjungan</span></div><div className="analytics-chart">{visitorDays.map((item:any)=><div className="analytics-bar" key={item.date}><div className="analytics-bar-value">{item.visits}</div><i style={{height:`${Math.max((item.visits/max)*100,4)}%`}}/><small>{new Date(`${item.date}T00:00:00`).toLocaleDateString('id-ID',{day:'numeric',month:'short'})}</small></div>)}</div></div><div className="analytics-panel"><div className="analytics-panel-head"><div><b>Aktivitas terbaru</b><small>Halaman yang baru saja dikunjungi.</small></div></div><div className="analytics-recent">{data.recent_visitor_activity.map((item:any,index:number)=><div key={`${item.path}-${item.visited_at}-${index}`}><span className="analytics-status live">{item.device==='mobile'?'Mobile':'Desktop'}</span><b>{item.path}</b><small>{new Date(item.visited_at).toLocaleString('id-ID',{dateStyle:'short',timeStyle:'short'})}{item.referrer?` · ${item.referrer}`:''}</small></div>)}{!data.recent_visitor_activity.length&&<p className="subtle">Belum ada aktivitas pengunjung.</p>}</div></div></div><div className="analytics-panel" style={{marginTop:20}}><div className="analytics-panel-head"><div><b>Halaman terpopuler</b><small>Halaman dengan kunjungan terbanyak dalam 7 hari terakhir.</small></div></div><div className="analytics-recent">{data.popular_pages.map((item:any)=><div key={item.path}><span className="analytics-status">{item.total} view</span><b>{item.path}</b></div>)}{!data.popular_pages.length&&<p className="subtle">Belum ada data halaman populer.</p>}</div></div></>}</section>
+}
+
+export function LegacyDashboardAnalyticsView(){
+  const [data,setData]=useState<{metrics:Record<string,number>;content_last_7_days:{date:string;total:number}[];recent_content:{id:number;title:string;is_published:boolean;created_at:string}[]}|null>(null),[error,setError]=useState('')
+  const load=()=>request('/dashboard-analytics').then(setData).catch(err=>setError(err.message))
+  useEffect(()=>{load()},[])
+  const metrics=[['Portofolio','portfolios'],['Konten terbit','published_content'],['Artikel RSS','rss_articles'],['Sumber RSS aktif','active_rss_sources'],['Iklan aktif','active_ads'],['Leads','leads']] as const
+  const max=Math.max(...(data?.content_last_7_days.map(item=>item.total)||[0]),1)
+  return <section className="content analytics-dashboard"><div className="page-title"><div><p className="eyebrow pink">DATA REAL-TIME</p><h1>Dashboard Analitik</h1><p className="subtle">Ringkasan data aktual yang tersimpan di sistem.</p></div><button className="secondary" onClick={load}><BarChart3 size={17}/> Perbarui data</button></div>{error&&<div className="error-box">{error}</div>}{!data?<div className="empty">Memuat data analitik…</div>:<><div className="stats analytics-stats">{metrics.map(([label,key])=><div key={key}><span>{label}</span><b>{data.metrics[key]||0}</b><small>Data tersimpan</small></div>)}</div><div className="analytics-layout"><div className="analytics-panel"><div className="analytics-panel-head"><div><b>Konten dibuat 7 hari terakhir</b><small>Artikel yang masuk ke Viralog per hari.</small></div><span>{data.content_last_7_days.reduce((total,item)=>total+item.total,0)} konten</span></div><div className="analytics-chart">{data.content_last_7_days.map(item=><div className="analytics-bar" key={item.date}><div className="analytics-bar-value">{item.total}</div><i style={{height:`${Math.max((item.total/max)*100,4)}%`}}/><small>{new Date(`${item.date}T00:00:00`).toLocaleDateString('id-ID',{day:'numeric',month:'short'})}</small></div>)}</div></div><div className="analytics-panel"><div className="analytics-panel-head"><div><b>Konten terbaru</b><small>Aktivitas konten yang terakhir disimpan.</small></div></div><div className="analytics-recent">{data.recent_content.map(item=><div key={item.id}><span className={item.is_published?'analytics-status live':'analytics-status'}>{item.is_published?'Terbit':'Draft'}</span><b>{item.title}</b><small>{new Date(item.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</small></div>)}{!data.recent_content.length&&<p className="subtle">Belum ada konten yang tersimpan.</p>}</div></div></div></>}</section>
+}
+
 function ContentView({type,label}:{type:ContentType;label:string}){
   if (type === 'service-pillars') {
     return <ServicePillarsView />
@@ -2539,6 +3393,12 @@ function ContentView({type,label}:{type:ContentType;label:string}){
   }
   if (type === 'packages') {
     return <PackagesView />
+  }
+  if (type === 'evolis-analytics') {
+    return <DashboardAnalyticsView />
+  }
+  if (type === 'evolis-leads') {
+    return <LeadsManagementView />
   }
 
   const [items,setItems]=useState<ContentItem[]>([]),[query,setQuery]=useState(''),[editing,setEditing]=useState<ContentItem|null|false>(false),[refresh,setRefresh]=useState(0),[error,setError]=useState(''),[managingCategories,setManagingCategories]=useState(false),[managingExploreCategories,setManagingExploreCategories]=useState(false);useEffect(()=>{request(`/modules/${type}`).then(setItems).catch(e=>setError(e.message))},[type,refresh]);const filtered=items.filter(item=>`${item.title} ${item.slug} ${item.summary||''}`.toLowerCase().includes(query.toLowerCase()));async function remove(id:number){if(!confirm(`Hapus ${label.toLowerCase()} ini?`))return;try{await request(`/modules/${type}/${id}`,{method:'DELETE'});setRefresh(value=>value+1)}catch(err){setError((err as Error).message)}}return <section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>{label}</h1><p className="subtle">Kelola konten {label.toLowerCase()} yang ditampilkan di frontend.</p></div><div className="page-title-actions">{type==='solution-library'&&<><button className="secondary" onClick={()=>setManagingCategories(true)}><Columns3 size={17}/> Atur kategori filter</button><button className="secondary" onClick={()=>setManagingExploreCategories(true)}><Columns3 size={17}/> Atur Jelajahi Topik</button></>}<button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah {label}</button></div></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder={`Cari ${label.toLowerCase()}…`} value={query} onChange={event=>setQuery(event.target.value)}/></div><span className="result-count">{filtered.length} konten</span></div>{error&&<div className="error-box">{error}</div>}<div className="admin-table"><div className="table-head"><span>Konten</span><span>Slug</span><span>Status</span><span></span></div>{filtered.map(item=><div className="table-row" key={item.id}><div className="person">{item.image_url?<img className="avatar" src={item.image_url} alt=""/>:<span className="avatar">{item.title[0]}</span>}<div><b>{item.title}</b>{item.summary&&<small>{item.summary}</small>}</div></div><span>{item.slug}</span><span>{item.is_published?'Published':'Draft'}</span><div className="row-actions"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div>)}{!filtered.length&&<div className="empty">Belum ada konten {label.toLowerCase()}.</div>}</div>{editing!==false&&<ContentModal type={type} label={label} item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(value=>value+1)}}/>}{managingCategories&&<SolutionLibraryCategoryManager onClose={()=>setManagingCategories(false)} onChanged={()=>setRefresh(value=>value+1)}/>} {managingExploreCategories&&<SolutionLibraryExploreCategoryManager onClose={()=>setManagingExploreCategories(false)}/>}</section>}
@@ -2563,8 +3423,26 @@ function SolutionLibraryCategoryManager({onClose,onChanged}:{onClose:()=>void;on
   return <div className="modal-backdrop"><div className="modal modal-lg"><div className="modal-head"><div><p className="eyebrow pink">SOLUTION LIBRARY</p><h2>Atur kategori</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><form className="category-manager-form" onSubmit={save}><input placeholder="Nama kategori" value={title} onChange={event=>setTitle(event.target.value)} required/><button className="primary" disabled={busy}>{editing?'Update kategori':'Tambah kategori'}</button>{editing&&<button type="button" className="secondary" onClick={reset}>Batal</button>}</form>{error&&<div className="error-box">{error}</div>}<div className="category-manager-list">{items.map(item=><div className="category-manager-item" key={item.id}><b>{item.title}</b><div className="row-actions"><button type="button" onClick={()=>{setEditing(item);setTitle(item.title)}}><Pencil size={16}/></button><button type="button" onClick={()=>remove(item)}><Trash2 size={16}/></button></div></div>)}{!items.length&&<p className="subtle">Belum ada kategori.</p>}</div></div></div>
 }
 
+function LeadModal({item,onClose,onSaved}:{item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){
+  const source=(item?.data||{}) as Record<string,any>
+  const [form,setForm]=useState({nama:item?.title||String(source.nama||''),email:item?.summary||String(source.email||''),whatsapp:String(source.whatsapp||''),perusahaan:String(source.perusahaan||source.nama_bisnis||''),jabatan:String(source.jabatan||''),kota:String(source.kota||source.city||''),industri:String(source.industri||''),tujuan:String(source.tujuan||source.kebutuhan||''),asset:String(source.asset||source.asset_download||''),consent:source.consent===undefined?true:Boolean(source.consent),is_published:item?.is_published??true})
+  const [error,setError]=useState(''),[busy,setBusy]=useState(false)
+  const update=(key:keyof typeof form,value:string|boolean)=>setForm({...form,[key]:value})
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{const slug=item?.slug||`lead-${Date.now()}-${form.nama.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-')}`;const data={nama:form.nama,email:form.email,whatsapp:form.whatsapp,perusahaan:form.perusahaan,jabatan:form.jabatan,kota:form.kota,industri:form.industri,tujuan:form.tujuan,asset:form.asset,consent:form.consent,sumber:item?String(source.sumber||'Marketing Kit Download'):'Input Manual Admin',lead_status:String(source.lead_status||'new')};await request(item?`/modules/evolis-leads/${item.id}`:'/modules/evolis-leads',{method:item?'PUT':'POST',body:JSON.stringify({title:form.nama,slug,summary:form.email,image_url:null,is_published:form.is_published,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  return <div className="modal-backdrop"><form className="modal modal-lg" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT LEAD':'LEAD BARU'}</p><h2>{item?'Edit Lead':'Tambah Lead'}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><div className="modal-scroll-area"><div className="form-row"><label>Nama lengkap<input value={form.nama} onChange={event=>update('nama',event.target.value)} required/></label><label>Email<input type="email" value={form.email} onChange={event=>update('email',event.target.value)} required/></label></div><label>Nomor WhatsApp<input value={form.whatsapp} onChange={event=>update('whatsapp',event.target.value)} required/></label><div className="form-row"><label>Perusahaan<input value={form.perusahaan} onChange={event=>update('perusahaan',event.target.value)}/></label><label>Jabatan<input value={form.jabatan} onChange={event=>update('jabatan',event.target.value)}/></label></div><div className="form-row"><label>Kota<input value={form.kota} onChange={event=>update('kota',event.target.value)}/></label><label>Industri<input value={form.industri} onChange={event=>update('industri',event.target.value)}/></label></div><label>Tujuan download<textarea rows={3} value={form.tujuan} onChange={event=>update('tujuan',event.target.value)}/></label><label>Asset yang diunduh<input value={form.asset} onChange={event=>update('asset',event.target.value)} placeholder="Kosongkan untuk input manual"/></label><label className="check"><input type="checkbox" checked={form.consent} onChange={event=>update('consent',event.target.checked)}/> Bersedia dihubungi tim Optibis</label><label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>update('is_published',event.target.checked)}/> Tampilkan di frontend</label></div>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan lead'}</button></div></form></div>
+}
+
+function LeadsManagementView(){
+  const [items,setItems]=useState<ContentItem[]>([]),[query,setQuery]=useState(''),[editing,setEditing]=useState<ContentItem|null|false>(false),[refresh,setRefresh]=useState(0),[error,setError]=useState('')
+  useEffect(()=>{request('/modules/evolis-leads').then(setItems).catch(err=>setError(err.message))},[refresh])
+  const filtered=items.filter(item=>{const lead=(item.data||{}) as Record<string,unknown>;return `${item.title} ${item.summary||''} ${lead.whatsapp||''} ${lead.perusahaan||lead.nama_bisnis||''}`.toLowerCase().includes(query.toLowerCase())})
+  async function remove(id:number){if(!confirm('Hapus lead ini?'))return;try{await request(`/modules/evolis-leads/${id}`,{method:'DELETE'});setRefresh(value=>value+1)}catch(err){setError((err as Error).message)}}
+  return <section className="content"><div className="page-title"><div><p className="eyebrow pink">MARKETING KIT</p><h1>Leads Masuk</h1><p className="subtle">Lead dari form download Marketing Kit dan input manual admin.</p></div><button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah lead</button></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder="Cari nama, email, WhatsApp…" value={query} onChange={event=>setQuery(event.target.value)}/></div><span className="result-count">{filtered.length} lead</span></div>{error&&<div className="error-box">{error}</div>}<div className="admin-table leads-table"><div className="table-head"><span>Lead</span><span>Kontak</span><span>Perusahaan</span><span>Tujuan</span><span>Sumber</span><span></span></div>{filtered.map(item=>{const lead=(item.data||{}) as Record<string,unknown>;return <div className="table-row" key={item.id}><div className="person"><span className="avatar">{item.title?.[0]||'?'}</span><div><b>{item.title}</b><small>{String(lead.industri||'—')}</small></div></div><div><b>{item.summary||'—'}</b><small className="lead-contact">{String(lead.whatsapp||'—')}</small></div><span>{String(lead.perusahaan||lead.nama_bisnis||'—')}</span><span>{String(lead.tujuan||lead.kebutuhan||'—')}</span><span className="lead-source">{String(lead.sumber||'Input Manual Admin')}</span><div className="row-actions"><button onClick={()=>setEditing(item)} aria-label="Edit lead"><Pencil size={16}/></button><button onClick={()=>remove(item.id)} aria-label="Hapus lead"><Trash2 size={16}/></button></div></div>})}{!filtered.length&&<div className="empty">Belum ada lead. Lead dari form Marketing Kit akan tampil di sini.</div>}</div>{editing!==false&&<LeadModal item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(value=>value+1)}}/>}</section>
+}
+
 function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:string;item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){
   if(type==='solution-library')return <SolutionLibraryModal item={item} label={label} onClose={onClose} onSaved={onSaved}/>
+  if(type==='evolis-leads')return <LeadModal item={item} onClose={onClose} onSaved={onSaved}/>
   const itemData=item?.data||{}
   const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',image_url:item?.image_url||'',is_published:item?.is_published??true})
   const [marketingKit,setMarketingKit]=useState({
@@ -2572,17 +3450,19 @@ function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:
   })
   const [insight,setInsight]=useState({category:String(itemData.category||''),format:String(itemData.format||''),price:String(itemData.price??'')})
   const [tool,setTool]=useState({url:String(itemData.url||''),category:String(itemData.category||''),tagline:String(itemData.tagline||'')})
+  const [adPlacement,setAdPlacement]=useState({placement:String(itemData.placement||'top_leaderboard'),ad_size:String(itemData.ad_size||adPlacementSize(String(itemData.placement||'top_leaderboard'))),destination_url:String(itemData.destination_url||''),button_label:String(itemData.button_label||'Pelajari selengkapnya'),start_at:String(itemData.start_at||''),end_at:String(itemData.end_at||''),priority:String(itemData.priority??'0'),new_tab:itemData.new_tab!==false})
   const [viralog,setViralog]=useState({id:String(itemData.id||''),subtitle:String(itemData.subtitle||''),body:String(itemData.body||''),thumbnail:String(itemData.thumbnail||''),content_type:String(itemData.content_type||'article'),source_type:String(itemData.source_type||'internal'),category_slug:String(itemData.category_slug||''),tags:Array.isArray(itemData.tags)?itemData.tags.join(', '):String(itemData.tags||''),author_name:String(itemData.author_name||''),author_slug:String(itemData.author_slug||''),status:String(itemData.status||'published'),publish_date:String(itemData.publish_date||''),featured:Boolean(itemData.featured),sponsored:Boolean(itemData.sponsored),cta_type:String(itemData.cta_type||''),cta_label:String(itemData.cta_label||''),cta_url:String(itemData.cta_url||''),read_time_minutes:String(itemData.read_time_minutes??''),views:String(itemData.views??''),shares:String(itemData.shares??''),bookmarks:String(itemData.bookmarks??''),viral_score:String(itemData.viral_score??''),seo_score:String(itemData.seo_score??''),engagement_score:String(itemData.engagement_score??''),freshness_score:String(itemData.freshness_score??''),credibility_score:String(itemData.credibility_score??''),monetization_score:String(itemData.monetization_score??'')})
   const [additionalFields,setAdditionalFields]=useState(()=>Object.entries(itemData).map(([key,value])=>({key,value:Array.isArray(value)?value.join(', '):String(value??''),isList:Array.isArray(value)})))
   const [error,setError]=useState(''),[busy,setBusy]=useState(false)
   const updateAdditionalField=(index:number,patch:Partial<{key:string;value:string;isList:boolean}>)=>setAdditionalFields(fields=>fields.map((field,fieldIndex)=>fieldIndex===index?{...field,...patch}:field))
-  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{let data:Record<string,unknown>={};if(type==='marketing-kits'){data={...itemData,...marketingKit,slug:form.slug,download_count:marketingKit.download_count===''?0:Number(marketingKit.download_count)}}else if(type==='insights'){data={...itemData,...insight,id:form.slug,title:form.title,desc:form.summary,image:form.image_url,price:insight.price===''?0:Number(insight.price)}}else if(type==='tools'){data={...itemData,...tool,name:form.title,description:form.summary}}else if(type==='viralog-content'){const numberKeys=['read_time_minutes','views','shares','bookmarks','viral_score','seo_score','engagement_score','freshness_score','credibility_score','monetization_score'] as const;data={...itemData,...viralog,id:viralog.id||form.slug,thumbnail:viralog.thumbnail||form.image_url,tags:viralog.tags.split(',').map(tag=>tag.trim()).filter(Boolean),...Object.fromEntries(numberKeys.map(key=>[key,viralog[key]===''?0:Number(viralog[key])]))}}else{data=Object.fromEntries(additionalFields.filter(field=>field.key.trim()).map(field=>[field.key.trim(),field.isList?field.value.split(',').map(value=>value.trim()).filter(Boolean):field.value]));}await request(item?`/modules/${type}/${item.id}`:`/modules/${type}`,{method:item?'PUT':'POST',body:JSON.stringify({...form,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{let data:Record<string,unknown>={};if(type==='marketing-kits'){data={...itemData,...marketingKit,slug:form.slug,download_count:marketingKit.download_count===''?0:Number(marketingKit.download_count)}}else if(type==='insights'){data={...itemData,...insight,id:form.slug,title:form.title,desc:form.summary,image:form.image_url,price:insight.price===''?0:Number(insight.price)}}else if(type==='tools'){data={...itemData,...tool,name:form.title,description:form.summary}}else if(type==='viralog-content'){const numberKeys=['read_time_minutes','views','shares','bookmarks','viral_score','seo_score','engagement_score','freshness_score','credibility_score','monetization_score'] as const;data={...itemData,...viralog,id:viralog.id||form.slug,thumbnail:viralog.thumbnail||form.image_url,tags:viralog.tags.split(',').map(tag=>tag.trim()).filter(Boolean),...Object.fromEntries(numberKeys.map(key=>[key,viralog[key]===''?0:Number(viralog[key])]))}}else if(type==='viralog-ad-campaigns'){data={...itemData,...adPlacement,priority:adPlacement.priority===''?0:Number(adPlacement.priority)}}else{data=Object.fromEntries(additionalFields.filter(field=>field.key.trim()).map(field=>[field.key.trim(),field.isList?field.value.split(',').map(value=>value.trim()).filter(Boolean):field.value]));}await request(item?`/modules/${type}/${item.id}`:`/modules/${type}`,{method:item?'PUT':'POST',body:JSON.stringify({...form,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
   const input=(label:string,key:Exclude<keyof typeof marketingKit,'featured'>,type='text')=><label>{label}<input type={type} value={marketingKit[key]} onChange={event=>setMarketingKit({...marketingKit,[key]:event.target.value})}/></label>
   const viralogInput=(label:string,key:Exclude<keyof typeof viralog,'featured'|'sponsored'>,type='text')=><label>{label}<input type={type} value={viralog[key]} onChange={event=>setViralog({...viralog,[key]:event.target.value})}/></label>
-  const basicFields=<><label>Judul<input value={form.title} onChange={event=>setForm({...form,title:event.target.value})} required/></label><label>Slug<input value={form.slug} onChange={event=>setForm({...form,slug:event.target.value})} required/></label><label>Ringkasan<textarea rows={3} value={form.summary} onChange={event=>setForm({...form,summary:event.target.value})}/></label><label>URL gambar<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})}/></label></>
+  const basicFields=<><label>Judul<input value={form.title} onChange={event=>setForm({...form,title:event.target.value})} required/></label><label>Slug<input value={form.slug} onChange={event=>setForm({...form,slug:event.target.value})} required/></label><label>Ringkasan<textarea rows={3} value={form.summary} onChange={event=>setForm({...form,summary:event.target.value})}/></label>{type!=='viralog-ad-campaigns'&&<label>URL gambar<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})}/></label>}</>
   const publishedField=<label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>setForm({...form,is_published:event.target.checked})}/> Tampilkan di frontend</label>
-  const additionalFieldsEditor=type==='viralog-content'?<div className="viralog-form-fields"><div className="form-row">{viralogInput('ID konten','id')}{viralogInput('Subjudul','subtitle')}</div><label>Isi artikel<textarea rows={12} value={viralog.body} onChange={event=>setViralog({...viralog,body:event.target.value})}/></label><div className="form-row">{viralogInput('URL thumbnail','thumbnail','url')}{viralogInput('Tipe konten','content_type')}</div><div className="form-row">{viralogInput('Sumber konten','source_type')}{viralogInput('Slug kategori','category_slug')}</div><div className="form-row">{viralogInput('Tag (pisahkan dengan koma)','tags')}{viralogInput('Tanggal publikasi','publish_date','date')}</div><div className="form-row">{viralogInput('Nama penulis','author_name')}{viralogInput('Slug penulis','author_slug')}</div><div className="form-row">{viralogInput('Status','status')}{viralogInput('Waktu baca (menit)','read_time_minutes','number')}</div><div className="form-row">{viralogInput('Tipe CTA','cta_type')}{viralogInput('Label CTA','cta_label')}</div>{viralogInput('URL CTA','cta_url','url')}<div className="form-row"><label className="check"><input type="checkbox" checked={viralog.featured} onChange={event=>setViralog({...viralog,featured:event.target.checked})}/> Konten unggulan</label><label className="check"><input type="checkbox" checked={viralog.sponsored} onChange={event=>setViralog({...viralog,sponsored:event.target.checked})}/> Konten bersponsor</label></div><div className="viralog-metrics"><b>Metrik konten</b><div className="form-row">{viralogInput('Dilihat','views','number')}{viralogInput('Dibagikan','shares','number')}</div><div className="form-row">{viralogInput('Disimpan','bookmarks','number')}{viralogInput('Skor viral','viral_score','number')}</div><div className="form-row">{viralogInput('Skor SEO','seo_score','number')}{viralogInput('Skor engagement','engagement_score','number')}</div><div className="form-row">{viralogInput('Skor kebaruan','freshness_score','number')}{viralogInput('Skor kredibilitas','credibility_score','number')}</div>{viralogInput('Skor monetisasi','monetization_score','number')}</div></div>:<div className="additional-fields"><div className="additional-fields-head"><b>Data tambahan</b><button type="button" className="secondary" onClick={()=>setAdditionalFields([...additionalFields,{key:'',value:'',isList:false}])}><Plus size={15}/> Tambah field</button></div>{additionalFields.map((field,index)=><div className="additional-field" key={`${field.key}-${index}`}><input aria-label="Nama field" placeholder="Nama field" value={field.key} onChange={event=>updateAdditionalField(index,{key:event.target.value})}/><input aria-label="Nilai field" placeholder={field.isList?'Pisahkan item dengan koma':'Nilai'} value={field.value} onChange={event=>updateAdditionalField(index,{value:event.target.value})}/><label className="check compact"><input type="checkbox" checked={field.isList} onChange={event=>updateAdditionalField(index,{isList:event.target.checked})}/> Daftar</label><button type="button" className="icon-btn" aria-label="Hapus field" onClick={()=>setAdditionalFields(fields=>fields.filter((_,fieldIndex)=>fieldIndex!==index))}><Trash2 size={15}/></button></div>)}{!additionalFields.length&&<p className="subtle">Belum ada data tambahan.</p>}</div>
-  return <div className="modal-backdrop"><form className={`modal ${type==='marketing-kits'||type==='insights'?'modal-lg':''}`} onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT KONTEN':'KONTEN BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div>{type==='marketing-kits'?<div className="modal-scroll-area">{basicFields}<div className="form-row">{input('Kategori','kategori')}{input('Subkategori','subkategori')}</div><div className="form-row">{input('Format file','format_file')}{input('Ukuran file','ukuran_file')}</div>{input('URL file','file_url','url')}{input('URL thumbnail','thumbnail','url')}{input('URL preview','preview_url','url')}<div className="form-row">{input('Tipe akses','akses_tipe')}{input('Badge','badge')}</div><div className="form-row">{input('Industri','industri')}{input('Bahasa','bahasa')}</div><div className="form-row">{input('Produk terkait','produk_terkait')}{input('Layanan terkait','layanan_terkait')}</div>{input('Total download','download_count','number')}<label className="check"><input type="checkbox" checked={marketingKit.featured} onChange={event=>setMarketingKit({...marketingKit,featured:event.target.checked})}/> Tampilkan sebagai unggulan</label>{publishedField}</div>:type==='insights'?<div className="modal-scroll-area">{basicFields}<div className="form-row"><label>Kategori<input value={insight.category} onChange={event=>setInsight({...insight,category:event.target.value})}/></label><label>Format<input value={insight.format} onChange={event=>setInsight({...insight,format:event.target.value})}/></label></div><label>Harga<input type="number" min="0" value={insight.price} onChange={event=>setInsight({...insight,price:event.target.value})}/></label>{publishedField}</div>:type==='tools'?<>{basicFields}<label>URL Tools<input type="url" value={tool.url} onChange={event=>setTool({...tool,url:event.target.value})}/></label><div className="form-row"><label>Kategori<input value={tool.category} onChange={event=>setTool({...tool,category:event.target.value})}/></label><label>Tagline<input value={tool.tagline} onChange={event=>setTool({...tool,tagline:event.target.value})}/></label></div>{publishedField}</>:type==='solution-library-categories'?<>{basicFields}{publishedField}</>:<div className="modal-scroll-area">{basicFields}{additionalFieldsEditor}{publishedField}</div>}{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan konten'}</button></div></form></div>
+  const adPlacementEditor=<div className="ad-placement-fields"><div className="form-row"><label>Posisi iklan<select className="select-input" value={adPlacement.placement} onChange={event=>setAdPlacement({...adPlacement,placement:event.target.value,ad_size:adPlacementSize(event.target.value)})}>{AD_PLACEMENTS.map((placement)=><option key={placement.value} value={placement.value}>{placement.label}</option>)}</select></label><label>Ukuran tampil<input value={adPlacement.ad_size} readOnly/></label><label>Prioritas<input type="number" min="0" value={adPlacement.priority} onChange={event=>setAdPlacement({...adPlacement,priority:event.target.value})}/></label></div><label>Link banner<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})} placeholder="https://..."/></label><label>URL tujuan<input type="url" value={adPlacement.destination_url} onChange={event=>setAdPlacement({...adPlacement,destination_url:event.target.value})} placeholder="https://..."/></label><div className="form-row"><label>Label tombol<input value={adPlacement.button_label} onChange={event=>setAdPlacement({...adPlacement,button_label:event.target.value})}/></label><label className="check"><input type="checkbox" checked={adPlacement.new_tab} onChange={event=>setAdPlacement({...adPlacement,new_tab:event.target.checked})}/> Buka di tab baru</label></div><div className="form-row"><label>Mulai tayang<input type="date" value={adPlacement.start_at} onChange={event=>setAdPlacement({...adPlacement,start_at:event.target.value})}/></label><label>Selesai tayang<input type="date" value={adPlacement.end_at} onChange={event=>setAdPlacement({...adPlacement,end_at:event.target.value})}/></label></div></div>
+  const additionalFieldsEditor=type==='viralog-content'?<div className="viralog-form-fields"><div className="form-row">{viralogInput('ID konten','id')}{viralogInput('Subjudul','subtitle')}</div><label>Isi artikel<textarea rows={12} value={viralog.body} onChange={event=>setViralog({...viralog,body:event.target.value})}/></label><div className="form-row">{viralogInput('URL thumbnail','thumbnail','url')}{viralogInput('Tipe konten','content_type')}</div><div className="form-row">{viralogInput('Sumber konten','source_type')}{viralogInput('Slug kategori','category_slug')}</div><div className="form-row">{viralogInput('Tag (pisahkan dengan koma)','tags')}{viralogInput('Tanggal publikasi','publish_date','date')}</div><div className="form-row">{viralogInput('Nama penulis','author_name')}{viralogInput('Slug penulis','author_slug')}</div><div className="form-row">{viralogInput('Status','status')}{viralogInput('Waktu baca (menit)','read_time_minutes','number')}</div><div className="form-row">{viralogInput('Tipe CTA','cta_type')}{viralogInput('Label CTA','cta_label')}</div>{viralogInput('URL CTA','cta_url','url')}<div className="form-row"><label className="check"><input type="checkbox" checked={viralog.featured} onChange={event=>setViralog({...viralog,featured:event.target.checked})}/> Konten unggulan</label><label className="check"><input type="checkbox" checked={viralog.sponsored} onChange={event=>setViralog({...viralog,sponsored:event.target.checked})}/> Konten bersponsor</label></div><div className="viralog-metrics"><b>Metrik konten</b><div className="form-row">{viralogInput('Dilihat','views','number')}{viralogInput('Dibagikan','shares','number')}</div><div className="form-row">{viralogInput('Disimpan','bookmarks','number')}{viralogInput('Skor viral','viral_score','number')}</div><div className="form-row">{viralogInput('Skor SEO','seo_score','number')}{viralogInput('Skor engagement','engagement_score','number')}</div><div className="form-row">{viralogInput('Skor kebaruan','freshness_score','number')}{viralogInput('Skor kredibilitas','credibility_score','number')}</div>{viralogInput('Skor monetisasi','monetization_score','number')}</div></div>:type==='viralog-ad-campaigns'?adPlacementEditor:<div className="additional-fields"><div className="additional-fields-head"><b>Data tambahan</b><button type="button" className="secondary" onClick={()=>setAdditionalFields([...additionalFields,{key:'',value:'',isList:false}])}><Plus size={15}/> Tambah field</button></div>{additionalFields.map((field,index)=><div className="additional-field" key={`${field.key}-${index}`}><input aria-label="Nama field" placeholder="Nama field" value={field.key} onChange={event=>updateAdditionalField(index,{key:event.target.value})}/><input aria-label="Nilai field" placeholder={field.isList?'Pisahkan item dengan koma':'Nilai'} value={field.value} onChange={event=>updateAdditionalField(index,{value:event.target.value})}/><label className="check compact"><input type="checkbox" checked={field.isList} onChange={event=>updateAdditionalField(index,{isList:event.target.checked})}/> Daftar</label><button type="button" className="icon-btn" aria-label="Hapus field" onClick={()=>setAdditionalFields(fields=>fields.filter((_,fieldIndex)=>fieldIndex!==index))}><Trash2 size={15}/></button></div>)}{!additionalFields.length&&<p className="subtle">Belum ada data tambahan.</p>}</div>
+  return <div className="modal-backdrop"><form className={`modal ${type==='marketing-kits'||type==='insights'||type==='viralog-ad-campaigns'?'modal-lg':''}`} onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT KONTEN':'KONTEN BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div>{type==='marketing-kits'?<div className="modal-scroll-area">{basicFields}<div className="form-row">{input('Kategori','kategori')}{input('Subkategori','subkategori')}</div><div className="form-row">{input('Format file','format_file')}{input('Ukuran file','ukuran_file')}</div>{input('URL file','file_url','url')}{input('URL thumbnail','thumbnail','url')}{input('URL preview','preview_url','url')}<div className="form-row">{input('Tipe akses','akses_tipe')}{input('Badge','badge')}</div><div className="form-row">{input('Industri','industri')}{input('Bahasa','bahasa')}</div><div className="form-row">{input('Produk terkait','produk_terkait')}{input('Layanan terkait','layanan_terkait')}</div>{input('Total download','download_count','number')}<label className="check"><input type="checkbox" checked={marketingKit.featured} onChange={event=>setMarketingKit({...marketingKit,featured:event.target.checked})}/> Tampilkan sebagai unggulan</label>{publishedField}</div>:type==='insights'?<div className="modal-scroll-area">{basicFields}<div className="form-row"><label>Kategori<input value={insight.category} onChange={event=>setInsight({...insight,category:event.target.value})}/></label><label>Format<input value={insight.format} onChange={event=>setInsight({...insight,format:event.target.value})}/></label></div><label>Harga<input type="number" min="0" value={insight.price} onChange={event=>setInsight({...insight,price:event.target.value})}/></label>{publishedField}</div>:type==='tools'?<>{basicFields}<label>URL Tools<input type="url" value={tool.url} onChange={event=>setTool({...tool,url:event.target.value})}/></label><div className="form-row"><label>Kategori<input value={tool.category} onChange={event=>setTool({...tool,category:event.target.value})}/></label><label>Tagline<input value={tool.tagline} onChange={event=>setTool({...tool,tagline:event.target.value})}/></label></div>{publishedField}</>:type==='solution-library-categories'?<>{basicFields}{publishedField}</>:<div className="modal-scroll-area">{basicFields}{additionalFieldsEditor}{publishedField}</div>}{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':type==='viralog-ad-campaigns'?'Simpan placement':'Simpan konten'}</button></div></form></div>
 }
 
 function SolutionLibraryModal({item,label,onClose,onSaved}:{item:ContentItem|null;label:string;onClose:()=>void;onSaved:()=>void}){

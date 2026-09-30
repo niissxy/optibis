@@ -58,13 +58,13 @@ export default function GrowthTeamHighlight() {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <div className="bg-gradient-to-br from-magenta-50 to-amethyst-50 rounded-2xl p-8 border border-magenta/10">
-              <h3 className="text-lg font-bold text-navy mb-6">{tr("Rata-rata hasil klien setelah 3 bulan")}</h3>
+            <div className="bg-gradient-to-br from-magenta-50 to-amethyst-50 dark:from-[#2b1737] dark:to-[#16294a] rounded-2xl p-8 border border-magenta/10 dark:border-magenta/30">
+              <h3 className="text-lg font-bold text-navy dark:text-white mb-6">{tr("Rata-rata hasil klien setelah 3 bulan")}</h3>
               <div className="grid grid-cols-3 gap-4">
                 {STATS.map((s) => (
                   <div key={s.label} className="text-center">
                     <div className="text-3xl font-extrabold text-magenta">{s.value}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{tr(s.label)}</div>
+                    <div className="text-xs text-muted-foreground dark:text-white/70 mt-1">{tr(s.label)}</div>
                   </div>
                 ))}
               </div>

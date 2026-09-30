@@ -6,6 +6,7 @@ import PillarLayout from "@/components/optibis/PillarLayout";
 import ViralogContentCard from "@/components/viralog/ViralogContentCard";
 import ViralogAdSlot from "@/components/viralog/ViralogAdSlot";
 import ViralogNewsletter from "@/components/viralog/ViralogNewsletter";
+import { useViralogContent } from "@/hooks/useViralogContent";
 import {
   getContentByCategory,
   getContentByTag,
@@ -19,6 +20,7 @@ import {
 export default function ViralogCategory() {
   const { slug } = useParams();
   const location = useLocation();
+  const content = useViralogContent();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -34,22 +36,22 @@ export default function ViralogCategory() {
   let author = null;
 
   if (isTag) {
-    items = getContentByTag(slug);
+    items = getContentByTag(slug, 20, content);
     title = `#${slug}`;
     subtitle = `Konten dengan tag "${slug}"`;
   } else if (isAuthor) {
     author = getAuthorBySlug(slug);
-    items = getContentByAuthor(slug);
+    items = getContentByAuthor(slug, 20, content);
     title = author?.name || "Author";
     subtitle = author?.bio || "Konten dari penulis ini";
   } else {
     category = getCategoryBySlug(slug);
-    items = getContentByCategory(slug);
+    items = getContentByCategory(slug, 20, content);
     title = category?.name || "Kategori";
     subtitle = category ? `Semua konten dalam kategori ${category.name}` : "Semua konten";
   }
 
-  const trendingSidebar = getTrendingContent(5);
+  const trendingSidebar = getTrendingContent(5, content);
 
   return (
     <PillarLayout>

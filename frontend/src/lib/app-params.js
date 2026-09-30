@@ -1,6 +1,7 @@
 const isNode = typeof window === 'undefined';
 const windowObj = isNode ? { localStorage: new Map() } : window;
 const storage = windowObj.localStorage;
+const isLocalDevelopment = !isNode && ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
 const toSnakeCase = (str) => {
 	return str.replace(/([A-Z])/g, '_$1').toLowerCase();
@@ -35,6 +36,16 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 }
 
 const getAppParams = () => {
+	if (isLocalDevelopment) {
+		return {
+			appId: null,
+			token: null,
+			fromUrl: window.location.href,
+			functionsVersion: null,
+			appBaseUrl: null,
+		}
+	}
+
 	if (getAppParamValue("clear_access_token") === 'true') {
 		storage.removeItem('base44_access_token');
 		storage.removeItem('token');

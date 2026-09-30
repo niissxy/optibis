@@ -19,6 +19,10 @@ class ImportViralogRss extends Command
         ['slug' => 'rss-dailyseo-id', 'title' => 'DailySEO ID', 'url' => 'https://www.dailyseo.id/feed/'],
         ['slug' => 'rss-niagahoster-blog', 'title' => 'Niagahoster Blog', 'url' => 'https://www.niagahoster.co.id/blog/feed/'],
         ['slug' => 'rss-dewaweb-blog', 'title' => 'Dewaweb Blog', 'url' => 'https://www.dewaweb.com/blog/feed/'],
+        ['slug' => 'rss-dailysocial', 'title' => 'DailySocial', 'url' => 'https://dailysocial.id/feed/'],
+        ['slug' => 'rss-idcloudhost-blog', 'title' => 'IDCloudHost Blog', 'url' => 'https://idcloudhost.com/blog/feed/'],
+        ['slug' => 'rss-jagoan-hosting-blog', 'title' => 'Jagoan Hosting Blog', 'url' => 'https://www.jagoanhosting.com/blog/feed/'],
+        ['slug' => 'rss-qwords-blog', 'title' => 'Qwords Blog', 'url' => 'https://qwords.com/blog/feed/'],
     ];
 
     private const KEYWORDS = [
@@ -43,7 +47,7 @@ class ImportViralogRss extends Command
                     break;
                 }
 
-                if (!$this->isRelevant($article, $source) || $this->exists($article['url'])) {
+                if (!$this->isRelevant($article, $source) || !$this->isIndonesian($article) || $this->exists($article['url'])) {
                     continue;
                 }
 
@@ -167,6 +171,14 @@ class ImportViralogRss extends Command
             }
         }
         return false;
+    }
+
+    private function isIndonesian(array $article): bool
+    {
+        $text = strip_tags("{$article['title']} {$article['summary']}");
+        $pattern = '/\b(the|for|with|from|into|after|before|funding|backed|subscribers|lands|files|global|venture|round|across|we[\'’]?re)\b/iu';
+
+        return preg_match_all($pattern, $text) < 2;
     }
 
     private function exists(string $url): bool

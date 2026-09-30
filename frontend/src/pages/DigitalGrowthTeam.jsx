@@ -108,7 +108,7 @@ export default function DigitalGrowthTeam() {
       </section>
 
       {/* Portfolio */}
-      <PillarPortfolio pillar="Digital Growth Team" color="navy" />
+      <PillarPortfolio pillar="Digital Growth Team" color="navy" carousel />
 
     </PillarLayout>
   );

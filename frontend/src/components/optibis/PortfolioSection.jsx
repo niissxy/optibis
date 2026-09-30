@@ -1,27 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useSafeNav } from "@/hooks/useSafeNav";
-import { getAllPortfolios } from "@/data/portfolio";
+import { usePortfolios } from "@/hooks/usePortfolios";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
 
-const FILTERS = ["Semua", "Digital Asset", "Website", "Growth Team"];
-
-const PORTFOLIO_ITEMS = getAllPortfolios().map((p) => ({
-  slug: p.slug, name: p.name, industry: p.industry, pilar: p.pilar, desc: p.ringkasan, thumbnail: p.thumbnail,
-}));
+const FILTERS = ["Semua", "Digital Asset", "Website", "Digital Growth Team"];
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80";
 
 export default function PortfolioSection() {
   const [activeFilter, setActiveFilter] = useState("Semua");
+  const { portfolios } = usePortfolios();
   const nav = useSafeNav();
   const { tr } = useLanguage();
 
-  const filtered = activeFilter === "Semua"
-    ? PORTFOLIO_ITEMS
-    : PORTFOLIO_ITEMS.filter((p) => p.pilar.includes(activeFilter));
+  const filtered = useMemo(() => {
+    if (activeFilter === "Semua") return portfolios;
+    return portfolios.filter((p) => {
+      const pilarList = Array.isArray(p.pilar) ? p.pilar : [];
+      return pilarList.includes(activeFilter) || (activeFilter === "Digital Growth Team" && pilarList.includes("Growth Team"));
+    });
+  }, [portfolios, activeFilter]);
 
   return (
     <section className="py-14 lg:py-20 bg-white" id="portofolio">
@@ -47,24 +49,32 @@ export default function PortfolioSection() {
 
         {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((p, i) => (
+          {filtered.slice(0, 6).map((p) => (
             <Link
               key={p.slug}
               to={`/portofolio/${p.slug}`}
-              className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all"
+              className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all flex flex-col"
             >
-              <div className="h-44 overflow-hidden relative">
-                <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div className="h-44 overflow-hidden relative bg-gray-100">
+                <img
+                  src={p.thumbnail || FALLBACK_IMG}
+                  alt={p.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_IMG;
+                  }}
+                />
                 <div className="absolute inset-0 bg-navy/0 group-hover:bg-navy/20 transition-colors duration-300" />
               </div>
-              <div className="p-5">
+              <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{p.industry}</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{p.industry || p.categoryLabel}</span>
                 </div>
                 <h3 className="text-base font-bold text-navy mb-1 group-hover:text-magenta transition-colors">{p.name}</h3>
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{tr(p.desc)}</p>
-                <div className="flex flex-wrap gap-1">
-                  {p.pilar.map((tag) => (
+                <p className="text-xs text-muted-foreground mb-4 line-clamp-2">{tr(p.desc || p.ringkasan)}</p>
+                <div className="mt-auto flex flex-wrap gap-1">
+                  {(p.pilar || []).map((tag) => (
                     <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-50 text-navy-300 border border-gray-100">
                       {tag}
                     </span>

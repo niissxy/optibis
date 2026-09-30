@@ -1,9 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Play, Eye, Clock, TrendingUp, Bookmark, Share2, BadgeCheck, Sparkles } from "lucide-react";
+import { Play, Eye, Clock, TrendingUp, Bookmark, Share2, BadgeCheck, Sparkles, Link2 } from "lucide-react";
 import { getCategoryBySlug, getAuthorBySlug, formatViews } from "@/data/viralog";
 import { useLanguage } from "@/lib/LanguageContext";
+import { VIRALOG_FALLBACK_THUMBNAIL } from "@/hooks/useViralogContent";
 
 const TYPE_LABELS = {
   article: "Artikel",
@@ -30,12 +31,17 @@ export default function ViralogContentCard({ content, variant = "compact", index
   const cat = getCategoryBySlug(content.category_slug);
   const author = getAuthorBySlug(content.author_slug);
   const typeLabel = TYPE_LABELS[content.content_type] || "Artikel";
+  const originalSourceUrl = content.original_url || content.source_url || content.url;
   const publishDate = new Date(content.publish_date).toLocaleDateString(language === "en" ? "en-US" : "id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
   const isVideo = content.content_type === "short_video" || content.content_type === "long_video" || content.content_type === "podcast";
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = VIRALOG_FALLBACK_THUMBNAIL;
+  };
 
   // ---- FEATURED: large, image-dominant ----
   if (variant === "featured") {
@@ -48,9 +54,10 @@ export default function ViralogContentCard({ content, variant = "compact", index
         <Link to={`/content/${content.slug}`} className="group block">
           <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden bg-navy-100">
             <img
-              src={content.thumbnail}
+              src={content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL}
               alt={content.title}
               loading="lazy"
+              onError={handleImageError}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent" />
@@ -100,7 +107,7 @@ export default function ViralogContentCard({ content, variant = "compact", index
       >
         <Link to={`/content/${content.slug}`} className="group flex gap-3 items-start">
           <div className="relative w-28 h-20 rounded-lg overflow-hidden shrink-0 bg-navy-100">
-            <img src={content.thumbnail} alt={content.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            <img src={content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL} alt={content.title} loading="lazy" onError={handleImageError} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
             {isVideo && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center">
@@ -139,7 +146,7 @@ export default function ViralogContentCard({ content, variant = "compact", index
       >
         <Link to={`/content/${content.slug}`} className="group block">
           <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-navy-100">
-            <img src={content.thumbnail} alt={content.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            <img src={content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL} alt={content.title} loading="lazy" onError={handleImageError} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
             <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 group-hover:bg-magenta transition-all duration-300">
@@ -194,10 +201,12 @@ export default function ViralogContentCard({ content, variant = "compact", index
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
+      className="h-full"
     >
-      <Link to={`/content/${content.slug}`} className="group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1">
+      <div className="group flex h-full min-h-[360px] flex-col bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1">
+      <Link to={`/content/${content.slug}`} className="flex flex-1 flex-col">
         <div className="relative h-44 overflow-hidden">
-          <img src={content.thumbnail} alt={content.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          <img src={content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL} alt={content.title} loading="lazy" onError={handleImageError} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           <div className="absolute inset-0 bg-gradient-to-t from-navy/30 to-transparent" />
           <div className="absolute top-3 left-3 flex items-center gap-1.5">
             {cat && (
@@ -219,7 +228,7 @@ export default function ViralogContentCard({ content, variant = "compact", index
             </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="flex flex-1 flex-col p-4">
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-2">
             <span>{tr(typeLabel)}</span>
             <span>•</span>
@@ -227,11 +236,11 @@ export default function ViralogContentCard({ content, variant = "compact", index
             <span>•</span>
             <span>{content.read_time_minutes} min</span>
           </div>
-          <h3 className="text-base font-bold text-navy leading-snug line-clamp-2 mb-2 group-hover:text-magenta transition-colors">
+          <h3 className="min-h-[2.5rem] text-base font-bold text-navy leading-snug line-clamp-2 mb-2 group-hover:text-magenta transition-colors">
             {tr(content.title)}
           </h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{tr(content.summary)}</p>
-          <div className="flex items-center justify-between">
+          <p className="min-h-[2rem] text-xs text-muted-foreground line-clamp-2 mb-3">{tr(content.summary)}</p>
+          <div className="mt-auto flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               {author?.avatar ? (
                 <img src={author.avatar} alt={content.author_name} className="w-5 h-5 rounded-full object-cover" />
@@ -251,6 +260,12 @@ export default function ViralogContentCard({ content, variant = "compact", index
           </div>
         </div>
       </Link>
+      {originalSourceUrl && (
+        <a href={originalSourceUrl} target="_blank" rel="noopener noreferrer" className="mx-4 mb-4 inline-flex w-fit items-center justify-center gap-1 rounded-md border border-navy/15 bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-navy transition-colors hover:border-magenta hover:bg-magenta hover:text-white">
+          <Link2 className="w-3 h-3" /> Baca sumber asli
+        </a>
+      )}
+      </div>
     </motion.div>
   );
 }

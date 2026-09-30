@@ -4,7 +4,7 @@ import { X, Download, Lock, LogIn, UserPlus, CheckCircle2, Mail, MessageCircle, 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { base44 } from "@/api/base44Client";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 export default function MarketingKitDownloadGate({ item, onClose }) {
   const { isAuthenticated } = useAuth();
@@ -25,21 +25,8 @@ export default function MarketingKitDownloadGate({ item, onClose }) {
     if (!form.nama || !form.email || !form.whatsapp || !form.consent) return;
     setLoading(true);
     try {
-      await base44.entities.Lead.create({
-        nama: form.nama,
-        email: form.email,
-        whatsapp: form.whatsapp,
-        nama_bisnis: form.perusahaan,
-        city: form.kota,
-        industri: form.industri,
-        kebutuhan: form.tujuan,
-        sumber: "Marketing Kit Download",
-        product_interest: item?.produk_terkait || "",
-        consent: true,
-        lead_status: "new",
-        status: "Lead Baru",
-        notes: `Download: ${item?.nama_asset}`,
-      });
+      const response = await fetch(`${API}/leads`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, asset: item?.nama_asset || item?.title || "Marketing Kit" }) });
+      if (!response.ok) throw new Error("Lead tidak dapat disimpan");
       setStep("success");
     } catch (e) {
       setStep("success");

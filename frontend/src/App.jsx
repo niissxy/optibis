@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/toaster"
+import { useEffect } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -16,6 +17,7 @@ import Tentang from '@/pages/Tentang';
 import DigitalAsset from '@/pages/DigitalAsset';
 import WebsiteService from '@/pages/WebsiteService';
 import DigitalGrowthTeam from '@/pages/DigitalGrowthTeam';
+import DynamicPillar from '@/pages/DynamicPillar';
 import PackageDetail from '@/pages/PackageDetail';
 import ServiceDetail from '@/pages/ServiceDetail';
 import PortofolioPage from '@/pages/PortofolioPage';
@@ -48,6 +50,36 @@ import ViralogSearch from '@/pages/viralog/ViralogSearch';
 import { ThemeProvider } from 'next-themes';
 import { LanguageProvider } from '@/lib/LanguageContext';
 
+const ANALYTICS_API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+
+function VisitorTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/app')) return;
+
+    const storageKey = 'optibis_visitor_id';
+    let visitorId = localStorage.getItem(storageKey);
+    if (!visitorId) {
+      visitorId = crypto.randomUUID();
+      localStorage.setItem(storageKey, visitorId);
+    }
+
+    let referrer = '';
+    try { referrer = document.referrer ? new URL(document.referrer).hostname : ''; } catch { referrer = ''; }
+    const device = window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop';
+
+    fetch(`${ANALYTICS_API}/analytics/visits`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitor_id: visitorId, path: `${location.pathname}${location.search}`, referrer, device }),
+      keepalive: true,
+    }).catch(() => {});
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -77,6 +109,7 @@ const AuthenticatedApp = () => {
       <Route path="/digital-asset" element={<DigitalAsset />} />
       <Route path="/website" element={<WebsiteService />} />
       <Route path="/digital-growth-team" element={<DigitalGrowthTeam />} />
+      <Route path="/pilar/:slug" element={<DynamicPillar />} />
       <Route path="/paket/:pillarSlug/:packageSlug" element={<PackageDetail />} />
       <Route path="/layanan/:pillarSlug/:serviceSlug" element={<ServiceDetail />} />
       <Route path="/portofolio" element={<PortofolioPage />} />
@@ -115,6 +148,7 @@ const AuthenticatedApp = () => {
           <Route path="/app/settings" element={<EvolisSettings />} />
         </Route>
       </Route>
+      <Route path="/:slug" element={<DynamicPillar />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -127,6 +161,7 @@ function App() {
         <AuthProvider>
           <QueryClientProvider client={queryClientInstance}>
             <Router>
+              <VisitorTracker />
               <ScrollToTop />
               <AuthenticatedApp />
             </Router>

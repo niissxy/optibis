@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -6,6 +6,8 @@ import { getAllPortfolios } from "@/data/portfolio";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 const COLOR_THEMES = {
   magenta: {
@@ -70,29 +72,53 @@ function PortfolioCard({ project, index, theme, tr }) {
   );
 }
 
-export default function PillarPortfolio({ pillar, color = "magenta", carousel = false }) {
+export default function PillarPortfolio({ pillar, color = "magenta", carousel = true }) {
   const { language, tr } = useLanguage();
   const theme = COLOR_THEMES[color] || COLOR_THEMES.magenta;
-  const projects = getAllPortfolios().filter((p) => p.pilar.includes(pillar));
+  const [savedProjects, setSavedProjects] = useState(null);
+  const staticProjects = getAllPortfolios();
+
+  useEffect(() => {
+    fetch(`${API}/portfolios`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => setSavedProjects(Array.isArray(items) ? items : []))
+      .catch(() => {});
+  }, []);
+
+  const remoteProjects = (savedProjects || []).map((item) => {
+    const fallback = staticProjects.find((project) => project.slug === item.slug || project.name === item.name);
+    return {
+      ...fallback,
+      ...item,
+      slug: item.slug || fallback?.slug || `portfolio-${item.id}`,
+      industry: item.category || fallback?.industry || "Proyek",
+      pilar: item.pilar?.length ? item.pilar : fallback?.pilar || [],
+      products: item.products?.length ? item.products : fallback?.products || [],
+      ringkasan: item.description || fallback?.ringkasan || "",
+      thumbnail: item.image_url || fallback?.thumbnail || "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80",
+    };
+  });
+  const savedNames = new Set(remoteProjects.map((project) => project.name));
+  const projects = [...remoteProjects, ...staticProjects.filter((project) => !savedNames.has(project.name))].filter((project) => project.pilar.includes(pillar));
 
   if (projects.length === 0) return null;
 
   return (
-    <section className="py-12 lg:py-20 bg-slate-50/50" id="portofolio">
+    <section className="py-10 sm:py-12 lg:py-20 bg-slate-50/50" id="portofolio">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading eyebrow="Portofolio Pilar Ini" title={<>{tr("Proyek")} {pillar}</>} description={language === "en" ? `See our work for clients in ${pillar}.` : `Lihat hasil kerja kami untuk klien di bidang ${pillar.toLowerCase()}.`} className="mb-12" />
+        <SectionHeading eyebrow="Portofolio Pilar Ini" title={<>{tr("Proyek")} {pillar}</>} description={language === "en" ? `See our work for clients in ${pillar}.` : `Lihat hasil kerja kami untuk klien di bidang ${pillar.toLowerCase()}.`} className="mb-8 sm:mb-12" />
 
         {carousel ? (
           <Carousel opts={{ align: "start", loop: true }} className="mx-auto w-full">
-            <CarouselContent className="-ml-5 pb-4">
+            <CarouselContent className="-ml-4 pb-4">
               {projects.map((project, index) => (
-                <CarouselItem key={project.slug} className="pl-5 sm:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={project.slug} className="basis-[88%] pl-4 sm:basis-1/2 lg:basis-1/3">
                   <PortfolioCard project={project} index={index} theme={theme} tr={tr} />
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-3 h-10 w-10 border-magenta bg-magenta text-white shadow-lg hover:bg-magenta-500 hover:text-white disabled:hidden lg:-left-5" />
-            <CarouselNext className="-right-3 h-10 w-10 border-magenta bg-magenta text-white shadow-lg hover:bg-magenta-500 hover:text-white disabled:hidden lg:-right-5" />
+            <CarouselPrevious className="-left-3 hidden h-10 w-10 border-magenta bg-magenta text-white shadow-lg hover:bg-magenta-500 hover:text-white disabled:hidden sm:flex lg:-left-5" />
+            <CarouselNext className="-right-3 hidden h-10 w-10 border-magenta bg-magenta text-white shadow-lg hover:bg-magenta-500 hover:text-white disabled:hidden sm:flex lg:-right-5" />
           </Carousel>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

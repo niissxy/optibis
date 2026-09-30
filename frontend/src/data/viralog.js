@@ -795,72 +795,72 @@ Konsistensi rusak ketika bisnis tumbuh dan semakin banyak orang terlibat. Solusi
 
 // ============ HELPER FUNCTIONS ============
 
-export function getContentBySlug(slug) {
-  return VIRALOG_CONTENT.find((c) => c.slug === slug);
+export function getContentBySlug(slug, content = VIRALOG_CONTENT) {
+  return content.find((c) => c.slug === slug);
 }
 
-export function getTrendingContent(limit = 8) {
-  return [...VIRALOG_CONTENT]
+export function getTrendingContent(limit = 8, content = VIRALOG_CONTENT) {
+  return [...content]
     .filter((c) => c.status === "published")
     .sort((a, b) => b.viral_score - a.viral_score)
     .slice(0, limit);
 }
 
-export function getLatestContent(limit = 8) {
-  return [...VIRALOG_CONTENT]
+export function getLatestContent(limit = 8, content = VIRALOG_CONTENT) {
+  return [...content]
     .filter((c) => c.status === "published")
     .sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date))
     .slice(0, limit);
 }
 
-export function getFeaturedContent(limit = 1) {
-  return VIRALOG_CONTENT.filter((c) => c.featured && c.status === "published").slice(0, limit);
+export function getFeaturedContent(limit = 1, content = VIRALOG_CONTENT) {
+  return content.filter((c) => c.featured && c.status === "published").slice(0, limit);
 }
 
-export function getContentByCategory(categorySlug, limit = 20) {
-  return VIRALOG_CONTENT
+export function getContentByCategory(categorySlug, limit = 20, content = VIRALOG_CONTENT) {
+  return content
     .filter((c) => c.category_slug === categorySlug && c.status === "published")
     .slice(0, limit);
 }
 
-export function getShortVideos(limit = 6) {
-  return VIRALOG_CONTENT
+export function getShortVideos(limit = 6, content = VIRALOG_CONTENT) {
+  return content
     .filter((c) => c.content_type === "short_video" && c.status === "published")
     .slice(0, limit);
 }
 
-export function getLongVideos(limit = 4) {
-  return VIRALOG_CONTENT
+export function getLongVideos(limit = 4, content = VIRALOG_CONTENT) {
+  return content
     .filter((c) => (c.content_type === "long_video" || c.content_type === "podcast") && c.status === "published")
     .slice(0, limit);
 }
 
-export function getSponsoredContent(limit = 3) {
-  return VIRALOG_CONTENT
+export function getSponsoredContent(limit = 3, content = VIRALOG_CONTENT) {
+  return content
     .filter((c) => c.sponsored && c.status === "published")
     .slice(0, limit);
 }
 
-export function getEditorsPick(limit = 4) {
-  return [...VIRALOG_CONTENT]
+export function getEditorsPick(limit = 4, content = VIRALOG_CONTENT) {
+  return [...content]
     .filter((c) => c.status === "published")
     .sort((a, b) => b.bookmarks - a.bookmarks)
     .slice(0, limit);
 }
 
-export function getRelatedContent(slug, limit = 4) {
-  const current = getContentBySlug(slug);
+export function getRelatedContent(slug, limit = 4, content = VIRALOG_CONTENT) {
+  const current = getContentBySlug(slug, content);
   if (!current) return [];
-  return VIRALOG_CONTENT
+  return content
     .filter((c) => c.slug !== slug && c.status === "published")
     .filter((c) => c.category_slug === current.category_slug || c.tags.some((t) => current.tags.includes(t)))
     .slice(0, limit);
 }
 
-export function searchContent(query) {
+export function searchContent(query, content = VIRALOG_CONTENT) {
   if (!query || query.trim().length < 2) return [];
   const q = query.toLowerCase();
-  return VIRALOG_CONTENT.filter((c) =>
+  return content.filter((c) =>
     c.status === "published" &&
     (c.title.toLowerCase().includes(q) ||
       c.summary.toLowerCase().includes(q) ||
@@ -877,14 +877,14 @@ export function getAuthorBySlug(slug) {
   return VIRALOG_AUTHORS.find((a) => a.slug === slug);
 }
 
-export function getContentByAuthor(authorSlug, limit = 20) {
-  return VIRALOG_CONTENT
+export function getContentByAuthor(authorSlug, limit = 20, content = VIRALOG_CONTENT) {
+  return content
     .filter((c) => c.author_slug === authorSlug && c.status === "published")
     .slice(0, limit);
 }
 
-export function getContentByTag(tag, limit = 20) {
-  return VIRALOG_CONTENT
+export function getContentByTag(tag, limit = 20, content = VIRALOG_CONTENT) {
+  return content
     .filter((c) => c.tags.includes(tag) && c.status === "published")
     .slice(0, limit);
 }

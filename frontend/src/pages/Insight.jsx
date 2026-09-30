@@ -19,6 +19,7 @@ const TABS = [
 export default function Insight() {
   const nav = useSafeNav();
   const [activeTab, setActiveTab] = useState("ebook");
+  const openWhatsApp = (action, item) => window.open(`https://wa.me/6287772577020?text=${encodeURIComponent(`Halo Optibis, saya ingin ${action}: ${item.title}.`)}`, "_blank", "noopener,noreferrer");
 
   return (
     <PillarLayout>
@@ -130,7 +131,7 @@ export default function Insight() {
                       <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{ebook.desc}</p>
                       <div className="flex items-center justify-between">
                         <div className="text-xl font-extrabold text-navy">{formatRupiah(ebook.price)}</div>
-                        <Button className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 group">
+                        <Button onClick={() => openWhatsApp("membeli ebook", ebook)} className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 group">
                           <Download className="w-4 h-4 mr-1" /> Beli
                         </Button>
                       </div>
@@ -182,7 +183,7 @@ export default function Insight() {
                         </ul>
                         <div className="flex items-center justify-between">
                           <div className="text-xl font-extrabold text-navy">{formatRupiah(training.price)}</div>
-                          <Button className="bg-amethyst hover:bg-amethyst-600 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                          <Button onClick={() => openWhatsApp("mendaftar pelatihan", training)} className="bg-amethyst hover:bg-amethyst-600 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
                             Daftar <ArrowRight className="w-4 h-4 ml-1" />
                           </Button>
                         </div>
@@ -232,7 +233,7 @@ export default function Insight() {
                         ))}
                       </ul>
                       <div className="text-xl font-extrabold text-navy mb-3">{formatRupiah(cons.price)}</div>
-                      <Button className="w-full bg-navy hover:bg-navy-400 text-white rounded-full h-9 text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-95">
+                      <Button onClick={() => openWhatsApp("booking sesi konsultasi", cons)} className="w-full bg-navy hover:bg-navy-400 text-white rounded-full h-9 text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-95">
                         Booking Sesi <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </motion.div>
@@ -272,7 +273,7 @@ export default function Insight() {
                       <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{tool.desc}</p>
                       <div className="flex items-center justify-between">
                         <div className="text-xl font-extrabold text-navy">{formatRupiah(tool.price)}</div>
-                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                        <Button onClick={() => openWhatsApp("membeli tools atau produk", tool)} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
                           <Download className="w-4 h-4 mr-1" /> Beli
                         </Button>
                       </div>

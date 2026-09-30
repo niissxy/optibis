@@ -5,33 +5,33 @@ import PillarLayout from "@/components/optibis/PillarLayout";
 import ToolCard from "@/components/optibis/ToolCard";
 import ToolDetailModal from "@/components/optibis/ToolDetailModal";
 import FinalCTA from "@/components/optibis/FinalCTA";
-import { TOOLS, TOOL_CATEGORIES, getToolImage } from "@/data/tools";
-
-const TOOLS_WITH_IMAGES = TOOLS.map((t) => ({ ...t, image: getToolImage(t) }));
+import { TOOL_CATEGORIES } from "@/data/tools";
+import { useTools } from "@/hooks/useTools";
 
 export default function ToolsPortfolio() {
+  const { tools, loading } = useTools();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedTool, setSelectedTool] = useState(null);
 
   const filtered = useMemo(() => {
-    return TOOLS_WITH_IMAGES.filter((tool) => {
+    return tools.filter((tool) => {
       const matchesCategory = activeCategory === "all" || tool.category === activeCategory;
       const q = query.toLowerCase().trim();
-      const matchesQuery = !q || tool.name.toLowerCase().includes(q) || tool.tagline.toLowerCase().includes(q);
+      const matchesQuery = !q || (tool.name || "").toLowerCase().includes(q) || (tool.tagline || "").toLowerCase().includes(q) || (tool.description || "").toLowerCase().includes(q);
       return matchesCategory && matchesQuery;
     });
-  }, [query, activeCategory]);
+  }, [tools, query, activeCategory]);
 
   const categoryCounts = useMemo(() => {
-    const counts = { all: TOOLS.length };
+    const counts = { all: tools.length };
     TOOL_CATEGORIES.forEach((cat) => {
       if (cat.slug !== "all") {
-        counts[cat.slug] = TOOLS.filter((t) => t.category === cat.slug).length;
+        counts[cat.slug] = tools.filter((t) => t.category === cat.slug).length;
       }
     });
     return counts;
-  }, []);
+  }, [tools]);
 
   const activeCatName = TOOL_CATEGORIES.find((c) => c.slug === activeCategory)?.name || "Semua";
 
@@ -64,7 +64,7 @@ export default function ToolsPortfolio() {
             transition={{ delay: 0.05 }}
             className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight"
           >
-            {TOOLS.length}+ Tools & Platform Digital <br className="hidden sm:block" />Sudah Live & Deploy
+            {tools.length}+ Tools & Platform Digital <br className="hidden sm:block" />Sudah Live & Deploy
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export default function ToolsPortfolio() {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             {[
-              { label: "Tools Live", value: `${TOOLS.length}+` },
+              { label: "Tools Live", value: `${tools.length}+` },
               { label: "Kategori", value: `${TOOL_CATEGORIES.length - 1}` },
               { label: "Status", value: "100% Deployed" },
             ].map((stat) => (
@@ -98,31 +98,31 @@ export default function ToolsPortfolio() {
       <div className="sticky top-16 lg:top-18 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col lg:flex-row gap-3">
-            <div className="relative flex-1 lg:max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Cari tools..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 h-10 rounded-lg border border-gray-200 bg-gray-50 text-sm text-navy placeholder:text-gray-400 focus:outline-none focus:border-magenta focus:bg-white transition-colors"
+                placeholder="Cari tools atau platform digital..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-gray-50/50 text-sm text-navy placeholder:text-muted-foreground focus:outline-none focus:border-magenta focus:bg-white transition-colors"
               />
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 lg:pb-0">
+
+            {/* Category Scroll */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide">
               {TOOL_CATEGORIES.map((cat) => (
                 <button
                   key={cat.slug}
                   onClick={() => setActiveCategory(cat.slug)}
-                  className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                     activeCategory === cat.slug
-                      ? "bg-magenta text-white shadow-md shadow-magenta/20"
-                      : "bg-gray-100 text-navy-300 hover:bg-gray-200"
+                      ? "bg-magenta text-white shadow-sm"
+                      : "bg-gray-100 text-navy-400 hover:bg-gray-200 hover:text-navy"
                   }`}
                 >
-                  {cat.name}
-                  <span className={`ml-1.5 ${activeCategory === cat.slug ? "opacity-70" : "opacity-50"}`}>
-                    {categoryCounts[cat.slug] || 0}
-                  </span>
+                  {cat.name} ({categoryCounts[cat.slug] || 0})
                 </button>
               ))}
             </div>
@@ -130,40 +130,61 @@ export default function ToolsPortfolio() {
         </div>
       </div>
 
-      {/* Results */}
-      <section className="py-10 lg:py-14 bg-slate-50/50 min-h-[400px]">
+      {/* Grid */}
+      <section className="py-12 lg:py-16 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm text-muted-foreground mb-6">
-            Menampilkan <span className="font-bold text-navy">{filtered.length}</span> tools
-            {activeCategory !== "all" && ` dalam kategori "${activeCatName}"`}
-            {query && ` untuk pencarian "${query}"`}
-          </p>
-          {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map((tool, i) => (
-                <ToolCard key={tool.url} tool={tool} index={i} onClick={setSelectedTool} />
-              ))}
-            </div>
-          ) : (
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-extrabold text-navy">
+              {activeCatName} <span className="text-sm font-normal text-muted-foreground">({filtered.length} tools)</span>
+            </h2>
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="text-xs text-magenta hover:underline font-semibold"
+              >
+                Reset pencarian
+              </button>
+            )}
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filtered.map((tool, idx) => (
+              <ToolCard
+                key={tool.name || idx}
+                tool={tool}
+                index={idx}
+                onClick={() => setSelectedTool(tool)}
+              />
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
             <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                <Search className="w-7 h-7 text-gray-300" />
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-muted-foreground">
+                <Search className="w-6 h-6" />
               </div>
-              <p className="text-lg font-bold text-navy mb-2">Tidak ada tools ditemukan</p>
-              <p className="text-sm text-muted-foreground mb-4">Coba kata kunci atau kategori lain.</p>
+              <h3 className="text-lg font-bold text-navy mb-1">Tools tidak ditemukan</h3>
+              <p className="text-sm text-muted-foreground mb-4">Coba cari dengan kata kunci lain atau pilih kategori Semua.</p>
               <button
                 onClick={() => { setQuery(""); setActiveCategory("all"); }}
-                className="text-sm font-semibold text-magenta hover:underline"
+                className="px-5 py-2 rounded-full bg-magenta text-white text-xs font-semibold"
               >
-                Reset filter
+                Tampilkan Semua Tools
               </button>
             </div>
           )}
         </div>
       </section>
 
+      {/* Detail Modal */}
+      {selectedTool && (
+        <ToolDetailModal
+          tool={selectedTool}
+          onClose={() => setSelectedTool(null)}
+        />
+      )}
+
       <FinalCTA />
-      <ToolDetailModal tool={selectedTool} onClose={() => setSelectedTool(null)} />
     </PillarLayout>
   );
 }
