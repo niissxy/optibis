@@ -233,7 +233,9 @@ function PortfolioView() {
 
       <div className="portfolio-grid">
         {filtered.map((item) => (
-          <article className="portfolio-card" key={item.id}>
+          <articl
+          
+          e className="portfolio-card" key={item.id}>
             <div className="card-image">
               {item.image_url ? (
                 <img
