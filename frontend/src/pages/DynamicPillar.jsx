@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import PillarSplitHero from "@/components/optibis/PillarSplitHero";
 import PillarPortfolio from "@/components/optibis/PillarPortfolio";
@@ -9,11 +10,14 @@ import PageNotFound from "@/lib/PageNotFound";
 import { useServicePillars, resolveIcon } from "@/hooks/useServicePillars";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema, getServiceSchema } from "@/lib/seoData";
 
 export default function DynamicPillar() {
   const { slug } = useParams();
   const location = useLocation();
   const nav = useSafeNav();
+  const { language, tr } = useLanguage();
   const { pillars, loading } = useServicePillars();
 
   const currentPath = location.pathname.replace(/^\//, "").replace(/^pilar\//, "");
@@ -44,7 +48,7 @@ export default function DynamicPillar() {
       <PillarLayout>
         <div className="max-w-7xl mx-auto px-4 py-32 text-center">
           <div className="w-8 h-8 border-4 border-slate-200 border-t-magenta rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Memuat pilar layanan...</p>
+          <p className="text-sm text-muted-foreground">{tr("Memuat pilar layanan...")}</p>
         </div>
       </PillarLayout>
     );
@@ -63,8 +67,33 @@ export default function DynamicPillar() {
   const imageSrc = pillar.img || "/assets/paket-digital-asset/siap-usaha.jpg";
   const color = pillar.color || "magenta";
 
+  const pageTitle = `${pillar.title} — Solusi Layanan Digital`;
+  const pageDesc = description || `Layanan dan solusi ${pillar.title} dari Optibis untuk membantu bisnis Anda berkembang secara digital.`;
+  const canonicalUrl = `https://optibis.id/pilar/${pillar.slug || cleanSlug}`;
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Layanan", url: "/layanan" },
+      { name: pillar.title, url: canonicalUrl },
+    ]),
+    getServiceSchema({
+      name: pillar.title,
+      description: pageDesc,
+      url: canonicalUrl,
+      image: imageSrc,
+    }),
+  ];
+
   return (
     <PillarLayout showPageRecommendations={false}>
+      <SEO
+        title={pageTitle}
+        description={pageDesc}
+        image={imageSrc}
+        canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
+      />
       {/* Hero Section */}
       <PillarSplitHero
         badgeIcon={Icon}
@@ -98,17 +127,17 @@ export default function DynamicPillar() {
                       <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <h3 className="text-base font-bold text-navy mb-2 group-hover:text-magenta transition-colors">
-                      {h}
+                      {tr(h)}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Layanan terintegrasi dan dirancang secara spesifik untuk mendukung efektivitas dan pertumbuhan bisnis Anda.
+                      {tr("Layanan terintegrasi dan dirancang secara spesifik untuk mendukung efektivitas dan pertumbuhan bisnis Anda.")}
                     </p>
                   </div>
                   <div
                     onClick={() => nav("#konsultasi")}
                     className="mt-6 pt-4 border-t border-slate-100 flex items-center text-xs font-semibold text-magenta cursor-pointer group-hover:gap-2 transition-all"
                   >
-                    <span>Konsultasikan Kebutuhan</span>
+                    <span>{tr("Konsultasikan Kebutuhan")}</span>
                     <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>

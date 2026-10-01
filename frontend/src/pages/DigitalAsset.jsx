@@ -1,12 +1,14 @@
 import React from "react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import PillarServiceCard from "@/components/optibis/PillarServiceCard";
 import { Palette, FileText, Megaphone, Camera, Mail, LayoutDashboard } from "lucide-react";
-import { getPackagesByPillar } from "@/data/packages";
+import { usePackages } from "@/hooks/usePackages";
 import PillarPortfolio from "@/components/optibis/PillarPortfolio";
 import PillarPackagesHero from "@/components/optibis/PillarPackagesHero";
 import SectionHeading from "@/components/optibis/SectionHeading";
 import PillarSplitHero from "@/components/optibis/PillarSplitHero";
+import { getBreadcrumbSchema, getServiceSchema } from "@/lib/seoData";
 export const SERVICES = [
   {
     icon: Palette, name: "Brand Identity", desc: "Identitas visual lengkap untuk bisnis Anda agar tampil konsisten dan profesional.",
@@ -40,12 +42,12 @@ export const SERVICES = [
   },
 ];
 
-const PACKAGES = getPackagesByPillar("digital-asset").map((p) => ({
-  slug: p.slug, name: p.name, target: p.target, price: p.priceShort || p.price,
-  features: p.included.map((i) => i.title), popular: p.popular,
-}));
-
 export default function DigitalAsset() {
+  const packages = usePackages();
+  const packageCards = packages.filter((pkg) => pkg.pillarSlug === "digital-asset").map((pkg) => ({
+    slug: pkg.slug, name: pkg.name, target: pkg.target, price: pkg.priceShort || pkg.price,
+    features: pkg.included.map((item) => item.title), popular: pkg.popular,
+  }));
   const [hero, setHero] = React.useState({
     badgeText: "PILAR 1 — DIGITAL ASSET",
     titlePrefix: "Bangun Citra Bisnis yang ",
@@ -75,8 +77,28 @@ export default function DigitalAsset() {
       .catch(() => {});
   }, []);
 
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Digital Asset", url: "/digital-asset" },
+    ]),
+    getServiceSchema({
+      name: "Digital Asset Setup & Brand Management",
+      description: "Layanan branding lengkap: Logo, Brand Guideline, Stationery, Social Media Kit, Company Profile, dan Digital Channel Setup.",
+      url: "/digital-asset",
+      serviceType: "Branding & Creative Design",
+    }),
+  ];
+
   return (
     <PillarLayout showPageRecommendations={false}>
+      <SEO
+        title="Layanan Digital Asset & Branding Bisnis Profesional"
+        description="Bangun citra bisnis yang kredibel dari logo, brand guideline, company profile, hingga materi promosi lengkap bersama Optibis Digital Asset."
+        keywords="jasa desain logo, brand identity bisnis, company profile profesional, stationery kantor, template media sosial, digital channel setup"
+        canonicalUrl="https://optibis.id/digital-asset"
+        structuredData={structuredData}
+      />
       <PillarSplitHero
         badgeIcon={Palette}
         badgeText={hero.badgeText}
@@ -92,7 +114,7 @@ export default function DigitalAsset() {
         title="Paket Digital Asset"
         description="Pilih paket yang sesuai dengan kebutuhan dan budget bisnis Anda."
         pillarSlug="digital-asset"
-        packages={PACKAGES}
+        packages={packageCards}
         accent="magenta"
       />
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUpRight, Box, Filter, Newspaper, Package, Search, X } from "lucide-react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import { searchGlobal } from "@/data/globalSearch";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -82,6 +83,11 @@ export default function ViralogSearch() {
 
   return (
     <PillarLayout>
+      <SEO
+        title={query ? `Hasil Pencarian: "${query}"` : "Pencarian Konten & Layanan"}
+        description={`Cari artikel, produk, tools, layanan, dan panduan digital di OPTIBIS.ID`}
+        noindex={true}
+      />
       <div className="min-h-screen bg-slate-50/50">
         <section className="border-b border-gray-100 bg-white py-8 lg:py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -6,6 +6,7 @@ import {
   ArrowLeft, Clock, Eye, Share2, Bookmark, Tag, ChevronRight,
   MessageCircle, Sparkles, BadgeCheck, TrendingUp, Link2,
 } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import ViralogContentCard from "@/components/viralog/ViralogContentCard";
@@ -22,11 +23,14 @@ import {
 } from "@/data/viralog";
 import { useSafeNav } from "@/hooks/useSafeNav";
 import { useViralogContent, VIRALOG_FALLBACK_THUMBNAIL } from "@/hooks/useViralogContent";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema, getArticleSchema } from "@/lib/seoData";
 
 export default function ViralogDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const nav = useSafeNav();
+  const { language, tr } = useLanguage();
   const [bookmarked, setBookmarked] = useState(false);
   const [shared, setShared] = useState(false);
   const allContent = useViralogContent();
@@ -40,11 +44,12 @@ export default function ViralogDetail() {
   if (!content) {
     return (
       <PillarLayout>
+        <SEO title="Konten Tidak Ditemukan" noindex={true} />
         <div className="max-w-2xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-2xl font-extrabold text-navy mb-4">Konten tidak ditemukan</h1>
-          <p className="text-muted-foreground mb-6">Konten yang Anda cari tidak tersedia atau telah dihapus.</p>
+          <h1 className="text-2xl font-extrabold text-navy mb-4">{tr("Konten tidak ditemukan")}</h1>
+          <p className="text-muted-foreground mb-6">{language === "en" ? "The content you are looking for is unavailable or has been removed." : "Konten yang Anda cari tidak tersedia atau telah dihapus."}</p>
           <Button onClick={() => navigate("/content")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full">
-            Kembali ke VIRALOG
+            {tr("Kembali ke VIRALOG")}
           </Button>
         </div>
       </PillarLayout>
@@ -57,6 +62,26 @@ export default function ViralogDetail() {
   const trendingSidebar = getTrendingContent(5, allContent);
   const isVideo = content.content_type === "short_video" || content.content_type === "long_video" || content.content_type === "podcast";
   const originalSourceUrl = content.original_url || content.source_url || content.url;
+  const canonicalUrl = `https://optibis.id/content/${content.slug}`;
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "VIRALOG", url: "/content" },
+      ...(cat ? [{ name: cat.name, url: `/kategori/${cat.slug}` }] : []),
+      { name: content.title, url: canonicalUrl },
+    ]),
+    getArticleSchema({
+      title: content.title,
+      description: content.summary || content.content?.slice(0, 160) || "",
+      url: canonicalUrl,
+      image: content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL,
+      author: author?.name || "Tim Optibis",
+      datePublished: content.published_at,
+      category: cat?.name || "Digital Marketing",
+      tags: content.tags || [],
+    }),
+  ];
 
   const handleShare = () => {
     if (navigator.share) {
@@ -70,14 +95,25 @@ export default function ViralogDetail() {
 
   return (
     <PillarLayout>
+      <SEO
+        title={content.title}
+        description={content.summary || content.content?.slice(0, 160) || ""}
+        image={content.thumbnail || VIRALOG_FALLBACK_THUMBNAIL}
+        type="article"
+        canonicalUrl={canonicalUrl}
+        publishedTime={content.published_at}
+        author={author?.name || "Tim Optibis"}
+        section={cat?.name || "Digital Marketing"}
+        structuredData={structuredData}
+      />
       {/* Breadcrumb */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
           <Link to="/content" className="hover:text-navy transition-colors">VIRALOG</Link>
           <ChevronRight className="w-3 h-3" />
-          {cat && <Link to={`/kategori/${cat.slug}`} className="hover:text-navy transition-colors">{cat.name}</Link>}
+          {cat && <Link to={`/kategori/${cat.slug}`} className="hover:text-navy transition-colors">{tr(cat.name)}</Link>}
           <ChevronRight className="w-3 h-3" />
-          <span className="text-navy font-medium line-clamp-1">{content.title}</span>
+          <span className="text-navy font-medium line-clamp-1">{tr(content.title)}</span>
         </nav>
       </div>
 
@@ -93,12 +129,12 @@ export default function ViralogDetail() {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {cat && (
               <Link to={`/kategori/${cat.slug}`} className={`px-3 py-1 rounded-full bg-${cat.color} text-white text-xs font-bold uppercase`}>
-                {cat.name}
+                {tr(cat.name)}
               </Link>
             )}
             {content.sponsored && (
               <span className="px-3 py-1 rounded-full bg-amber-400 text-navy text-xs font-bold flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Sponsored Content
+                <Sparkles className="w-3 h-3" /> {tr("Sponsored Content")}
               </span>
             )}
             {content.source_type === "rss" && (
@@ -114,10 +150,10 @@ export default function ViralogDetail() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy leading-tight mb-3">
-            {content.title}
+            {tr(content.title)}
           </h1>
           {content.subtitle && (
-            <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-5">{content.subtitle}</p>
+            <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-5">{tr(content.subtitle)}</p>
           )}
 
           {/* Author + Meta */}
@@ -135,7 +171,7 @@ export default function ViralogDetail() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{formatDate(content.publish_date)}</span>
                   <span>•</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {content.read_time_minutes} min baca</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {content.read_time_minutes} {tr("min baca")}</span>
                   <span>•</span>
                   <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {formatViews(content.views)}</span>
                 </div>
@@ -202,23 +238,23 @@ export default function ViralogDetail() {
         {/* CTA Block */}
         {(content.cta_label || originalSourceUrl) && (
           <div className="my-8 bg-gradient-to-r from-navy to-navy-400 rounded-2xl p-6 text-center">
-            <h3 className="text-lg font-bold text-white mb-2">{content.cta_label || "Baca sumber asli"}</h3>
-            <p className="text-sm text-white/60 mb-4">Tim Optibis siap membantu bisnis Anda berkembang.</p>
+            <h3 className="text-lg font-bold text-white mb-2">{content.cta_label ? tr(content.cta_label) : tr("Baca sumber asli")}</h3>
+            <p className="text-sm text-white/60 mb-4">{tr("Tim Optibis siap membantu bisnis Anda berkembang.")}</p>
             {originalSourceUrl && (content.cta_type === "original_source" || /sumber asli/i.test(content.cta_label || "")) ? (
               <a href={originalSourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-magenta hover:bg-magenta-500 text-white rounded-full px-6 h-10 text-sm font-semibold transition-colors">
-                <Link2 className="w-4 h-4" /> Baca sumber asli
+                <Link2 className="w-4 h-4" /> {tr("Baca sumber asli")}
               </a>
             ) : content.cta_type === "whatsapp" ? (
               <a href={content.cta_url || "https://wa.me/6287772577020"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors">
-                <MessageCircle className="w-4 h-4" /> Chat WhatsApp
+                <MessageCircle className="w-4 h-4" /> {tr("Chat WhatsApp")}
               </a>
             ) : originalSourceUrl && !content.cta_label ? (
               <a href={originalSourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-magenta hover:bg-magenta-500 text-white rounded-full px-6 h-10 text-sm font-semibold transition-colors">
-                <Link2 className="w-4 h-4" /> Baca sumber asli
+                <Link2 className="w-4 h-4" /> {tr("Baca sumber asli")}
               </a>
             ) : (
               <Button onClick={() => nav(content.cta_url || "#konsultasi")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-6">
-                {content.cta_label}
+                {tr(content.cta_label)}
               </Button>
             )}
           </div>
@@ -251,7 +287,7 @@ export default function ViralogDetail() {
                   <span className="px-2 py-0.5 rounded bg-amethyst/10 text-amethyst text-[10px] font-bold">AI</span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{author.bio}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{tr(author.bio)}</p>
             </div>
           </div>
         )}
@@ -264,7 +300,7 @@ export default function ViralogDetail() {
         {/* Share Bar */}
         <div className="flex items-center justify-between py-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Bagikan:</span>
+            <span className="text-xs text-muted-foreground">{tr("Bagikan:")}</span>
             <button onClick={handleShare} className="p-2 rounded-lg bg-slate-50 text-navy hover:bg-magenta/10 transition-colors">
               {shared ? <BadgeCheck className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
             </button>
@@ -273,7 +309,7 @@ export default function ViralogDetail() {
             </a>
           </div>
           <button onClick={() => setBookmarked(!bookmarked)} className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${bookmarked ? "text-magenta" : "text-muted-foreground hover:text-navy"}`}>
-            <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-magenta text-magenta" : ""}`} /> {bookmarked ? "Tersimpan" : "Simpan"}
+            <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-magenta text-magenta" : ""}`} /> {bookmarked ? tr("Tersimpan") : tr("Simpan")}
           </button>
         </div>
       </article>
@@ -283,7 +319,7 @@ export default function ViralogDetail() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-100">
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <h2 className="text-lg font-bold text-navy mb-4">Konten Terkait</h2>
+              <h2 className="text-lg font-bold text-navy mb-4">{tr("Konten Terkait")}</h2>
               <div className="grid sm:grid-cols-3 gap-4">
                 {related.map((item, i) => (
                   <ViralogContentCard key={item.id} content={item} variant="standard" index={i} />
@@ -295,7 +331,7 @@ export default function ViralogDetail() {
               <div className="bg-white rounded-xl border border-gray-100 p-5">
                 <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
                   <TrendingUp className="w-4 h-4 text-magenta" />
-                  <h3 className="font-bold text-navy text-sm uppercase tracking-wide">Trending</h3>
+                  <h3 className="font-bold text-navy text-sm uppercase tracking-wide">{tr("Trending")}</h3>
                 </div>
                 <div className="space-y-0">
                   {trendingSidebar.map((item, i) => (

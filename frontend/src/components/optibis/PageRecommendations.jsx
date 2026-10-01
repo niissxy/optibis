@@ -77,25 +77,29 @@ function toPackage(item) {
 }
 
 function getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages) {
-  const packagesRecommendingCurrent = managedPackages
-    .filter((item) => Array.isArray(item.data?.recommended_packages) && item.data.recommended_packages.some((recommendation) => (typeof recommendation === "string" ? recommendation : recommendation?.slug) === currentPackageSlug))
-    .map(toPackage);
+  const packagesRecommendingCurrent = (managedPackages || [])
+    .filter((item) => Array.isArray(item?.data?.recommended_packages) && item.data.recommended_packages.some((recommendation) => (typeof recommendation === "string" ? recommendation : recommendation?.slug) === currentPackageSlug))
+    .map(toPackage)
+    .filter((pkg) => pkg && pkg.slug);
 
   if ((currentPackageSlug === "solution-library" || currentPackageSlug?.startsWith("page:")) && packagesRecommendingCurrent.length) {
     return packagesRecommendingCurrent;
   }
 
   const automaticPackages = pillarSlug
-    ? getPackagesByPillar(pillarSlug)
-      .filter((pkg) => pkg.slug !== currentPackageSlug)
+    ? (getPackagesByPillar(pillarSlug) || [])
+      .filter((pkg) => pkg && pkg.slug !== currentPackageSlug)
       .slice(0, 3)
-    : Object.keys(PILLAR_META).map((slug) => {
-        const packages = getPackagesByPillar(slug);
-        return packages.find((pkg) => pkg.popular) || packages[0];
-      });
+    : Object.keys(PILLAR_META)
+        .map((slug) => {
+          const packages = getPackagesByPillar(slug) || [];
+          return packages.find((pkg) => pkg?.popular) || packages[0];
+        })
+        .filter((pkg) => pkg && pkg.slug);
 
   return [...packagesRecommendingCurrent, ...automaticPackages]
-    .filter((pkg, index, list) => list.findIndex((candidate) => candidate.slug === pkg.slug) === index);
+    .filter((pkg) => pkg && pkg.slug)
+    .filter((pkg, index, list) => list.findIndex((candidate) => candidate?.slug === pkg.slug) === index);
 }
 
 export default function PageRecommendations() {
@@ -105,7 +109,7 @@ export default function PageRecommendations() {
   const { pillarSlug, currentPackageSlug } = getPageContext(pathname);
   const packages = getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages);
   const trending = getTrendingContent(3);
-  const categoryName = pillarSlug ? PILLAR_META[pillarSlug].name : "pilihan Optibis";
+  const categoryName = (pillarSlug && PILLAR_META[pillarSlug]?.name) || "pilihan Optibis";
   const showTrending = pathname === "/content";
 
   useEffect(() => {
@@ -116,48 +120,51 @@ export default function PageRecommendations() {
   }, []);
 
   if (pathname === "/") return null;
+  if (!packages.length && !showTrending) return null;
 
   return (
     <>
-      <section className="border-t border-gray-100 bg-white py-12 lg:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading eyebrow="Paket Pilihan" title="Rekomendasi Paket Lainnya" description={t("relevantPackages", { category: categoryName })} compact className="mb-6" />
-          <div className="mb-10 flex justify-center">
-            {pillarSlug && (
-              <Link to={`/${pillarSlug}`} className="inline-flex items-center gap-1 text-sm font-semibold text-navy transition-colors hover:text-magenta">
-                {tr("Lihat semua paket")} <ArrowRight className="h-4 w-4" />
-              </Link>
-            )}
-          </div>
+      {packages.length > 0 && (
+        <section className="border-t border-gray-100 bg-white py-12 lg:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <SectionHeading eyebrow="Paket Pilihan" title="Rekomendasi Paket Lainnya" description={t("relevantPackages", { category: categoryName })} compact className="mb-6" />
+            <div className="mb-10 flex justify-center">
+              {pillarSlug && (
+                <Link to={`/${pillarSlug}`} className="inline-flex items-center gap-1 text-sm font-semibold text-navy transition-colors hover:text-magenta">
+                  {tr("Lihat semua paket")} <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
 
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {packages.map((pkg) => {
-              const meta = PILLAR_META[pkg.pillarSlug];
-              const styles = ACCENT_STYLES[meta.accent];
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {packages.map((pkg) => {
+                const meta = PILLAR_META[pkg.pillarSlug] || { name: pkg.pillarSlug, accent: "magenta" };
+                const styles = ACCENT_STYLES[meta.accent] || ACCENT_STYLES.magenta;
 
-              return (
-                <article key={pkg.slug} className={`flex flex-col rounded-lg border border-gray-300 bg-white p-5 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/50 ${styles.border}`}>
-                  <span className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${styles.badge}`}>{meta.name}</span>
-                  <h3 className="mt-4 text-lg font-extrabold text-navy">{tr(pkg.name)}</h3>
-                  <p className="mt-1 min-h-10 text-xs leading-relaxed text-muted-foreground">{tr(pkg.target)}</p>
-                  <div className="mt-4 text-xs text-muted-foreground">{tr("Mulai dari")}</div>
-                  <div className="text-2xl font-extrabold text-navy">{pkg.priceShort || pkg.price}</div>
-                  <ul className="my-5 space-y-2">
-                    {pkg.included.slice(0, 3).map((item) => (
-                      <li key={item.title} className="flex items-start gap-2 text-sm text-navy-300">
-                        <Check className={`mt-0.5 h-4 w-4 shrink-0 ${styles.text}`} /> {tr(item.title)}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to={`/paket/${pkg.pillarSlug}/${pkg.slug}`} className={`mt-auto inline-flex h-10 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition-colors ${styles.button}`}>
-                    {tr("Lihat Paket")} <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </article>
-              );
-            })}
+                return (
+                  <article key={pkg.slug} className={`flex flex-col rounded-lg border border-gray-300 bg-white p-5 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/50 ${styles.border}`}>
+                    <span className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${styles.badge}`}>{meta.name}</span>
+                    <h3 className="mt-4 text-lg font-extrabold text-navy">{tr(pkg.name)}</h3>
+                    <p className="mt-1 min-h-10 text-xs leading-relaxed text-muted-foreground">{tr(pkg.target)}</p>
+                    <div className="mt-4 text-xs text-muted-foreground">{tr("Mulai dari")}</div>
+                    <div className="text-2xl font-extrabold text-navy">{pkg.priceShort || pkg.price}</div>
+                    <ul className="my-5 space-y-2">
+                      {pkg.included.slice(0, 3).map((item) => (
+                        <li key={item.title} className="flex items-start gap-2 text-sm text-navy-300">
+                          <Check className={`mt-0.5 h-4 w-4 shrink-0 ${styles.text}`} /> {tr(item.title)}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to={`/paket/${pkg.pillarSlug}/${pkg.slug}`} className={`mt-auto inline-flex h-10 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition-colors ${styles.button}`}>
+                      {tr("Lihat Paket")} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {showTrending && (
         <section className="bg-slate-50/60 py-12 lg:py-16">

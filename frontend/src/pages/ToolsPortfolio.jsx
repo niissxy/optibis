@@ -1,15 +1,19 @@
 import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Rocket, LayoutGrid, ArrowRight } from "lucide-react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import ToolCard from "@/components/optibis/ToolCard";
 import ToolDetailModal from "@/components/optibis/ToolDetailModal";
 import FinalCTA from "@/components/optibis/FinalCTA";
 import { TOOL_CATEGORIES } from "@/data/tools";
 import { useTools } from "@/hooks/useTools";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema } from "@/lib/seoData";
 
 export default function ToolsPortfolio() {
   const { tools, loading } = useTools();
+  const { tr } = useLanguage();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedTool, setSelectedTool] = useState(null);
@@ -35,8 +39,22 @@ export default function ToolsPortfolio() {
 
   const activeCatName = TOOL_CATEGORIES.find((c) => c.slug === activeCategory)?.name || "Semua";
 
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Tools Portfolio", url: "/tools" },
+    ]),
+  ];
+
   return (
     <PillarLayout>
+      <SEO
+        title="Portofolio Tools & Platform Digital Bisnis"
+        description="Eksplorasi koleksi tools, modul aplikasi, dan platform digital siap pakai yang dikembangkan oleh tim engineer Optibis untuk mendukung efisiensi bisnis."
+        keywords="tools bisnis, platform digital indonesia, software bisnis umkm, aplikasi otomasi bisnis, kalkulator bisnis, tools optibis"
+        canonicalUrl="https://optibis.id/tools"
+        structuredData={structuredData}
+      />
       {/* Hero */}
       <section className="relative py-12 lg:py-20 bg-gradient-to-br from-navy via-navy-400 to-navy text-white overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(233,30,99,0.15),transparent_60%)]" />
@@ -56,7 +74,7 @@ export default function ToolsPortfolio() {
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta/20 backdrop-blur-sm text-magenta-100 text-xs font-bold mb-5"
           >
-            <Rocket className="w-3.5 h-3.5" /> PORTOFOLIO TOOLS & PLATFORM
+            <Rocket className="w-3.5 h-3.5" /> {tr("PORTOFOLIO TOOLS & PLATFORM")}
           </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -64,7 +82,7 @@ export default function ToolsPortfolio() {
             transition={{ delay: 0.05 }}
             className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight"
           >
-            {tools.length}+ Tools & Platform Digital <br className="hidden sm:block" />Sudah Live & Deploy
+            {tools.length}+ {tr("Tools & Platform Digital")} <br className="hidden sm:block" />{tr("Sudah Live & Deploy")}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -72,7 +90,7 @@ export default function ToolsPortfolio() {
             transition={{ delay: 0.1 }}
             className="text-white/70 text-base lg:text-lg max-w-2xl mx-auto mb-8"
           >
-            Eksplorasi berbagai platform digital yang telah kami bangun dan deploy — dari finance, travel, HR, hingga AI dan konten.
+            {tr("Eksplorasi berbagai platform digital yang telah kami bangun dan deploy — dari finance, travel, HR, hingga AI dan konten.")}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -81,9 +99,9 @@ export default function ToolsPortfolio() {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             {[
-              { label: "Tools Live", value: `${tools.length}+` },
-              { label: "Kategori", value: `${TOOL_CATEGORIES.length - 1}` },
-              { label: "Status", value: "100% Deployed" },
+              { label: tr("Tools Live"), value: `${tools.length}+` },
+              { label: tr("Kategori"), value: `${TOOL_CATEGORIES.length - 1}` },
+              { label: tr("Status"), value: "100% Deployed" },
             ].map((stat) => (
               <div key={stat.label} className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/10">
                 <div className="text-xl font-extrabold text-white">{stat.value}</div>
@@ -105,7 +123,7 @@ export default function ToolsPortfolio() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari tools atau platform digital..."
+                placeholder={tr("Cari tools atau platform digital...")}
                 className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-gray-50/50 text-sm text-navy placeholder:text-muted-foreground focus:outline-none focus:border-magenta focus:bg-white transition-colors"
               />
             </div>
@@ -122,7 +140,7 @@ export default function ToolsPortfolio() {
                       : "bg-gray-100 text-navy-400 hover:bg-gray-200 hover:text-navy"
                   }`}
                 >
-                  {cat.name} ({categoryCounts[cat.slug] || 0})
+                  {tr(cat.name)} ({categoryCounts[cat.slug] || 0})
                 </button>
               ))}
             </div>
@@ -135,14 +153,14 @@ export default function ToolsPortfolio() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-extrabold text-navy">
-              {activeCatName} <span className="text-sm font-normal text-muted-foreground">({filtered.length} tools)</span>
+              {tr(activeCatName)} <span className="text-sm font-normal text-muted-foreground">({filtered.length} {tr("Tools").toLowerCase()})</span>
             </h2>
             {query && (
               <button
                 onClick={() => setQuery("")}
                 className="text-xs text-magenta hover:underline font-semibold"
               >
-                Reset pencarian
+                {tr("Reset pencarian")}
               </button>
             )}
           </div>
@@ -163,13 +181,13 @@ export default function ToolsPortfolio() {
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-muted-foreground">
                 <Search className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-navy mb-1">Tools tidak ditemukan</h3>
-              <p className="text-sm text-muted-foreground mb-4">Coba cari dengan kata kunci lain atau pilih kategori Semua.</p>
+              <h3 className="text-lg font-bold text-navy mb-1">{tr("Tools tidak ditemukan")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{tr("Coba cari dengan kata kunci lain atau pilih kategori Semua.")}</p>
               <button
                 onClick={() => { setQuery(""); setActiveCategory("all"); }}
                 className="px-5 py-2 rounded-full bg-magenta text-white text-xs font-semibold"
               >
-                Tampilkan Semua Tools
+                {tr("Tampilkan Semua Tools")}
               </button>
             </div>
           )}

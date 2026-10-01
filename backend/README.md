@@ -1,59 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# OPTIBIS Backend Service
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend REST API untuk platform **OPTIBIS.ID**, dibangun menggunakan Laravel 11. Layanan ini mengelola data portofolio, modul konten terintegrasi, manajemen lead, analitik pengunjung, dan administrasi dashboard.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠️ Persyaratan Sistem
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **PHP**: >= 8.2
+- **Composer**: >= 2.x
+- **Database**: SQLite / MySQL / PostgreSQL
+- **Ekstensi PHP yang dibutuhkan**: `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `curl`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Panduan Instalasi & Menjalankan Backend
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+1. Masuk ke direktori backend:
+   ```bash
+   cd backend
+   ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. Pasang dependensi PHP:
+   ```bash
+   composer install
+   ```
 
-## Laravel Sponsors
+3. Buat file konfigurasi `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+4. Generate Application Key:
+   ```bash
+   php artisan key:generate
+   ```
 
-### Premium Partners
+5. Konfigurasi database pada file `.env` (misal SQLite):
+   ```env
+   DB_CONNECTION=sqlite
+   ```
+   *(Jika menggunakan SQLite, pastikan file `database/database.sqlite` telah dibuat jika belum ada)*
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+6. Jalankan migrasi dan seeder awal:
+   ```bash
+   php artisan migrate --seed
+   ```
 
-## Contributing
+7. Hubungkan storage publik (untuk upload file media):
+   ```bash
+   php artisan storage:link
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+8. Jalankan server pengembangan lokal:
+   ```bash
+   php artisan serve
+   ```
+   Server default berjalan di `http://127.0.0.1:8000`.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📂 Struktur Direktori Utama
 
-## Security Vulnerabilities
+```
+backend/
+├── app/
+│   ├── Console/Commands/       # Custom artisan command (e.g. ImportViralogRss)
+│   ├── Http/
+│   │   ├── Controllers/        # API Controllers (Auth, Portfolio, ModuleContent, Analytics)
+│   │   └── Middleware/         # Token Auth & CORS Middleware
+│   └── Models/                 # Eloquent Models (Admin, Portfolio, etc.)
+├── config/                     # Konfigurasi aplikasi, auth, cors, database
+├── database/
+│   ├── migrations/             # Database schema migrations
+│   └── seeders/                # Initial database seeders
+├── routes/
+│   └── api.php                 # Rute REST API v1
+├── storage/                    # Uploads, log file, dan cache
+├── openapi.yaml                # Spesifikasi OpenAPI 3.0.3
+├── API_DOCUMENTATION.md        # Panduan teknis endpoint API
+└── README.md                   # Dokumentasi backend ini
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## ⚙️ Artisan Commands Khusus
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 1. Import RSS Feed VIRALOG
+Digunakan untuk mengimpor dan menyinkronkan feed konten digital/teknologi ke dalam database VIRALOG:
+```bash
+php artisan viralog:import-rss
+```
+
+---
+
+## 📖 Dokumentasi Endpoint API
+
+Dokumentasi lengkap mengenai struktur payload, header, dan response code dapat dibaca di:
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+- [openapi.yaml](./openapi.yaml)

@@ -1,4 +1,6 @@
 import React from "react";
+import SEO from "@/components/SEO";
+import { getOrganizationSchema, getWebSiteSchema } from "@/lib/seoData";
 import SiteHeader from "@/components/optibis/SiteHeader";
 import HeroSection from "@/components/optibis/HeroSection";
 import TrustBar from "@/components/optibis/TrustBar";
@@ -19,8 +21,19 @@ import SiteFooter from "@/components/optibis/SiteFooter";
 import FloatingWhatsApp from "@/components/optibis/FloatingWhatsApp";
 
 export default function Home() {
+  const structuredData = [
+    getOrganizationSchema(),
+    getWebSiteSchema(),
+  ];
+
   return (
     <div className="min-h-screen">
+      <SEO
+        title="OPTIBIS.ID — Satu Partner untuk Branding, Website, dan Pertumbuhan Digital Bisnis Anda"
+        description="Optibis membantu bisnis tampil lebih profesional, mudah ditemukan di Google, dan bertumbuh secara digital melalui solusi branding, website modern, dan digital growth team terintegrasi."
+        keywords="jasa pembuatan website, branding bisnis, digital marketing agency indonesia, kelola sosial media, logo design, landing page murah profesional, digital asset, growth team bisnis, konsultan digital umkm, optibis"
+        structuredData={structuredData}
+      />
       <SiteHeader />
       <HeroSection />
       <TrustBar />

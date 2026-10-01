@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, MapPin, Calendar, Building2, X, ChevronLeft, ChevronRight, TrendingUp, MessageCircle, Sparkles, ExternalLink, FileText } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import DocumentViewer from "@/components/optibis/DocumentViewer";
 import { usePortfolios } from "@/hooks/usePortfolios";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema, SITE_CONFIG } from "@/lib/seoData";
 
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80";
 
@@ -14,6 +17,7 @@ export default function PortfolioDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const nav = useSafeNav();
+  const { tr } = useLanguage();
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const { portfolios, loading } = usePortfolios();
 
@@ -30,7 +34,7 @@ export default function PortfolioDetail() {
       <PillarLayout>
         <div className="max-w-7xl mx-auto px-4 py-32 text-center">
           <div className="w-8 h-8 border-4 border-slate-200 border-t-magenta rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Memuat detail portofolio...</p>
+          <p className="text-sm text-muted-foreground">{tr("Memuat detail portofolio...")}</p>
         </div>
       </PillarLayout>
     );
@@ -39,11 +43,12 @@ export default function PortfolioDetail() {
   if (!project) {
     return (
       <PillarLayout>
+        <SEO title="Portofolio Tidak Ditemukan" noindex={true} />
         <div className="max-w-2xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-2xl font-extrabold text-navy mb-4">Proyek tidak ditemukan</h1>
-          <p className="text-muted-foreground mb-6">Proyek portofolio yang Anda cari tidak tersedia atau belum dipublikasikan.</p>
+          <h1 className="text-2xl font-extrabold text-navy mb-4">{tr("Proyek tidak ditemukan")}</h1>
+          <p className="text-muted-foreground mb-6">{tr("Proyek portofolio yang Anda cari tidak tersedia atau belum dipublikasikan.")}</p>
           <Button onClick={() => navigate("/portofolio")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full">
-            Kembali ke Portofolio
+            {tr("Kembali ke Portofolio")}
           </Button>
         </div>
       </PillarLayout>
@@ -57,14 +62,49 @@ export default function PortfolioDetail() {
   const nextImage = () => setLightboxIndex((p) => (p === null ? null : (p + 1) % galleryList.length));
   const prevImage = () => setLightboxIndex((p) => (p === null ? null : (p - 1 + galleryList.length) % galleryList.length));
 
+  const canonicalUrl = `https://optibis.id/portofolio/${project.slug}`;
+  const projectDesc = project.deskripsi || project.ringkasan || `Studi kasus portofolio ${project.name} untuk klien ${project.client}.`;
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Portofolio", url: "/portofolio" },
+      { name: project.name, url: canonicalUrl },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": project.name,
+      "headline": `Studi Kasus: ${project.name}`,
+      "description": projectDesc,
+      "image": project.thumbnail || FALLBACK_IMG,
+      "url": canonicalUrl,
+      "creator": {
+        "@type": "Organization",
+        "name": SITE_CONFIG.name,
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": project.client,
+      },
+    },
+  ];
+
   return (
     <PillarLayout>
+      <SEO
+        title={`Portofolio: ${project.name} (${project.client})`}
+        description={projectDesc}
+        image={project.thumbnail || FALLBACK_IMG}
+        canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
+      />
       {/* Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-navy transition-colors">Beranda</Link>
+          <Link to="/" className="hover:text-navy transition-colors">{tr("Beranda")}</Link>
           <span>/</span>
-          <Link to="/portofolio" className="hover:text-navy transition-colors">Portofolio</Link>
+          <Link to="/portofolio" className="hover:text-navy transition-colors">{tr("Portofolio")}</Link>
           <span>/</span>
           <span className="text-navy font-medium">{project.name}</span>
         </nav>
@@ -75,7 +115,7 @@ export default function PortfolioDetail() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-magenta/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link to="/portofolio" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-magenta mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Kembali ke Portofolio
+            <ArrowLeft className="w-4 h-4" /> {tr("Kembali ke Portofolio")}
           </Link>
           <div className="grid lg:grid-cols-5 gap-10 items-center">
             <motion.div
@@ -85,11 +125,11 @@ export default function PortfolioDetail() {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold">
-                  <Sparkles className="w-3.5 h-3.5" /> {(project.industry || project.categoryLabel || "WEBSITE").toUpperCase()}
+                  <Sparkles className="w-3.5 h-3.5" /> {tr(project.industry || project.categoryLabel || "WEBSITE").toUpperCase()}
                 </span>
                 {project.featured && (
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-navy text-white text-xs font-bold">
-                    Featured Project
+                    {tr("Featured Project")}
                   </span>
                 )}
               </div>
@@ -97,7 +137,7 @@ export default function PortfolioDetail() {
                 {project.name}
               </h1>
               <p className="text-base lg:text-lg text-muted-foreground leading-relaxed">
-                {project.ringkasan || project.desc}
+                {tr(project.ringkasan || project.desc)}
               </p>
               <div className="flex flex-wrap gap-5 pt-2">
                 {project.client && (
@@ -121,7 +161,7 @@ export default function PortfolioDetail() {
                   onClick={() => nav("#konsultasi")}
                   className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-8 h-12 shadow-lg shadow-magenta/20"
                 >
-                  Konsultasi Proyek Serupa <ArrowRight className="w-4 h-4 ml-2" />
+                  {tr("Konsultasi Proyek Serupa")} <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 {project.website_url && project.website_url !== "#" && (
                   <a
@@ -130,7 +170,7 @@ export default function PortfolioDetail() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-navy hover:bg-magenta text-white text-sm font-semibold transition-colors shadow-sm"
                   >
-                    <ExternalLink className="w-4 h-4" /> Kunjungi Website
+                    <ExternalLink className="w-4 h-4" /> {tr("Kunjungi Website")}
                   </a>
                 )}
                 <a
@@ -139,7 +179,7 @@ export default function PortfolioDetail() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors"
                 >
-                  <MessageCircle className="w-4 h-4" /> Chat WhatsApp
+                  <MessageCircle className="w-4 h-4" /> {tr("Chat WhatsApp")}
                 </a>
               </div>
             </motion.div>
@@ -174,7 +214,7 @@ export default function PortfolioDetail() {
               {project.stats.map((s, i) => (
                 <div key={i} className="bg-slate-50/70 rounded-2xl p-6 border border-gray-100 text-center">
                   <div className="text-2xl lg:text-3xl font-extrabold text-magenta mb-1">{s.value}</div>
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{s.label}</div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tr(s.label)}</div>
                 </div>
               ))}
             </div>
@@ -188,19 +228,19 @@ export default function PortfolioDetail() {
           <div className="grid lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-6">
               <div>
-                <h2 className="text-2xl font-extrabold text-navy mb-4">Tentang Proyek</h2>
+                <h2 className="text-2xl font-extrabold text-navy mb-4">{tr("Tentang Proyek")}</h2>
                 <p className="text-base text-navy-400 leading-relaxed whitespace-pre-line">
-                  {project.deskripsi || project.desc || project.ringkasan}
+                  {tr(project.deskripsi || project.desc || project.ringkasan)}
                 </p>
               </div>
 
               {project.hasil && (
                 <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
                   <div className="flex items-center gap-2 text-magenta font-bold text-sm mb-2">
-                    <TrendingUp className="w-4 h-4" /> Hasil & Dampak
+                    <TrendingUp className="w-4 h-4" /> {tr("Hasil & Dampak")}
                   </div>
                   <p className="text-sm font-semibold text-navy leading-relaxed">
-                    {project.hasil}
+                    {tr(project.hasil)}
                   </p>
                 </div>
               )}
@@ -208,7 +248,7 @@ export default function PortfolioDetail() {
               {/* Process Timeline */}
               {project.process && project.process.length > 0 && (
                 <div className="pt-6">
-                  <h3 className="text-xl font-extrabold text-navy mb-6">Tahapan Pengerjaan</h3>
+                  <h3 className="text-xl font-extrabold text-navy mb-6">{tr("Tahapan Pengerjaan")}</h3>
                   <div className="space-y-4">
                     {project.process.map((step, idx) => (
                       <div key={idx} className="flex gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
@@ -216,8 +256,8 @@ export default function PortfolioDetail() {
                           {step.num || idx + 1}
                         </span>
                         <div>
-                          <h4 className="text-sm font-bold text-navy mb-1">{step.title}</h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
+                          <h4 className="text-sm font-bold text-navy mb-1">{tr(step.title)}</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{tr(step.desc)}</p>
                         </div>
                       </div>
                     ))}
@@ -231,11 +271,11 @@ export default function PortfolioDetail() {
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5">
                 {project.pilar && project.pilar.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Pilar Solusi</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">{tr("Pilar Solusi")}</h3>
                     <div className="flex flex-wrap gap-2">
                       {project.pilar.map((p) => (
                         <span key={p} className="px-3 py-1 rounded-full bg-navy-50 text-navy text-xs font-semibold">
-                          {p}
+                          {tr(p)}
                         </span>
                       ))}
                     </div>
@@ -244,11 +284,11 @@ export default function PortfolioDetail() {
 
                 {project.products && project.products.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Produk / Layanan</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">{tr("Produk / Layanan")}</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {project.products.map((prod) => (
                         <span key={prod} className="px-2.5 py-1 rounded-md bg-magenta-50 text-magenta text-xs font-medium">
-                          {prod}
+                          {tr(prod)}
                         </span>
                       ))}
                     </div>
@@ -257,11 +297,11 @@ export default function PortfolioDetail() {
 
                 {project.tags && project.tags.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Tags</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">{tr("Tags")}</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {project.tags.map((tag) => (
                         <span key={tag} className="px-2 py-0.5 rounded bg-gray-100 text-navy-400 text-xs">
-                          #{tag}
+                          #{tr(tag)}
                         </span>
                       ))}
                     </div>
@@ -277,7 +317,7 @@ export default function PortfolioDetail() {
       {galleryList.length > 1 && (
         <section className="py-12 lg:py-16 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-8 text-center">Galeri Proyek</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-8 text-center">{tr("Galeri Proyek")}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {galleryList.map((imgUrl, i) => (
                 <div
@@ -296,7 +336,7 @@ export default function PortfolioDetail() {
                   />
                   <div className="absolute inset-0 bg-navy/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-navy text-xs font-bold shadow">
-                      Perbesar
+                      {tr("Perbesar")}
                     </span>
                   </div>
                 </div>
@@ -315,17 +355,17 @@ export default function PortfolioDetail() {
       <section className="py-14 lg:py-20 bg-gradient-to-r from-navy via-navy-400 to-navy text-white text-center">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4">
-            Ingin Membangun Proyek Seperti Ini?
+            {tr("Ingin Membangun Proyek Seperti Ini?")}
           </h2>
           <p className="text-white/70 text-base mb-8 max-w-xl mx-auto">
-            Konsultasikan ide bisnis Anda bersama tim ahli Optibis secara gratis dan dapatkan rekomendasi solusi terbaik.
+            {tr("Konsultasikan ide bisnis Anda bersama tim ahli Optibis secara gratis dan dapatkan rekomendasi solusi terbaik.")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               onClick={() => nav("#konsultasi")}
               className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-8 h-12 shadow-xl shadow-magenta/30 w-full sm:w-auto"
             >
-              Konsultasi Gratis <ArrowRight className="w-4 h-4 ml-2" />
+              {tr("Konsultasi Gratis")} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             <a
               href="https://wa.me/6287772577020"
@@ -333,7 +373,7 @@ export default function PortfolioDetail() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors w-full sm:w-auto"
             >
-              <MessageCircle className="w-4 h-4" /> Chat WhatsApp
+              <MessageCircle className="w-4 h-4" /> {tr("Chat WhatsApp")}
             </a>
           </div>
         </div>
@@ -344,8 +384,8 @@ export default function PortfolioDetail() {
         <section className="py-12 lg:py-16 bg-white border-t border-gray-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">Proyek Lainnya</h2>
-              <p className="text-sm text-muted-foreground">Lihat hasil kerja kami untuk klien lain.</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-2">{tr("Proyek Lainnya")}</h2>
+              <p className="text-sm text-muted-foreground">{tr("Lihat hasil kerja kami untuk klien lain.")}</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {otherProjects.map((p, i) => (
@@ -372,11 +412,11 @@ export default function PortfolioDetail() {
                       />
                     </div>
                     <div className="p-5">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{p.industry}</span>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{tr(p.industry)}</span>
                       <h3 className="text-base font-bold text-navy mb-1 group-hover:text-magenta transition-colors">{p.name}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{p.ringkasan}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{tr(p.ringkasan)}</p>
                       <div className="flex items-center gap-1.5 text-sm font-semibold text-magenta mt-3 group-hover:gap-2.5 transition-all">
-                        Lihat Detail <ArrowRight className="w-4 h-4" />
+                        {tr("Lihat Detail")} <ArrowRight className="w-4 h-4" />
                       </div>
                     </div>
                   </Link>

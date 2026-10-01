@@ -2,6 +2,7 @@ import { PACKAGE_DATA } from "@/data/packages";
 import { MARKETING_KIT_ITEMS } from "@/data/marketingKit";
 import { TOOLS, getToolImage } from "@/data/tools";
 import { VIRALOG_CONTENT } from "@/data/viralog";
+import { SERVICES as WEBSITE_SERVICES } from "@/pages/WebsiteService";
 
 function normalize(value = "") {
   return value
@@ -11,15 +12,28 @@ function normalize(value = "") {
 }
 
 export function getGlobalSearchItems() {
-  const packages = Object.entries(PACKAGE_DATA).map(([slug, pkg]) => ({
-    id: `package-${slug}`,
-    type: "package",
-    title: pkg.name,
-    description: pkg.target,
-    meta: `${pkg.pillar} - ${pkg.priceShort || pkg.price}`,
-    image: pkg.included[0]?.image,
-    href: `/paket/${pkg.pillarSlug}/${slug}`,
-    keywords: [pkg.pillar, pkg.target, ...pkg.included.map((item) => item.title)],
+  const packages = Object.entries(PACKAGE_DATA)
+    .filter(([, pkg]) => pkg.pillarSlug !== "website")
+    .map(([slug, pkg]) => ({
+      id: `package-${slug}`,
+      type: "package",
+      title: pkg.name,
+      description: pkg.target,
+      meta: `${pkg.pillar} - ${pkg.priceShort || pkg.price}`,
+      image: pkg.included[0]?.image,
+      href: `/paket/${pkg.pillarSlug}/${slug}`,
+      keywords: [pkg.pillar, pkg.target, ...pkg.included.map((item) => item.title)],
+    }));
+
+  const websiteServices = (WEBSITE_SERVICES || []).map((s) => ({
+    id: `service-website-${s.slug}`,
+    type: "service",
+    title: s.name,
+    description: s.desc,
+    meta: "Website",
+    image: s.image,
+    href: `/layanan/website/${s.slug}`,
+    keywords: ["Website", "Jasa Pembuatan Website", ...(s.features || [])],
   }));
 
   const tools = TOOLS.map((tool, index) => ({
@@ -58,7 +72,7 @@ export function getGlobalSearchItems() {
       keywords: [item.subtitle, item.category_slug, ...(item.tags || [])],
     }));
 
-  return [...packages, ...tools, ...marketingProducts, ...news];
+  return [...packages, ...websiteServices, ...tools, ...marketingProducts, ...news];
 }
 
 export function searchGlobal(query, type = "all") {

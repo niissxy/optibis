@@ -50,9 +50,7 @@ export default function SiteFooter() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {/* Brand */}
             <div className="col-span-2 md:col-span-3 lg:col-span-2">
-              <div className="text-xl font-extrabold mb-3">
-                OPTIBIS<span className="text-magenta">.ID</span>
-              </div>
+              <img src="/assets/optibis-logo-horizontal.png" alt="OPTIBIS.ID" className="h-14 w-auto mb-3" />
               <p className="text-sm text-white/60 mb-5 max-w-xs leading-relaxed">
                 {language === "en" ? "One partner for your business branding, website, and digital growth." : "Satu partner untuk branding, website, dan pertumbuhan digital bisnis Anda."}
               </p>
@@ -110,7 +108,7 @@ export default function SiteFooter() {
         <div className="border-t border-white/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-white/40">
-              © 2024 OPTIBIS.ID. {language === "en" ? "All rights reserved." : "Hak cipta dilindungi."}
+              © {new Date().getFullYear()} OPTIBIS.ID. {language === "en" ? "All rights reserved." : "Hak cipta dilindungi."}
             </p>
             <p className="text-xs text-white/30">
               {language === "en" ? "Built for digital business growth in Indonesia." : "Dibuat untuk pertumbuhan digital bisnis di Indonesia."}

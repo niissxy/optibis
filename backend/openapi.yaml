@@ -1,108 +1,666 @@
 openapi: 3.0.3
 info:
-  title: Optibis Admin API
+  title: OPTIBIS.ID REST API
   version: 1.0.0
-  description: API autentikasi, admin, dan portofolio untuk dashboard Optibis.
+  description: |
+    Dokumentasi resmi REST API untuk ekosistem OPTIBIS.ID.
+    Menyediakan endpoint untuk frontend publik (portofolio, modul konten, lead capture, analitik pengunjung)
+    serta endpoint administrasi terproteksi (manajemen admin, CRUD konten dinamis, dashboard analytics).
 servers:
   - url: http://localhost:8000/api/v1
+    description: Local Development Server
+  - url: https://api.optibis.id/api/v1
+    description: Production Server
+
 paths:
+  # ==========================================
+  # AUTHENTICATION
+  # ==========================================
   /auth/login:
     post:
-      summary: Login admin
+      tags:
+        - Authentication
+      summary: Login Admin
+      description: Melakukan autentikasi admin dan menghasilkan bearer token akses.
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/LoginRequest' }
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
       responses:
-        '200': { description: Token berhasil dibuat }
-        '422': { description: Kredensial tidak valid }
+        '200':
+          description: Autentikasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '422':
+          description: Validasi gagal / kredensial tidak cocok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /auth/me:
     get:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Profil admin aktif } }
+      tags:
+        - Authentication
+      summary: Dapatkan Profil Admin Aktif
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data profil admin yang sedang login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+        '401':
+          description: Tidak terautentikasi (Token tidak valid / expired)
+
   /auth/logout:
     post:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Logout berhasil } }
+      tags:
+        - Authentication
+      summary: Logout Admin
+      description: Mencabut atau menghapus sesi token admin yang aktif.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Berhasil logout
+
+  # ==========================================
+  # VISITOR & DASHBOARD ANALYTICS
+  # ==========================================
+  /analytics/visits:
+    post:
+      tags:
+        - Analytics
+      summary: Rekam Kunjungan Halaman Publik
+      description: Endpoint publik untuk mencatat traffic pengunjung situs (anonymous tracking).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitRecordRequest'
+      responses:
+        '200':
+          description: Kunjungan berhasil dicatat
+        '201':
+          description: Kunjungan baru berhasil dibuat
+
+  /dashboard-analytics:
+    get:
+      tags:
+        - Analytics
+      summary: Ringkasan Analitik Dashboard Admin
+      description: Mengambil data metrik agregat traffic, konversi lead, perangkat, dan halaman terpopuler.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data ringkasan analitik
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardAnalyticsResponse'
+        '401':
+          description: Tidak terautentikasi
+
+  # ==========================================
+  # LEADS MANAGEMENT
+  # ==========================================
+  /leads:
+    post:
+      tags:
+        - Leads
+      summary: Form Registrasi Lead Publik
+      description: Menangkap lead dari form konsultasi website atau gerbang download Marketing Kit.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadSubmissionRequest'
+      responses:
+        '201':
+          description: Lead berhasil tersimpan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recorded:
+                    type: boolean
+                    example: true
+        '422':
+          description: Validasi input gagal
+
+  # ==========================================
+  # PORTFOLIOS
+  # ==========================================
   /portfolios:
     get:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Daftar portofolio } }
+      tags:
+        - Portfolios
+      summary: Daftar Portofolio Publik & Terkelola
+      responses:
+        '200':
+          description: Array data portofolio
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PortfolioItem'
     post:
-      security: [{ bearerAuth: [] }]
-      requestBody: { $ref: '#/components/requestBodies/PortfolioForm' }
-      responses: { '201': { description: Portofolio dibuat } }
+      tags:
+        - Portfolios
+      summary: Buat Portofolio Baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PortfolioFormRequest'
+      responses:
+        '201':
+          description: Portofolio berhasil dibuat
+        '401':
+          description: Tidak terautentikasi
+
   /portfolios/{id}:
-    parameters: [{ $ref: '#/components/parameters/id' }]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID atau Slug Portofolio
     get:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Detail portofolio } }
+      tags:
+        - Portfolios
+      summary: Detail Portofolio
+      responses:
+        '200':
+          description: Data detail portofolio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioItem'
     put:
-      summary: Update portofolio
-      security: [{ bearerAuth: [] }]
-      requestBody: { $ref: '#/components/requestBodies/PortfolioForm' }
-      responses: { '200': { description: Portofolio diperbarui } }
+      tags:
+        - Portfolios
+      summary: Update Portofolio
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PortfolioFormRequest'
+      responses:
+        '200':
+          description: Portofolio berhasil diperbarui
     delete:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Portofolio dihapus } }
+      tags:
+        - Portfolios
+      summary: Hapus Portofolio
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Portofolio berhasil dihapus
+
+  # ==========================================
+  # GENERIC DYNAMIC MODULE CONTENTS
+  # ==========================================
+  /modules/{module}:
+    parameters:
+      - name: module
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          Nama modul sistem:
+          - service-pillars
+          - services
+          - packages
+          - tools
+          - solution-library
+          - solution-library-categories
+          - solution-library-explore-categories
+          - marketing-kits
+          - insights
+          - viralog-contents
+          - viralog-categories
+          - viralog-tags
+          - viralog-authors
+          - viralog-ads
+          - viralog-newsletters
+          - evolis-business-dna
+          - evolis-products
+          - evolis-audiences
+          - evolis-objectives
+          - evolis-campaigns
+          - evolis-assets
+          - evolis-publishing
+          - evolis-leads
+          - evolis-pipelines
+          - evolis-recommendations
+          - evolis-automations
+          - evolis-governance
+    get:
+      tags:
+        - Dynamic Modules
+      summary: Ambil Semua Item Modul
+      description: Endpoint publik untuk mengambil item konten dari modul tertentu.
+      responses:
+        '200':
+          description: Daftar item modul
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModuleItem'
+    post:
+      tags:
+        - Dynamic Modules
+      summary: Tambah Item Modul Baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleItemInput'
+      responses:
+        '201':
+          description: Item berhasil ditambahkan
+
+  /modules/{module}/{id}:
+    parameters:
+      - name: module
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID numerik atau Slug item modul
+    get:
+      tags:
+        - Dynamic Modules
+      summary: Detail Item Modul
+      responses:
+        '200':
+          description: Data item modul
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleItem'
+    put:
+      tags:
+        - Dynamic Modules
+      summary: Update Item Modul
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleItemInput'
+      responses:
+        '200':
+          description: Item berhasil diperbarui
+    delete:
+      tags:
+        - Dynamic Modules
+      summary: Hapus Item Modul
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Item berhasil dihapus
+
+  # ==========================================
+  # ADMIN USERS MANAGEMENT
+  # ==========================================
   /admins:
     get:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Daftar admin } }
+      tags:
+        - Admin Management
+      summary: Daftar Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List admin aktif
     post:
-      security: [{ bearerAuth: [] }]
-      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/AdminRequest' } } } }
-      responses: { '201': { description: Admin dibuat } }
+      tags:
+        - Admin Management
+      summary: Buat Admin Baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCreateRequest'
+      responses:
+        '201':
+          description: Admin berhasil dibuat
+
   /admins/{id}:
-    parameters: [{ $ref: '#/components/parameters/id' }]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
     get:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Detail admin } }
+      tags:
+        - Admin Management
+      summary: Detail Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Detail admin
     put:
-      security: [{ bearerAuth: [] }]
-      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/AdminUpdate' } } } }
-      responses: { '200': { description: Admin diperbarui } }
+      tags:
+        - Admin Management
+      summary: Update Admin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdateRequest'
+      responses:
+        '200':
+          description: Admin berhasil diperbarui
     delete:
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Admin dihapus } }
+      tags:
+        - Admin Management
+      summary: Hapus Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin berhasil dihapus
+
 components:
   securitySchemes:
-    bearerAuth: { type: http, scheme: bearer }
-  parameters:
-    id: { name: id, in: path, required: true, schema: { type: integer } }
-  requestBodies:
-    PortfolioForm:
-      required: true
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            required: [name, category, description, website_url]
-            properties:
-              name: { type: string }
-              category: { type: string }
-              description: { type: string }
-              website_url: { type: string, format: uri }
-              image: { type: string, format: binary }
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     LoginRequest:
       type: object
-      required: [email, password]
+      required:
+        - email
+        - password
       properties:
-        email: { type: string, format: email }
-        password: { type: string, format: password }
-    AdminRequest:
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        password:
+          type: string
+          format: password
+          example: your_secret_password
+
+    LoginResponse:
       type: object
-      required: [name, email, password]
       properties:
-        name: { type: string }
-        email: { type: string, format: email }
-        password: { type: string, minLength: 8 }
-    AdminUpdate:
+        token:
+          type: string
+          example: sample_bearer_token_string
+        user:
+          $ref: '#/components/schemas/AdminUser'
+
+    AdminUser:
       type: object
-      description: Semua field opsional saat update.
       properties:
-        name: { type: string }
-        email: { type: string, format: email }
-        password: { type: string, format: password, minLength: 8 }
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Administrator
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        role:
+          type: string
+          example: superadmin
+
+    AdminCreateRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          example: Nama Admin
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        password:
+          type: string
+          format: password
+          example: your_password
+
+    AdminUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    VisitRecordRequest:
+      type: object
+      required:
+        - visitor_id
+        - path
+      properties:
+        visitor_id:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        path:
+          type: string
+          example: /website
+        referrer:
+          type: string
+          example: google.com
+        device:
+          type: string
+          enum: [desktop, mobile, tablet]
+          example: desktop
+
+    LeadSubmissionRequest:
+      type: object
+      required:
+        - nama
+        - email
+        - whatsapp
+        - consent
+      properties:
+        nama:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+        whatsapp:
+          type: string
+          example: "081234567890"
+        perusahaan:
+          type: string
+          example: PT Sukses Mandiri
+        jabatan:
+          type: string
+          example: Founder & CEO
+        kota:
+          type: string
+          example: Jakarta
+        industri:
+          type: string
+          example: Retail & E-commerce
+        tujuan:
+          type: string
+          example: Ingin membangun website e-commerce profesional
+        asset:
+          type: string
+          example: Ebook Panduan Branding
+        consent:
+          type: boolean
+          example: true
+
+    PortfolioItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        name:
+          type: string
+        client:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        website_url:
+          type: string
+        image_url:
+          type: string
+        data:
+          type: object
+        is_published:
+          type: boolean
+
+    PortfolioFormRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        website_url:
+          type: string
+        image:
+          type: string
+          format: binary
+        data:
+          type: string
+          description: JSON stringified object data
+        is_published:
+          type: boolean
+
+    ModuleItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        image_url:
+          type: string
+        data:
+          type: object
+        is_published:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ModuleItemInput:
+      type: object
+      required:
+        - title
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        image_url:
+          type: string
+        data:
+          type: object
+        is_published:
+          type: boolean
+
+    DashboardAnalyticsResponse:
+      type: object
+      properties:
+        total_visits:
+          type: integer
+        unique_visitors:
+          type: integer
+        total_leads:
+          type: integer
+        devices:
+          type: object
+        top_referrers:
+          type: array
+          items:
+            type: object
+        top_pages:
+          type: array
+          items:
+            type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object

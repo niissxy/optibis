@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Search, MessageCircle, LayoutDashboard, Moon, Sun, Globe2, PackageOpen } from "lucide-react";
+import { Menu, X, ChevronDown, Search, MessageCircle, LayoutDashboard, Moon, Sun, Globe2, PackageOpen, LayoutGrid, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeNav } from "@/hooks/useSafeNav";
@@ -13,24 +13,55 @@ import { useServicePillars } from "@/hooks/useServicePillars";
 const LAYANAN_CHILDREN = [
   { group: "", items: [
     { label: "Digital Asset", href: "/digital-asset" },
-    { label: "Website", href: "/website" },
+    {
+      label: "Website",
+      href: "/website",
+      subItems: [
+        { label: "Landing Page", href: "/layanan/website/landing-page" },
+        { label: "Multi Page", href: "/layanan/website/multi-page" },
+        { label: "Toko Online", href: "/layanan/website/toko-online" },
+      ],
+    },
+    {
+      label: "Software & Sistem Bisnis",
+      href: "/layanan",
+      icon: Code2,
+      subItems: [
+        { label: "Web Application", href: "/layanan/software/web-application", icon: LayoutGrid },
+        { label: "Custom System", href: "/layanan/software/custom-system", icon: Code2 },
+      ],
+    },
     { label: "Digital Growth Team", href: "/digital-growth-team" },
   ]},
 ];
 
 const PAKET_CHILDREN = [
-  { group: "Digital Asset", items: [
-    { label: "Paket Siap Usaha", href: "/paket/digital-asset/siap-usaha" },
-    { label: "Paket Citra Usaha", href: "/paket/digital-asset/citra-usaha" },
-    { label: "Paket Bisnis Profesional", href: "/paket/digital-asset/bisnis-profesional" },
-  ]},
-  { group: "Website", items: [
-    { label: "Landing Page", href: "/paket/website/landing-page" },
-    { label: "Multi Page", href: "/paket/website/multi-page" },
-    { label: "Toko Online", href: "/paket/website/toko-online" },
-  ]},
-  { group: "Digital Growth Team", items: [
-    { label: "Admin Digital", href: "/paket/digital-growth-team/growth" },
+  { group: "", items: [
+    {
+      label: "Digital Asset",
+      href: "/paket",
+      subItems: [
+        { label: "Paket Siap Usaha", href: "/paket/digital-asset/siap-usaha" },
+        { label: "Paket Citra Usaha", href: "/paket/digital-asset/citra-usaha" },
+        { label: "Paket Bisnis Profesional", href: "/paket/digital-asset/bisnis-profesional" },
+      ],
+    },
+    {
+      label: "Digital Growth Team",
+      href: "/paket",
+      subItems: [
+        { label: "Admin Digital Starter", href: "/paket/digital-growth-team/growth-starter" },
+        { label: "Admin Digital Growth", href: "/paket/digital-growth-team/growth" },
+        { label: "Admin Digital Professional", href: "/paket/digital-growth-team/growth-professional" },
+      ],
+    },
+    {
+      label: "Paket Khusus",
+      href: "/paket",
+      subItems: [
+        { label: "Paket Custom", href: "/paket/khusus/paket-custom" },
+      ],
+    },
   ]},
 ];
 
@@ -51,7 +82,10 @@ const KONTEN_CHILDREN = [
     { label: "Video & Podcast", href: "/video" },
     { label: "Cari Konten", href: "/search" },
   ]},
-  { group: "Produk Digital", items: [
+];
+
+const PRODUK_DIGITAL_CHILDREN = [
+  { group: "", items: [
     { label: "Ebook & Pelatihan", href: "/insight" },
     { label: "Konsultasi Berbayar", href: "/insight" },
     { label: "Tools & Template", href: "/insight" },
@@ -73,10 +107,11 @@ const TENTANG_CHILDREN = [
 
 const NAV_ITEMS = [
   { label: "Beranda", href: "/" },
-  { label: "Layanan", href: "/layanan", megaChildren: LAYANAN_CHILDREN, megaWidth: "w-64" },
-  { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80" },
+  { label: "Layanan", href: "/layanan", megaChildren: LAYANAN_CHILDREN, megaWidth: "w-72", footerAction: { label: "Akses Semua Layanan", href: "/layanan" } },
+  { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80", footerAction: { label: "Lihat Semua Paket", href: "/paket" } },
   { label: "Portofolio", href: "/portofolio", megaChildren: PORTOFOLIO_CHILDREN, megaWidth: "w-64" },
-  { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-72" },
+  { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-64" },
+  { label: "Produk Digital", href: "/insight", megaChildren: PRODUK_DIGITAL_CHILDREN, megaWidth: "w-56" },
   { label: "Tentang", href: "/tentang", megaChildren: TENTANG_CHILDREN, megaWidth: "w-72" },
 ];
 
@@ -115,26 +150,15 @@ export default function SiteHeader() {
   const { pillars } = useServicePillars();
   const darkNav = resolvedTheme === "dark";
 
-  const dynamicLayananChildren = [
-    {
-      group: "",
-      items: (pillars && pillars.length > 0 ? pillars : [
-        { title: "Digital Asset", link: "/digital-asset" },
-        { title: "Website", link: "/website" },
-        { title: "Digital Growth Team", link: "/digital-growth-team" },
-      ]).map((p) => ({
-        label: p.title,
-        href: p.link || `/pilar/${p.slug}`,
-      })),
-    },
-  ];
+  const dynamicLayananChildren = LAYANAN_CHILDREN;
 
   const navItems = [
     { label: "Beranda", href: "/" },
-    { label: "Layanan", href: "/layanan", megaChildren: dynamicLayananChildren, megaWidth: "w-64" },
-    { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80" },
+    { label: "Layanan", href: "/layanan", megaChildren: dynamicLayananChildren, megaWidth: "w-72", footerAction: { label: "Akses Semua Layanan", href: "/layanan" } },
+    { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80", footerAction: { label: "Lihat Semua Paket", href: "/paket" } },
     { label: "Portofolio", href: "/portofolio", megaChildren: PORTOFOLIO_CHILDREN, megaWidth: "w-64" },
-    { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-72" },
+    { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-64" },
+    { label: "Produk Digital", href: "/insight", megaChildren: PRODUK_DIGITAL_CHILDREN, megaWidth: "w-56" },
     { label: "Tentang", href: "/tentang", megaChildren: TENTANG_CHILDREN, megaWidth: "w-72" },
   ];
 
@@ -171,9 +195,11 @@ export default function SiteHeader() {
         <div className="flex items-center justify-between h-16 lg:h-18">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0 group">
-            <span className={`origin-left text-xl font-extrabold tracking-tight transition-transform group-hover:scale-105 ${darkNav ? "text-white" : "text-navy"}`}>
-              OPTIBIS<span className="text-magenta">.ID</span>
-            </span>
+            <img
+              src="/assets/optibis-logo-horizontal.png"
+              alt="OPTIBIS.ID"
+              className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -191,6 +217,7 @@ export default function SiteHeader() {
                     width={item.megaWidth}
                     dark={darkNav}
                     translate={tr}
+                    footerAction={item.footerAction}
                   >
                     {item.megaChildren}
                   </MegaMenuDropdown>
@@ -417,9 +444,7 @@ export default function SiteHeader() {
                 <div key={item.label}>
                   <button
                     onClick={() => {
-                      if (["Layanan", "Paket", "Tentang"].includes(item.label)) {
-                        onNavClick(item.href);
-                      } else if (item.megaChildren) {
+                      if (item.megaChildren) {
                         setMobileExpanded(mobileExpanded === item.label ? null : item.label);
                       } else {
                         onNavClick(item.href);
@@ -428,26 +453,53 @@ export default function SiteHeader() {
                     className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-navy-400 hover:bg-gray-50 rounded-lg"
                   >
                     {tr(item.label)}
-                    {item.megaChildren && !["Layanan", "Paket", "Tentang"].includes(item.label) && (
+                    {item.megaChildren && (
                       <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpanded === item.label ? "rotate-180" : ""}`} />
                     )}
                   </button>
-                  {item.megaChildren && !["Layanan", "Paket", "Tentang"].includes(item.label) && mobileExpanded === item.label && (
+                  {item.megaChildren && mobileExpanded === item.label && (
                     <div className="pl-4 space-y-3 pt-1 pb-2">
                       {item.megaChildren.map((group, idx) => (
                         <div key={group.group || idx}>
                           {group.group && <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 px-2">{tr(group.group)}</p>}
                           {group.items.map((sub) => (
-                            <button
-                              key={sub.label}
-                              onClick={() => onNavClick(sub.href)}
-                              className="block w-full text-left px-3 py-1.5 text-sm text-navy-300 hover:text-magenta hover:bg-magenta-50 rounded-md transition-colors"
-                            >
-                              {tr(sub.label)}
-                            </button>
+                            <div key={sub.label}>
+                              <button
+                                key={sub.label}
+                                onClick={() => onNavClick(sub.href)}
+                                className="flex items-center gap-2.5 w-full text-left px-3 py-1.5 text-sm text-navy-300 hover:text-magenta hover:bg-magenta-50 rounded-md transition-colors"
+                              >
+                                {sub.icon && <sub.icon className="w-4 h-4 shrink-0 text-navy-400" />}
+                                <span>{tr(sub.label)}</span>
+                              </button>
+                              {sub.subItems && (
+                                <div className="ml-4 pl-2.5 my-1 border-l-2 border-magenta/40 space-y-0.5">
+                                  {sub.subItems.map((child) => (
+                                    <button
+                                      key={child.label}
+                                      onClick={() => onNavClick(child.href)}
+                                      className="block w-full text-left px-2.5 py-1 text-xs text-navy-200 hover:text-magenta rounded-md transition-colors"
+                                    >
+                                      {tr(child.label)}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       ))}
+                      {item.footerAction && (
+                        <div className="pt-2 px-2">
+                          <button
+                            onClick={() => onNavClick(item.footerAction.href)}
+                            className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-magenta bg-magenta-50 rounded-lg hover:bg-magenta-100 transition-colors"
+                          >
+                            <span>{tr(item.footerAction.label)}</span>
+                            <span className="text-sm">→</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

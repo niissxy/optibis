@@ -121,6 +121,9 @@
 }
 
 html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -294,25 +297,35 @@ html {
   background: #3a5275;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 767px) {
   html,
   body,
   #root {
     width: 100%;
-    max-width: 100%;
-    overflow-x: clip;
-  }
-
-  body {
-    min-width: 320px;
-  }
-
-  main,
-  section,
-  article,
-  [class*="grid"],
-  [class*="flex"] {
     min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  :where(main, header, footer, section, article, nav, form) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  :where(div,
+  [class*="grid"],
+  [class*="flex"]) {
+    min-width: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  a,
+  button,
+  label {
+    overflow-wrap: anywhere;
   }
 
   img,

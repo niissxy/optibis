@@ -12,6 +12,7 @@ import {
   ExternalLink,
   FileCheck,
   FileText,
+  FolderPlus,
   HelpCircle,
   ImagePlus,
   LayoutDashboard,
@@ -89,8 +90,15 @@ type Section = 'portfolio'|'admins'|'viralog'|'evolis'|'settings'|ContentType
 
 const SERVICE_PILLARS = [
   { id: 'website', name: 'Website' },
+  { id: 'software', name: 'Software & Sistem Bisnis' },
   { id: 'digital-asset', name: 'Digital Asset' },
   { id: 'digital-growth-team', name: 'Digital Growth Team' },
+]
+
+const PACKAGE_PILLARS = [
+  { id: 'digital-asset', name: 'Digital Asset' },
+  { id: 'digital-growth-team', name: 'Digital Growth Team' },
+  { id: 'khusus', name: 'Paket Khusus' },
 ]
 
 const CONTENT_SECTIONS:{id:ContentType;label:string;icon:typeof Package}[] = [
@@ -126,7 +134,7 @@ async function request(path:string, options:RequestInit = {}) {
 function Login({onLogin}:{onLogin:(user:User, token:string)=>void}) {
   const [email,setEmail] = useState('admin@optibis.test'), [password,setPassword] = useState('password123'), [error,setError] = useState(''), [busy,setBusy] = useState(false)
   async function submit(e:FormEvent) { e.preventDefault(); setBusy(true); setError(''); try { const data=await request('/auth/login',{method:'POST',body:JSON.stringify({email,password})}); onLogin(data.user,data.token) } catch (err) { setError((err as Error).message) } finally { setBusy(false) } }
-  return <main className="login-page"><div className="login-art"><div className="art-orb orb-one"/><div className="art-orb orb-two"/><div className="art-copy"><div className="brand-mark">O</div><p className="eyebrow">OPTIBIS STUDIO</p><h1>Bangun karya yang<br/><em>berkesan.</em></h1><p className="muted-light">Kelola portofolio digital Anda dalam satu ruang yang sederhana dan powerful.</p></div></div><div className="login-panel"><div className="mobile-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="login-box"><p className="eyebrow pink">ADMIN CONSOLE</p><h2>Selamat datang kembali</h2><p className="subtle">Masuk untuk mengelola portofolio dan tim Anda.</p><form onSubmit={submit}><label>Email<div className="input-wrap"><Mail size={17}/><input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="nama@perusahaan.com"/></div></label><label>Password<div className="input-wrap"><ShieldCheck size={17}/><input type="password" value={password} onChange={e=>setPassword(e.target.value)} required placeholder="••••••••"/></div></label>{error && <div className="error-box">{error}</div>}<button className="primary full" disabled={busy}>{busy?'Memproses…':'Masuk ke dashboard'} <ChevronDown size={17} className="rotate-270"/></button></form><p className="login-hint">Demo: admin@optibis.test · password123</p></div><div className="login-footer">© 2025 Optibis Studio <span>·</span> Built with intention</div></div></main>
+  return <main className="login-page"><div className="login-art"><div className="art-orb orb-one"/><div className="art-orb orb-two"/><div className="art-copy"><div className="brand-mark">O</div><p className="eyebrow">OPTIBIS STUDIO</p><h1>Bangun karya yang<br/><em>berkesan.</em></h1><p className="muted-light">Kelola portofolio digital Anda dalam satu ruang yang sederhana dan powerful.</p></div></div><div className="login-panel"><div className="mobile-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="login-box"><p className="eyebrow pink">ADMIN CONSOLE</p><h2>Selamat datang kembali</h2><p className="subtle">Masuk untuk mengelola portofolio dan tim Anda.</p><form onSubmit={submit}><label>Email<div className="input-wrap"><Mail size={17}/><input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="nama@perusahaan.com"/></div></label><label>Password<div className="input-wrap"><ShieldCheck size={17}/><input type="password" value={password} onChange={e=>setPassword(e.target.value)} required placeholder="••••••••"/></div></label>{error && <div className="error-box">{error}</div>}<button className="primary full" disabled={busy}>{busy?'Memproses…':'Masuk ke dashboard'} <ChevronDown size={17} className="rotate-270"/></button></form><p className="login-hint"></p></div><div className="login-footer">© 2025 Optibis Studio <span>·</span> Built with intention</div></div></main>
 }
 
 function App() {
@@ -142,6 +150,7 @@ function PortfolioView() {
   const [items, setItems] = useState<Portfolio[]>([])
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Portfolio | null | false>(false)
+  const [managingCategories, setManagingCategories] = useState(false)
   const [refresh, setRefresh] = useState(0)
   const [error, setError] = useState('')
 
@@ -174,11 +183,16 @@ function PortfolioView() {
         <div>
           <p className="eyebrow pink">CONTENT LIBRARY</p>
           <h1>Portofolio</h1>
-          <p className="subtle">Kelola seluruh proyek portofolio, detail teknis, dokumen lampiran, dan hasil pengerjaan.</p>
+          <p className="subtle">Kelola seluruh proyek portofolio, aset digital, detail teknis, dokumen lampiran, dan hasil pengerjaan.</p>
         </div>
-        <button className="primary" onClick={() => setEditing(null)}>
-          <Plus size={18} /> Tambah portofolio
-        </button>
+        <div className="page-title-actions" style={{ display: 'flex', gap: '8px' }}>
+          <button className="secondary" onClick={() => setManagingCategories(true)}>
+            <FolderPlus size={17} /> Kelola Kategori
+          </button>
+          <button className="primary" onClick={() => setEditing(null)}>
+            <Plus size={18} /> Tambah portofolio
+          </button>
+        </div>
       </div>
 
       <div className="stats">
@@ -307,7 +321,224 @@ function PortfolioView() {
           }}
         />
       )}
+
+      {managingCategories && (
+        <PortfolioCategoryModal
+          onClose={() => setManagingCategories(false)}
+          onSaved={() => setRefresh((x) => x + 1)}
+        />
+      )}
     </section>
+  )
+}
+
+function PortfolioCategoryModal({
+  onClose,
+  onSaved,
+}: {
+  onClose: () => void
+  onSaved?: () => void
+}) {
+  const [activeTab, setActiveTab] = useState<'project' | 'digital-asset'>('project')
+  const [items, setItems] = useState<ContentItem[]>([])
+  const [title, setTitle] = useState('')
+  const [icon, setIcon] = useState('Layout')
+  const [editing, setEditing] = useState<ContentItem | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const load = () =>
+    request('/modules/portfolio-categories')
+      .then(setItems)
+      .catch((err) => setError(err.message))
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  const reset = () => {
+    setTitle('')
+    setIcon(activeTab === 'digital-asset' ? 'Palette' : 'Layout')
+    setEditing(null)
+  }
+
+  useEffect(() => {
+    setIcon(activeTab === 'digital-asset' ? 'Palette' : 'Layout')
+  }, [activeTab])
+
+  const projectItems = items.filter((item) => (item.summary || item.data?.type) === 'project')
+  const digitalAssetItems = items.filter((item) => (item.summary || item.data?.type) === 'digital-asset')
+  const currentItems = activeTab === 'project' ? projectItems : digitalAssetItems
+
+  async function save(event: FormEvent) {
+    event.preventDefault()
+    if (!title.trim()) return
+    setBusy(true)
+    setError('')
+    try {
+      const type = editing?.data?.type || activeTab
+      const slug = `portfolio-category-${type}-${title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+      const body = {
+        title: title.trim(),
+        slug,
+        summary: type,
+        image_url: null,
+        data: { type, icon: icon || (type === 'digital-asset' ? 'Palette' : 'Layout') },
+        is_published: true,
+      }
+
+      await request(
+        editing ? `/modules/portfolio-categories/${editing.id}` : '/modules/portfolio-categories',
+        {
+          method: editing ? 'PUT' : 'POST',
+          body: JSON.stringify(body),
+        }
+      )
+      reset()
+      load()
+      onSaved?.()
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove(item: ContentItem) {
+    if (!confirm(`Hapus kategori "${item.title}"?`)) return
+    try {
+      await request(`/modules/portfolio-categories/${item.id}`, { method: 'DELETE' })
+      load()
+      onSaved?.()
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+
+  const iconOptions =
+    activeTab === 'project'
+      ? ['Layout', 'Briefcase', 'ShoppingCart', 'Server', 'AppWindow', 'Smartphone', 'Monitor', 'PenTool', 'Layers', 'FileText']
+      : ['Palette', 'Sparkles', 'Printer', 'Image', 'Share2', 'PenTool', 'FileText', 'Layers']
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal modal-lg">
+        <div className="modal-head">
+          <div>
+            <p className="eyebrow pink">PORTOFOLIO</p>
+            <h2>Kelola Kategori Portofolio</h2>
+          </div>
+          <button type="button" className="icon-btn" onClick={onClose}>
+            <X />
+          </button>
+        </div>
+
+        {/* Tab selector */}
+        <div className="modal-tabs">
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'project' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('project')
+              reset()
+            }}
+          >
+            📁 Kategori Proyek ({projectItems.length})
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'digital-asset' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('digital-asset')
+              reset()
+            }}
+          >
+            🎨 Kategori Digital Asset ({digitalAssetItems.length})
+          </button>
+        </div>
+
+        <form className="category-manager-form" onSubmit={save} style={{ marginTop: '16px' }}>
+          <select
+            className="category-icon-input"
+            value={icon}
+            onChange={(e) => setIcon(e.target.value)}
+            style={{ width: '130px' }}
+          >
+            {iconOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          <input
+            placeholder={
+              activeTab === 'project'
+                ? 'Contoh: Website Edukasi, Aplikasi CRM...'
+                : 'Contoh: Logo Brand, Desain Sosial Media, Banner...'
+            }
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            style={{ flex: 1 }}
+          />
+          <button className="primary" disabled={busy}>
+            {editing
+              ? 'Update Kategori'
+              : `+ Tambah Kategori ${activeTab === 'project' ? 'Proyek' : 'Digital Asset'}`}
+          </button>
+          {editing && (
+            <button type="button" className="secondary" onClick={reset}>
+              Batal
+            </button>
+          )}
+        </form>
+
+        {error && <div className="error-box">{error}</div>}
+
+        <div className="category-manager-list" style={{ maxHeight: '320px', overflowY: 'auto' }}>
+          {currentItems.map((item) => (
+            <div className="category-manager-item" key={item.id}>
+              <span className="category-manager-title">
+                <small style={{ color: '#888', marginRight: '6px' }}>[{String(item.data?.icon || 'Layout')}]</small>
+                <b>{item.title}</b>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    marginLeft: '8px',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    background: activeTab === 'digital-asset' ? '#fce4ec' : '#e3f2fd',
+                    color: activeTab === 'digital-asset' ? '#c2185b' : '#1565c0',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {activeTab === 'digital-asset' ? 'Digital Asset' : 'Proyek'}
+                </span>
+              </span>
+              <div className="row-actions">
+                <button
+                  type="button"
+                  title="Edit kategori"
+                  onClick={() => {
+                    setEditing(item)
+                    setTitle(item.title)
+                    setIcon(String(item.data?.icon || (activeTab === 'digital-asset' ? 'Palette' : 'Layout')))
+                  }}
+                >
+                  <Pencil size={16} />
+                </button>
+                <button type="button" title="Hapus kategori" onClick={() => remove(item)}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+          {!currentItems.length && (
+            <p className="subtle">Belum ada kategori {activeTab === 'project' ? 'proyek' : 'digital asset'}.</p>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -363,6 +594,22 @@ function PortfolioModal({
   const [documents, setDocuments] = useState<{ title: string; type: string; desc: string; url: string }[]>(
     item?.documents && item.documents.length > 0 ? item.documents : []
   )
+
+  const [categories, setCategories] = useState<ContentItem[]>([])
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false)
+
+  const loadCategories = () => {
+    request('/modules/portfolio-categories')
+      .then(setCategories)
+      .catch(() => {})
+  }
+
+  useEffect(() => {
+    loadCategories()
+  }, [])
+
+  const projectCats = categories.filter((c) => (c.summary || c.data?.type) === 'project')
+  const digitalCats = categories.filter((c) => (c.summary || c.data?.type) === 'digital-asset')
 
   const [image, setImage] = useState<File | null>(null)
   const [error, setError] = useState('')
@@ -513,13 +760,60 @@ function PortfolioModal({
 
               <div className="form-row">
                 <label>
-                  Industri / Kategori
-                  <input
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value, industry: e.target.value })}
-                    required
-                    placeholder="Website Company Profile"
-                  />
+                  Kategori Portofolio
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      className="select-input"
+                      style={{ flex: 1 }}
+                      value={form.category}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        const isDigital = digitalCats.some((c) => c.title === val)
+                        const isProject = projectCats.some((c) => c.title === val)
+                        let newPilar = [...form.pilar]
+                        if (isDigital && !newPilar.includes('Digital Asset')) {
+                          newPilar.push('Digital Asset')
+                        }
+                        if (isProject && !newPilar.includes('Website')) {
+                          newPilar.push('Website')
+                        }
+                        setForm({ ...form, category: val, industry: val, pilar: newPilar })
+                      }}
+                      required
+                    >
+                      <option value="">-- Pilih Kategori --</option>
+                      {projectCats.length > 0 && (
+                        <optgroup label="📁 Kategori Proyek">
+                          {projectCats.map((c) => (
+                            <option key={c.id} value={c.title}>
+                              {c.title}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {digitalCats.length > 0 && (
+                        <optgroup label="🎨 Kategori Digital Asset">
+                          {digitalCats.map((c) => (
+                            <option key={c.id} value={c.title}>
+                              {c.title}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {form.category && !categories.some((c) => c.title === form.category) && (
+                        <option value={form.category}>{form.category} (Kustom)</option>
+                      )}
+                    </select>
+                    <button
+                      type="button"
+                      className="secondary"
+                      style={{ padding: '0 10px', fontSize: '11px', whiteSpace: 'nowrap' }}
+                      onClick={() => setCategoryModalOpen(true)}
+                      title="Kelola / Tambah Kategori"
+                    >
+                      <Plus size={14} /> Kategori Baru
+                    </button>
+                  </div>
                 </label>
                 <label>
                   Lokasi
@@ -905,6 +1199,15 @@ function PortfolioModal({
           </button>
         </div>
       </form>
+
+      {categoryModalOpen && (
+        <PortfolioCategoryModal
+          onClose={() => setCategoryModalOpen(false)}
+          onSaved={() => {
+            loadCategories()
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -1578,7 +1881,13 @@ function ServicesView() {
     const rawPillar = (data.pillar_slug || data.pillar || '').toString().trim().toLowerCase()
     const pillar = SERVICE_PILLARS.find(p => p.id === rawPillar || p.name.toLowerCase() === rawPillar)?.id || rawPillar
     const features = Array.isArray(data.features) ? data.features.join(' ') : ''
-    const matchQuery = `${item.title} ${item.slug} ${item.summary || ''} ${pillar} ${features}`.toLowerCase().includes(query.toLowerCase())
+    const highlights = Array.isArray(data.highlights) ? data.highlights.map((h: any) => `${h.title || h} ${h.desc || ''}`).join(' ') : ''
+    const included = Array.isArray(data.included) ? data.included.map((inc: any) => `${inc.title || inc} ${inc.desc || ''}`).join(' ') : ''
+    const faqs = Array.isArray(data.faqs) ? data.faqs.map((f: any) => `${f.q || f.question || ''} ${f.a || f.answer || ''}`).join(' ') : ''
+    const target = (data.target || '').toString()
+    const timeline = (data.timeline || '').toString()
+    const price = (data.price || '').toString()
+    const matchQuery = `${item.title} ${item.slug} ${item.summary || ''} ${pillar} ${features} ${highlights} ${included} ${faqs} ${target} ${timeline} ${price}`.toLowerCase().includes(query.toLowerCase())
     const matchPillar = pillarFilter === 'all' || pillar === pillarFilter
     return matchQuery && matchPillar
   })
@@ -1604,7 +1913,7 @@ function ServicesView() {
         <div>
           <p className="eyebrow pink">SERVICES MANAGEMENT</p>
           <h1>Layanan</h1>
-          <p className="subtle">Kelola seluruh layanan, pilar, dan poin <strong>"Yang Termasuk dalam Layanan"</strong>.</p>
+          <p className="subtle">Kelola seluruh layanan, pilar, alasan memilih, detail layanan, cakupan, dan FAQ.</p>
         </div>
         <button className="primary" onClick={() => setEditing(null)}>
           <Plus size={18} /> Tambah Layanan
@@ -1635,7 +1944,7 @@ function ServicesView() {
         <div className="search">
           <Search size={17} />
           <input
-            placeholder="Cari layanan atau fitur…"
+            placeholder="Cari layanan, cakupan, harga, target…"
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
@@ -1665,8 +1974,8 @@ function ServicesView() {
       <div className="admin-table services-table">
         <div className="table-head">
           <span>Layanan</span>
-          <span>Pilar</span>
-          <span>Yang Termasuk dalam Layanan</span>
+          <span>Pilar & Harga</span>
+          <span>Cakupan & Detail</span>
           <span>Slug</span>
           <span>Status</span>
           <span></span>
@@ -1675,14 +1984,18 @@ function ServicesView() {
         {filtered.map(item => {
           const data = (item.data || {}) as Record<string, any>
           const features: string[] = Array.isArray(data.features) ? data.features : []
+          const highlights: any[] = Array.isArray(data.highlights) ? data.highlights : []
+          const included: any[] = Array.isArray(data.included) ? data.included : []
+          const faqs: any[] = Array.isArray(data.faqs) ? data.faqs : []
           const pillar = data.pillar_slug || data.pillar || 'website'
           const pillarObj = SERVICE_PILLARS.find(p => p.id === pillar) || { name: pillar || 'Website' }
+          const flyer = item.image_url || data.image || data.heroImage || data.flyer_image
 
           return (
             <div className="table-row" key={item.id}>
               <div className="person">
-                {item.image_url ? (
-                  <img className="avatar" src={item.image_url} alt="" />
+                {flyer ? (
+                  <img className="avatar avatar-pillar" src={flyer} alt="" />
                 ) : (
                   <span className="avatar"><BriefcaseBusiness size={15} /></span>
                 )}
@@ -1696,12 +2009,35 @@ function ServicesView() {
                 <span className={`pillar-tag pillar-${pillar}`}>
                   {pillarObj.name}
                 </span>
+                {data.price && (
+                  <div style={{ marginTop: '4px' }}>
+                    <span className="package-price-main">{data.price}</span>
+                    {(data.price_note || data.price_period) && <span className="package-price-note">{data.price_note || data.price_period}</span>}
+                  </div>
+                )}
               </div>
 
               <div className="features-preview-cell">
-                <span className="features-badge">
-                  <Check size={12} /> {features.length} cakupan
-                </span>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                  <span className="features-badge">
+                    <Check size={12} /> {features.length} cakupan
+                  </span>
+                  {highlights.length > 0 && (
+                    <span className="features-badge" style={{ background: '#fce7f3', color: '#be185d' }}>
+                      <Sparkles size={11} /> {highlights.length} alasan
+                    </span>
+                  )}
+                  {included.length > 0 && (
+                    <span className="features-badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>
+                      <Package size={11} /> {included.length} detail
+                    </span>
+                  )}
+                  {faqs.length > 0 && (
+                    <span className="features-badge" style={{ background: '#f3e8ff', color: '#7e22ce' }}>
+                      <HelpCircle size={11} /> {faqs.length} faq
+                    </span>
+                  )}
+                </div>
                 {features.length > 0 && (
                   <div className="features-preview-list">
                     {features.slice(0, 2).map((f, i) => (
@@ -1756,6 +2092,10 @@ function ServicesView() {
   )
 }
 
+type HighlightItem = { title: string; desc: string }
+type IncludedItem = { title: string; desc: string; image?: string }
+type FaqItem = { q: string; a: string }
+
 function ServiceModal({
   item,
   onClose,
@@ -1767,19 +2107,52 @@ function ServiceModal({
 }) {
   const existingData = (item?.data || {}) as Record<string, any>
   const initialFeatures: string[] = Array.isArray(existingData.features) ? existingData.features : []
-  const initialPillar = existingData.pillar || 'website'
+  const initialHighlights: HighlightItem[] = Array.isArray(existingData.highlights)
+    ? existingData.highlights.map((h: any) => typeof h === 'string' ? { title: h, desc: '' } : { title: h.title || '', desc: h.desc || '' })
+    : []
+  const initialIncluded: IncludedItem[] = Array.isArray(existingData.included)
+    ? existingData.included.map((inc: any) => typeof inc === 'string' ? { title: inc, desc: '', image: '' } : { title: inc.title || '', desc: inc.desc || '', image: inc.image || '' })
+    : []
+  const initialFaqs: FaqItem[] = Array.isArray(existingData.faqs)
+    ? existingData.faqs.map((f: any) => ({ q: f.q || f.question || '', a: f.a || f.answer || '' }))
+    : []
+  const initialPillar = existingData.pillar_slug || existingData.pillar || 'website'
+
+  const [activeTab, setActiveTab] = useState<'info' | 'features' | 'highlights' | 'included' | 'faqs'>('info')
 
   const [form, setForm] = useState({
     title: item?.title || '',
     slug: item?.slug || '',
     pillar: initialPillar,
     summary: item?.summary || existingData.desc || '',
-    image_url: item?.image_url || existingData.image || '',
+    image_url: item?.image_url || existingData.image || existingData.flyer_image || '',
+    price: existingData.price || '',
+    price_note: existingData.price_note || existingData.price_period || '',
+    target: existingData.target || '',
+    timeline: existingData.timeline || '',
     is_published: item?.is_published ?? true
   })
 
+  // Features state
   const [features, setFeatures] = useState<string[]>(initialFeatures)
   const [newFeatureText, setNewFeatureText] = useState('')
+
+  // Highlights state ("Mengapa Memilih Layanan Ini")
+  const [highlights, setHighlights] = useState<HighlightItem[]>(initialHighlights)
+  const [newHlTitle, setNewHlTitle] = useState('')
+  const [newHlDesc, setNewHlDesc] = useState('')
+
+  // Included state ("Detail Layanan / Yang Didapatkan")
+  const [included, setIncluded] = useState<IncludedItem[]>(initialIncluded)
+  const [newIncTitle, setNewIncTitle] = useState('')
+  const [newIncDesc, setNewIncDesc] = useState('')
+  const [newIncImage, setNewIncImage] = useState('')
+
+  // FAQ state ("Pertanyaan Umum")
+  const [faqs, setFaqs] = useState<FaqItem[]>(initialFaqs)
+  const [newFaqQ, setNewFaqQ] = useState('')
+  const [newFaqA, setNewFaqA] = useState('')
+
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -1795,13 +2168,13 @@ function ServiceModal({
     }
   }
 
+  // Feature handlers
   function addFeature() {
     const trimmed = newFeatureText.trim()
     if (!trimmed) return
     setFeatures(prev => [...prev, trimmed])
     setNewFeatureText('')
   }
-
   function updateFeature(index: number, val: string) {
     setFeatures(prev => {
       const updated = [...prev]
@@ -1809,11 +2182,9 @@ function ServiceModal({
       return updated
     })
   }
-
   function removeFeature(index: number) {
     setFeatures(prev => prev.filter((_, i) => i !== index))
   }
-
   function moveFeature(index: number, direction: 'up' | 'down') {
     if ((direction === 'up' && index === 0) || (direction === 'down' && index === features.length - 1)) return
     const targetIndex = direction === 'up' ? index - 1 : index + 1
@@ -1826,21 +2197,120 @@ function ServiceModal({
     })
   }
 
+  // Highlight handlers
+  function addHighlight() {
+    if (!newHlTitle.trim()) return
+    setHighlights(prev => [...prev, { title: newHlTitle.trim(), desc: newHlDesc.trim() }])
+    setNewHlTitle('')
+    setNewHlDesc('')
+  }
+  function updateHighlight(index: number, field: 'title' | 'desc', val: string) {
+    setHighlights(prev => {
+      const copy = [...prev]
+      copy[index] = { ...copy[index], [field]: val }
+      return copy
+    })
+  }
+  function removeHighlight(index: number) {
+    setHighlights(prev => prev.filter((_, i) => i !== index))
+  }
+  function moveHighlight(index: number, direction: 'up' | 'down') {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === highlights.length - 1)) return
+    const targetIdx = direction === 'up' ? index - 1 : index + 1
+    setHighlights(prev => {
+      const list = [...prev]
+      const temp = list[index]
+      list[index] = list[targetIdx]
+      list[targetIdx] = temp
+      return list
+    })
+  }
+
+  // Included handlers
+  function addIncluded() {
+    if (!newIncTitle.trim()) return
+    setIncluded(prev => [...prev, { title: newIncTitle.trim(), desc: newIncDesc.trim(), image: newIncImage.trim() || undefined }])
+    setNewIncTitle('')
+    setNewIncDesc('')
+    setNewIncImage('')
+  }
+  function updateIncluded(index: number, field: 'title' | 'desc' | 'image', val: string) {
+    setIncluded(prev => {
+      const copy = [...prev]
+      copy[index] = { ...copy[index], [field]: val }
+      return copy
+    })
+  }
+  function removeIncluded(index: number) {
+    setIncluded(prev => prev.filter((_, i) => i !== index))
+  }
+  function moveIncluded(index: number, direction: 'up' | 'down') {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === included.length - 1)) return
+    const targetIdx = direction === 'up' ? index - 1 : index + 1
+    setIncluded(prev => {
+      const list = [...prev]
+      const temp = list[index]
+      list[index] = list[targetIdx]
+      list[targetIdx] = temp
+      return list
+    })
+  }
+
+  // FAQ handlers
+  function addFaq() {
+    if (!newFaqQ.trim()) return
+    setFaqs(prev => [...prev, { q: newFaqQ.trim(), a: newFaqA.trim() }])
+    setNewFaqQ('')
+    setNewFaqA('')
+  }
+  function updateFaq(index: number, field: 'q' | 'a', val: string) {
+    setFaqs(prev => {
+      const copy = [...prev]
+      copy[index] = { ...copy[index], [field]: val }
+      return copy
+    })
+  }
+  function removeFaq(index: number) {
+    setFaqs(prev => prev.filter((_, i) => i !== index))
+  }
+  function moveFaq(index: number, direction: 'up' | 'down') {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === faqs.length - 1)) return
+    const targetIdx = direction === 'up' ? index - 1 : index + 1
+    setFaqs(prev => {
+      const list = [...prev]
+      const temp = list[index]
+      list[index] = list[targetIdx]
+      list[targetIdx] = temp
+      return list
+    })
+  }
+
   async function save(e: FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError('')
 
     const cleanFeatures = features.map(f => f.trim()).filter(Boolean)
+    const cleanHighlights = highlights.filter(h => h.title.trim())
+    const cleanIncluded = included.filter(inc => inc.title.trim())
+    const cleanFaqs = faqs.filter(f => f.q.trim())
 
     const payloadData: Record<string, any> = {
       ...existingData,
       name: form.title,
       desc: form.summary,
       pillar: form.pillar,
+      pillar_slug: form.pillar,
       pillar_name: SERVICE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
       image: form.image_url.trim() || null,
-      features: cleanFeatures
+      price: form.price.trim(),
+      price_note: form.price_note.trim(),
+      target: form.target.trim(),
+      timeline: form.timeline.trim(),
+      features: cleanFeatures,
+      highlights: cleanHighlights,
+      included: cleanIncluded,
+      faqs: cleanFaqs
     }
 
     const payload = {
@@ -1878,135 +2348,338 @@ function ServiceModal({
           </button>
         </div>
 
+        <div className="modal-tabs">
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            <BriefcaseBusiness size={14} /> Informasi Dasar
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'features' ? 'active' : ''}`}
+            onClick={() => setActiveTab('features')}
+          >
+            <CheckCircle2 size={14} /> Cakupan ({features.length})
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'highlights' ? 'active' : ''}`}
+            onClick={() => setActiveTab('highlights')}
+          >
+            <Sparkles size={14} /> Mengapa Memilih ({highlights.length})
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'included' ? 'active' : ''}`}
+            onClick={() => setActiveTab('included')}
+          >
+            <Package size={14} /> Detail Layanan ({included.length})
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'faqs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('faqs')}
+          >
+            <HelpCircle size={14} /> FAQ ({faqs.length})
+          </button>
+        </div>
+
         <div className="modal-scroll-area">
-          <div className="form-row">
-            <label>
-              Nama Layanan
-              <input
-                value={form.title}
-                onChange={e => handleTitleChange(e.target.value)}
-                placeholder="Contoh: Landing Page"
-                required
-              />
-            </label>
+          {/* TAB 1: INFORMASI DASAR */}
+          {activeTab === 'info' && (
+            <>
+              <div className="form-row">
+                <label>
+                  Nama Layanan
+                  <input
+                    value={form.title}
+                    onChange={e => handleTitleChange(e.target.value)}
+                    placeholder="Contoh: Landing Page"
+                    required
+                  />
+                </label>
 
-            <label>
-              Pilar Layanan
-              <select
-                value={form.pillar}
-                onChange={e => setForm({ ...form, pillar: e.target.value })}
-                required
-                className="select-input"
-              >
-                {SERVICE_PILLARS.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="form-row">
-            <label>
-              Slug URL
-              <input
-                value={form.slug}
-                onChange={e => setForm({ ...form, slug: e.target.value })}
-                placeholder="landing-page"
-                required
-              />
-            </label>
-
-            <label>
-              URL Gambar Banner
-              <input
-                type="url"
-                value={form.image_url}
-                onChange={e => setForm({ ...form, image_url: e.target.value })}
-                placeholder="https://images.unsplash.com/..."
-              />
-            </label>
-          </div>
-
-          <label>
-            Ringkasan / Deskripsi Layanan
-            <textarea
-              rows={3}
-              value={form.summary}
-              onChange={e => setForm({ ...form, summary: e.target.value })}
-              placeholder="Jelaskan deskripsi singkat atau fungsi dari layanan ini..."
-              required
-            />
-          </label>
-
-          {/* BAGIAN YANG TERMASUK DALAM LAYANAN */}
-          <div className="features-section">
-            <div className="features-section-header">
-              <div>
-                <h3 className="features-section-title">
-                  <CheckCircle2 size={18} className="icon-pink" />
-                  Yang Termasuk dalam Layanan
-                </h3>
-                <p className="features-section-sub">
-                  Cakupan utama dan deliverables yang akan didapatkan klien dari layanan ini.
-                </p>
+                <label>
+                  Pilar Layanan
+                  <select
+                    value={form.pillar}
+                    onChange={e => setForm({ ...form, pillar: e.target.value })}
+                    required
+                    className="select-input"
+                  >
+                    {SERVICE_PILLARS.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
-              <span className="features-count-pill">
-                {features.length} Poin
-              </span>
-            </div>
 
-            {/* Quick Add Bar */}
-            <div className="feature-add-box">
-              <input
-                type="text"
-                className="feature-add-input"
-                placeholder="Ketik cakupan layanan (misal: 1 halaman responsif, Form inquiry & WhatsApp, SEO dasar)..."
-                value={newFeatureText}
-                onChange={e => setNewFeatureText(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    addFeature()
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="primary feature-add-btn"
-                onClick={addFeature}
-                disabled={!newFeatureText.trim()}
-              >
-                <Plus size={16} /> Tambah
-              </button>
-            </div>
+              <div className="form-row">
+                <label>
+                  Slug URL
+                  <input
+                    value={form.slug}
+                    onChange={e => setForm({ ...form, slug: e.target.value })}
+                    placeholder="landing-page"
+                    required
+                  />
+                </label>
 
-            {/* Feature List */}
-            <div className="feature-list-container">
-              {features.length > 0 ? (
-                <div className="feature-items-list">
-                  {features.map((feat, idx) => (
-                    <div className="feature-item-row" key={idx}>
-                      <span className="feature-check-icon">
-                        <Check size={15} />
-                      </span>
-                      <span className="feature-index-badge">{idx + 1}</span>
-                      <input
-                        type="text"
-                        className="feature-text-input"
-                        value={feat}
-                        onChange={e => updateFeature(idx, e.target.value)}
-                        placeholder="Deskripsi cakupan layanan"
-                        required
-                      />
-                      <div className="feature-item-actions">
+                <label>
+                  URL Gambar Banner / Flyer
+                  <input
+                    type="text"
+                    value={form.image_url}
+                    onChange={e => setForm({ ...form, image_url: e.target.value })}
+                    placeholder="https://images.unsplash.com/... atau /assets/paket-website/landing-page.png"
+                  />
+                </label>
+              </div>
+
+              {form.image_url && (
+                <div className="flyer-preview-card">
+                  <img
+                    src={form.image_url}
+                    alt="Preview Banner/Flyer"
+                    className="flyer-preview-img"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.opacity = '0.3'
+                    }}
+                  />
+                  <div>
+                    <b style={{ fontSize: '13px', display: 'block', color: 'var(--ink)' }}>Preview Gambar Layanan</b>
+                    <small style={{ color: 'var(--muted)', fontSize: '11px', display: 'block', marginTop: '3px' }}>{form.image_url}</small>
+                  </div>
+                </div>
+              )}
+
+              <label>
+                Ringkasan / Deskripsi Layanan
+                <textarea
+                  rows={3}
+                  value={form.summary}
+                  onChange={e => setForm({ ...form, summary: e.target.value })}
+                  placeholder="Jelaskan deskripsi singkat atau fungsi dari layanan ini..."
+                  required
+                />
+              </label>
+
+              <div className="form-row">
+                <label>
+                  Estimasi Harga
+                  <input
+                    value={form.price}
+                    onChange={e => setForm({ ...form, price: e.target.value })}
+                    placeholder="Contoh: Rp 3.500.000 atau Sesuai Kebutuhan"
+                  />
+                </label>
+
+                <label>
+                  Periode / Keterangan Harga
+                  <input
+                    value={form.price_note}
+                    onChange={e => setForm({ ...form, price_note: e.target.value })}
+                    placeholder="Contoh: Sekali bayar / /bulan"
+                  />
+                </label>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  Target Audiens (Cocok untuk Siapa)
+                  <textarea
+                    rows={2}
+                    value={form.target}
+                    onChange={e => setForm({ ...form, target: e.target.value })}
+                    placeholder="Contoh: Promosi & campaign, UMKM, perusahaan baru..."
+                  />
+                </label>
+
+                <label>
+                  Estimasi Lama Pengerjaan (Timeline)
+                  <input
+                    value={form.timeline}
+                    onChange={e => setForm({ ...form, timeline: e.target.value })}
+                    placeholder="Contoh: 5–7 hari kerja"
+                  />
+                </label>
+              </div>
+
+              <label className="check" style={{ marginTop: '16px' }}>
+                <input
+                  type="checkbox"
+                  checked={form.is_published}
+                  onChange={e => setForm({ ...form, is_published: e.target.checked })}
+                />
+                Tampilkan di frontend (Published)
+              </label>
+            </>
+          )}
+
+          {/* TAB 2: CAKUPAN LAYANAN */}
+          {activeTab === 'features' && (
+            <div className="features-section">
+              <div className="features-section-header">
+                <div>
+                  <h3 className="features-section-title">
+                    <CheckCircle2 size={18} className="icon-pink" />
+                    Yang Termasuk dalam Layanan
+                  </h3>
+                  <p className="features-section-sub">
+                    Cakupan utama dan poin yang akan didapatkan klien dari layanan ini.
+                  </p>
+                </div>
+                <span className="features-count-pill">
+                  {features.length} Poin
+                </span>
+              </div>
+
+              <div className="feature-add-box">
+                <input
+                  type="text"
+                  className="feature-add-input"
+                  placeholder="Ketik cakupan layanan (misal: 1 halaman responsif, Form inquiry & WhatsApp)..."
+                  value={newFeatureText}
+                  onChange={e => setNewFeatureText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addFeature()
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="primary feature-add-btn"
+                  onClick={addFeature}
+                  disabled={!newFeatureText.trim()}
+                >
+                  <Plus size={16} /> Tambah
+                </button>
+              </div>
+
+              <div className="feature-list-container">
+                {features.length > 0 ? (
+                  <div className="feature-items-list">
+                    {features.map((feat, idx) => (
+                      <div className="feature-item-row" key={idx}>
+                        <span className="feature-check-icon">
+                          <Check size={15} />
+                        </span>
+                        <span className="feature-index-badge">{idx + 1}</span>
+                        <input
+                          type="text"
+                          className="feature-text-input"
+                          value={feat}
+                          onChange={e => updateFeature(idx, e.target.value)}
+                          placeholder="Deskripsi cakupan layanan"
+                          required
+                        />
+                        <div className="feature-item-actions">
+                          <button
+                            type="button"
+                            className="icon-mini-btn"
+                            title="Pindah ke atas"
+                            disabled={idx === 0}
+                            onClick={() => moveFeature(idx, 'up')}
+                          >
+                            <ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} />
+                          </button>
+                          <button
+                            type="button"
+                            className="icon-mini-btn"
+                            title="Pindah ke bawah"
+                            disabled={idx === features.length - 1}
+                            onClick={() => moveFeature(idx, 'down')}
+                          >
+                            <ChevronDown size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="icon-mini-btn delete"
+                            title="Hapus poin ini"
+                            onClick={() => removeFeature(idx)}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="feature-empty-state">
+                    <p>Belum ada poin cakupan yang ditambahkan.</p>
+                    <small>Ketik cakupan di kolom atas lalu klik tombol <strong>Tambah</strong> atau tekan <strong>Enter</strong>.</small>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: MENGAPA MEMILIH LAYANAN INI */}
+          {activeTab === 'highlights' && (
+            <div className="features-section">
+              <div className="features-section-header">
+                <div>
+                  <h3 className="features-section-title">
+                    <Sparkles size={18} className="icon-pink" />
+                    Mengapa Memilih Layanan Ini?
+                  </h3>
+                  <p className="features-section-sub">
+                    Poin-poin keunggulan atau alasan utama mengapa klien memilih layanan ini.
+                  </p>
+                </div>
+                <span className="features-count-pill">
+                  {highlights.length} Poin Alasan
+                </span>
+              </div>
+
+              <div style={{ background: '#fff', border: '1px solid #ebdbe2', borderRadius: '10px', padding: '12px', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="feature-add-input"
+                  placeholder="Judul alasan (misal: Fokus Konversi, Loading Cepat)…"
+                  value={newHlTitle}
+                  onChange={e => setNewHlTitle(e.target.value)}
+                />
+                <textarea
+                  rows={2}
+                  className="feature-add-input"
+                  placeholder="Deskripsi penjelasan alasan…"
+                  value={newHlDesc}
+                  onChange={e => setNewHlDesc(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="primary"
+                  style={{ alignSelf: 'flex-end', height: '36px', padding: '0 16px' }}
+                  onClick={addHighlight}
+                  disabled={!newHlTitle.trim()}
+                >
+                  <Plus size={15} /> Tambah Alasan
+                </button>
+              </div>
+
+              <div className="feature-items-list">
+                {highlights.map((item, idx) => (
+                  <div className="item-card-row" key={idx}>
+                    <div className="item-card-header">
+                      <strong>
+                        <span className="feature-index-badge">{idx + 1}</span>
+                        <Sparkles size={14} style={{ color: 'var(--pink)' }} />
+                        Alasan #{idx + 1}
+                      </strong>
+                      <div className="item-card-actions">
                         <button
                           type="button"
                           className="icon-mini-btn"
                           title="Pindah ke atas"
                           disabled={idx === 0}
-                          onClick={() => moveFeature(idx, 'up')}
+                          onClick={() => moveHighlight(idx, 'up')}
                         >
                           <ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} />
                         </button>
@@ -2014,40 +2687,276 @@ function ServiceModal({
                           type="button"
                           className="icon-mini-btn"
                           title="Pindah ke bawah"
-                          disabled={idx === features.length - 1}
-                          onClick={() => moveFeature(idx, 'down')}
+                          disabled={idx === highlights.length - 1}
+                          onClick={() => moveHighlight(idx, 'down')}
                         >
                           <ChevronDown size={14} />
                         </button>
                         <button
                           type="button"
                           className="icon-mini-btn delete"
-                          title="Hapus poin ini"
-                          onClick={() => removeFeature(idx)}
+                          title="Hapus"
+                          onClick={() => removeHighlight(idx)}
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="feature-empty-state">
-                  <p>Belum ada poin cakupan yang ditambahkan.</p>
-                  <small>Ketik cakupan di kolom atas lalu klik tombol <strong>Tambah</strong> atau tekan <strong>Enter</strong>.</small>
-                </div>
-              )}
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={e => updateHighlight(idx, 'title', e.target.value)}
+                      placeholder="Judul alasan"
+                      required
+                      style={{ fontWeight: 600 }}
+                    />
+                    <textarea
+                      rows={2}
+                      value={item.desc}
+                      onChange={e => updateHighlight(idx, 'desc', e.target.value)}
+                      placeholder="Deskripsi penjelasan alasan"
+                    />
+                  </div>
+                ))}
+                {!highlights.length && (
+                  <div className="feature-empty-state">
+                    <p>Belum ada alasan "Mengapa Memilih Layanan Ini" yang ditambahkan.</p>
+                    <small>Gunakan form di atas untuk menambahkan alasan.</small>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
-          <label className="check" style={{ marginTop: '16px' }}>
-            <input
-              type="checkbox"
-              checked={form.is_published}
-              onChange={e => setForm({ ...form, is_published: e.target.checked })}
-            />
-            Tampilkan di frontend (Published)
-          </label>
+          {/* TAB 4: DETAIL LAYANAN / YANG DIDAPATKAN */}
+          {activeTab === 'included' && (
+            <div className="features-section">
+              <div className="features-section-header">
+                <div>
+                  <h3 className="features-section-title">
+                    <Package size={18} className="icon-pink" />
+                    Detail Layanan (Yang Anda Dapatkan)
+                  </h3>
+                  <p className="features-section-sub">
+                    Rincian deliverables atau fitur utama lengkap dengan judul, deskripsi, dan gambar pendukung.
+                  </p>
+                </div>
+                <span className="features-count-pill">
+                  {included.length} Detail Layanan
+                </span>
+              </div>
+
+              <div style={{ background: '#fff', border: '1px solid #ebdbe2', borderRadius: '10px', padding: '12px', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="feature-add-input"
+                  placeholder="Nama detail layanan (misal: 1 Halaman Landing Page, Mobile Responsive)…"
+                  value={newIncTitle}
+                  onChange={e => setNewIncTitle(e.target.value)}
+                />
+                <textarea
+                  rows={2}
+                  className="feature-add-input"
+                  placeholder="Deskripsi rincian…"
+                  value={newIncDesc}
+                  onChange={e => setNewIncDesc(e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="feature-add-input"
+                  placeholder="URL / Path Gambar (opsional)…"
+                  value={newIncImage}
+                  onChange={e => setNewIncImage(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="primary"
+                  style={{ alignSelf: 'flex-end', height: '36px', padding: '0 16px' }}
+                  onClick={addIncluded}
+                  disabled={!newIncTitle.trim()}
+                >
+                  <Plus size={15} /> Tambah Detail Layanan
+                </button>
+              </div>
+
+              <div className="feature-items-list">
+                {included.map((item, idx) => (
+                  <div className="item-card-row" key={idx}>
+                    <div className="item-card-header">
+                      <strong>
+                        <span className="feature-index-badge">{idx + 1}</span>
+                        <Package size={14} style={{ color: '#0284c7' }} />
+                        Detail #{idx + 1}
+                      </strong>
+                      <div className="item-card-actions">
+                        <button
+                          type="button"
+                          className="icon-mini-btn"
+                          title="Pindah ke atas"
+                          disabled={idx === 0}
+                          onClick={() => moveIncluded(idx, 'up')}
+                        >
+                          <ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} />
+                        </button>
+                        <button
+                          type="button"
+                          className="icon-mini-btn"
+                          title="Pindah ke bawah"
+                          disabled={idx === included.length - 1}
+                          onClick={() => moveIncluded(idx, 'down')}
+                        >
+                          <ChevronDown size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="icon-mini-btn delete"
+                          title="Hapus"
+                          onClick={() => removeIncluded(idx)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={e => updateIncluded(idx, 'title', e.target.value)}
+                      placeholder="Nama detail layanan"
+                      required
+                      style={{ fontWeight: 600 }}
+                    />
+                    <textarea
+                      rows={2}
+                      value={item.desc}
+                      onChange={e => updateIncluded(idx, 'desc', e.target.value)}
+                      placeholder="Deskripsi rincian"
+                    />
+                    <input
+                      type="text"
+                      value={item.image || ''}
+                      onChange={e => updateIncluded(idx, 'image', e.target.value)}
+                      placeholder="URL / Path Gambar (opsional)"
+                    />
+                  </div>
+                ))}
+                {!included.length && (
+                  <div className="feature-empty-state">
+                    <p>Belum ada detail layanan yang ditambahkan.</p>
+                    <small>Gunakan form di atas untuk menambahkan rincian.</small>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: PERTANYAAN UMUM (FAQ) */}
+          {activeTab === 'faqs' && (
+            <div className="features-section">
+              <div className="features-section-header">
+                <div>
+                  <h3 className="features-section-title">
+                    <HelpCircle size={18} className="icon-pink" />
+                    Pertanyaan Umum (FAQ)
+                  </h3>
+                  <p className="features-section-sub">
+                    Pertanyaan yang sering diajukan klien beserta jawabannya untuk layanan ini.
+                  </p>
+                </div>
+                <span className="features-count-pill">
+                  {faqs.length} FAQ
+                </span>
+              </div>
+
+              <div style={{ background: '#fff', border: '1px solid #ebdbe2', borderRadius: '10px', padding: '12px', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="feature-add-input"
+                  placeholder="Pertanyaan (misal: Apakah domain sudah termasuk?)…"
+                  value={newFaqQ}
+                  onChange={e => setNewFaqQ(e.target.value)}
+                />
+                <textarea
+                  rows={2}
+                  className="feature-add-input"
+                  placeholder="Jawaban pertanyaan…"
+                  value={newFaqA}
+                  onChange={e => setNewFaqA(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="primary"
+                  style={{ alignSelf: 'flex-end', height: '36px', padding: '0 16px' }}
+                  onClick={addFaq}
+                  disabled={!newFaqQ.trim()}
+                >
+                  <Plus size={15} /> Tambah FAQ
+                </button>
+              </div>
+
+              <div className="feature-items-list">
+                {faqs.map((item, idx) => (
+                  <div className="item-card-row" key={idx}>
+                    <div className="item-card-header">
+                      <strong>
+                        <span className="feature-index-badge">{idx + 1}</span>
+                        <HelpCircle size={14} style={{ color: '#7c3aed' }} />
+                        FAQ #{idx + 1}
+                      </strong>
+                      <div className="item-card-actions">
+                        <button
+                          type="button"
+                          className="icon-mini-btn"
+                          title="Pindah ke atas"
+                          disabled={idx === 0}
+                          onClick={() => moveFaq(idx, 'up')}
+                        >
+                          <ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} />
+                        </button>
+                        <button
+                          type="button"
+                          className="icon-mini-btn"
+                          title="Pindah ke bawah"
+                          disabled={idx === faqs.length - 1}
+                          onClick={() => moveFaq(idx, 'down')}
+                        >
+                          <ChevronDown size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="icon-mini-btn delete"
+                          title="Hapus"
+                          onClick={() => removeFaq(idx)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={item.q}
+                      onChange={e => updateFaq(idx, 'q', e.target.value)}
+                      placeholder="Pertanyaan"
+                      required
+                      style={{ fontWeight: 600 }}
+                    />
+                    <textarea
+                      rows={2}
+                      value={item.a}
+                      onChange={e => updateFaq(idx, 'a', e.target.value)}
+                      placeholder="Jawaban"
+                      required
+                    />
+                  </div>
+                ))}
+                {!faqs.length && (
+                  <div className="feature-empty-state">
+                    <p>Belum ada FAQ yang ditambahkan.</p>
+                    <small>Gunakan form di atas untuk menambahkan FAQ.</small>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {error && <div className="error-box">{error}</div>}
@@ -2080,7 +2989,7 @@ function PackagesView() {
   const filtered = items.filter(item => {
     const data = (item.data || {}) as Record<string, any>
     const rawPillar = (data.pillar_slug || data.pillar || '').toString().trim().toLowerCase()
-    const pillar = SERVICE_PILLARS.find(p => p.id === rawPillar || p.name.toLowerCase() === rawPillar)?.id || rawPillar
+    const pillar = PACKAGE_PILLARS.find(p => p.id === rawPillar || p.name.toLowerCase() === rawPillar)?.id || rawPillar
     const target = (data.target || '').toString().toLowerCase()
     const timeline = (data.timeline || '').toString().toLowerCase()
     const price = (data.price || '').toString().toLowerCase()
@@ -2160,7 +3069,7 @@ function PackagesView() {
           >
             Semua Pilar
           </button>
-          {SERVICE_PILLARS.map(p => (
+          {PACKAGE_PILLARS.map(p => (
             <button
               key={p.id}
               className={pillarFilter === p.id ? 'filter-btn active' : 'filter-btn'}
@@ -2187,8 +3096,8 @@ function PackagesView() {
 
         {filtered.map(item => {
           const data = (item.data || {}) as Record<string, any>
-          const pillar = data.pillar || 'website'
-          const pillarObj = SERVICE_PILLARS.find(p => p.id === pillar) || { name: pillar || 'Website' }
+          const pillar = data.pillar_slug || data.pillar || 'digital-asset'
+          const pillarObj = PACKAGE_PILLARS.find(p => p.id === pillar || p.name.toLowerCase() === String(pillar).toLowerCase()) || { name: pillar || 'Digital Asset' }
           const highlights = Array.isArray(data.highlights) ? data.highlights : []
           const included = Array.isArray(data.included) ? data.included : []
           const deliverables = Array.isArray(data.deliverables) ? data.deliverables : []
@@ -2300,10 +3209,6 @@ function PackagesView() {
   )
 }
 
-type HighlightItem = { title: string; desc: string }
-type IncludedItem = { title: string; desc: string; image?: string }
-type FaqItem = { q: string; a: string }
-
 function PackageModal({
   item,
   packages,
@@ -2332,7 +3237,7 @@ function PackageModal({
   const initialFaqs: FaqItem[] = Array.isArray(existingData.faqs)
     ? existingData.faqs.map((f: any) => ({ q: f.q || f.question || '', a: f.a || f.answer || '' }))
     : []
-  const initialPillar = SERVICE_PILLARS.find(p => p.id === existingData.pillar_slug || p.id === existingData.pillar || p.name.toLowerCase() === String(existingData.pillar || '').toLowerCase())?.id || 'website'
+  const initialPillar = PACKAGE_PILLARS.find(p => p.id === existingData.pillar_slug || p.id === existingData.pillar || p.name.toLowerCase() === String(existingData.pillar || '').toLowerCase())?.id || 'digital-asset'
 
   const [activeTab, setActiveTab] = useState<'info' | 'highlights' | 'included' | 'deliverables' | 'faqs' | 'recommendations'>('info')
 
@@ -2534,9 +3439,9 @@ function PackageModal({
     const payloadData: Record<string, any> = {
       ...existingData,
       name: form.title,
-      pillar: SERVICE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
+      pillar: PACKAGE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
       pillar_slug: form.pillar,
-      pillar_name: SERVICE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
+      pillar_name: PACKAGE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
       tagline: form.tagline || form.summary,
       badge: form.badge || (form.popular ? 'Paling Populer' : ''),
       popular: form.popular,
@@ -2659,7 +3564,7 @@ function PackageModal({
                     required
                     className="select-input"
                   >
-                    {SERVICE_PILLARS.map(p => (
+                    {PACKAGE_PILLARS.map(p => (
                       <option key={p.id} value={p.id}>
                         {p.name}
                       </option>

@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Eye, Download, FileText, ImageIcon, Film, Archive, Palette } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const BADGE_STYLE = {
   New: "bg-green-500 text-white",
@@ -40,6 +41,7 @@ const AKSES_COLOR = {
 };
 
 export default function MarketingKitCard({ item, index, onPreview, onDownload }) {
+  const { tr } = useLanguage();
   const FormatIcon = FORMAT_ICON[item.format_file] || FileText;
 
   return (
@@ -67,7 +69,7 @@ export default function MarketingKitCard({ item, index, onPreview, onDownload })
         )}
         {/* Akses Type */}
         <span className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${AKSES_COLOR[item.akses_tipe]}`}>
-          {AKSES_LABEL[item.akses_tipe]}
+          {tr(AKSES_LABEL[item.akses_tipe])}
         </span>
         {/* Format */}
         <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-sm text-[10px] font-bold text-navy">
@@ -76,15 +78,15 @@ export default function MarketingKitCard({ item, index, onPreview, onDownload })
         {/* Hover Preview */}
         <div className="absolute inset-0 bg-navy/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <span className="flex items-center gap-1.5 text-white text-sm font-medium bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
-            <Eye className="w-4 h-4" /> Preview
+            <Eye className="w-4 h-4" /> {tr("Preview")}
           </span>
         </div>
       </div>
       {/* Body */}
       <div className="p-4 flex-1 flex flex-col">
-        <span className="text-[10px] font-semibold text-magenta uppercase tracking-wide mb-1">{item.kategori}</span>
+        <span className="text-[10px] font-semibold text-magenta uppercase tracking-wide mb-1">{tr(item.kategori)}</span>
         <h3 className="text-sm font-bold text-navy leading-tight mb-1.5 line-clamp-2">{item.nama_asset}</h3>
-        <p className="text-xs text-muted-foreground leading-relaxed flex-1 line-clamp-2 mb-3">{item.deskripsi}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed flex-1 line-clamp-2 mb-3">{tr(item.deskripsi)}</p>
         {/* Meta */}
         <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-3 pb-3 border-b border-gray-50">
           <span>{item.ukuran_file}</span>
@@ -96,13 +98,13 @@ export default function MarketingKitCard({ item, index, onPreview, onDownload })
             onClick={() => onPreview(item)}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-navy text-xs font-semibold transition-colors"
           >
-            <Eye className="w-3.5 h-3.5" /> Preview
+            <Eye className="w-3.5 h-3.5" /> {tr("Preview")}
           </button>
           <button
             onClick={() => onDownload(item)}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-magenta hover:bg-magenta-500 text-white text-xs font-semibold transition-colors"
           >
-            <Download className="w-3.5 h-3.5" /> Download
+            <Download className="w-3.5 h-3.5" /> {tr("Download")}
           </button>
         </div>
       </div>

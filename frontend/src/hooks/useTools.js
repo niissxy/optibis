@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TOOLS, TOOL_CATEGORIES, getToolImage } from "@/data/tools";
+import { TOOLS, getToolImage } from "@/data/tools";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
@@ -10,7 +10,11 @@ export function normalizeTool(item, fallback = {}) {
   const category = data.category || item.category || fallback.category || "other";
   const tagline = data.tagline || item.summary || fallback.tagline || "";
   const description = item.summary || data.description || fallback.description || "";
-  const image = item.image_url || data.image || fallback.image || getToolImage({ name, category });
+  const fallbackImage = getToolImage({ name, category });
+  const imageCandidate = item.image_url || data.image || fallback.image;
+  const image = typeof imageCandidate === "string" && imageCandidate.trim()
+    ? imageCandidate
+    : fallbackImage;
 
   return {
     ...fallback,
@@ -22,6 +26,7 @@ export function normalizeTool(item, fallback = {}) {
     tagline,
     description,
     image,
+    fallbackImage,
     is_published: item.is_published !== false,
   };
 }
@@ -34,21 +39,9 @@ export function useTools() {
     fetch(`${API}/modules/tools`)
       .then((res) => (res.ok ? res.json() : []))
       .then((apiItems) => {
-        if (Array.isArray(apiItems) && apiItems.length > 0) {
+        if (Array.isArray(apiItems)) {
           const published = apiItems.filter((i) => i.is_published !== false);
-          const staticList = TOOLS.map((t) => ({ ...t, image: getToolImage(t) }));
-          
-          const merged = published.map((item) => {
-            const staticItem = staticList.find(
-              (s) => s.name.toLowerCase() === (item.title || "").toLowerCase()
-            );
-            return normalizeTool(item, staticItem || {});
-          });
-
-          const existingNames = new Set(merged.map((m) => m.name.toLowerCase()));
-          const leftovers = staticList.filter((s) => !existingNames.has(s.name.toLowerCase()));
-
-          setTools([...merged, ...leftovers]);
+          setTools(published.map((item) => normalizeTool(item)));
         }
       })
       .catch(() => {})

@@ -33,7 +33,10 @@ export default function HeroSection() {
             </div>
 
             <h1 className="text-2xl font-semibold leading-[1.1] tracking-[-0.04em] text-navy sm:text-5xl lg:text-5xl">
-              Satu Partner untuk Branding, <span className="text-magenta">Website</span> dan Pertumbuhan Digital <span className="text-violet-800">Bisnis Anda</span>
+              {tr("Satu Partner untuk Branding,")}{" "}
+              <span className="text-magenta">{tr("Website")}</span>{" "}
+              {tr("dan Pertumbuhan Digital")}{" "}
+              <span className="text-violet-800">{tr("Bisnis Anda")}</span>
             </h1>
 
             <p className="mt-6 max-w-lg text-sm leading-relaxed text-navy-300 sm:text-base lg:text-[1.05rem]">
@@ -62,27 +65,27 @@ export default function HeroSection() {
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="flex items-center gap-2 rounded-full bg-magenta/10 px-3 py-2 w-full">
                 <Sparkles className="w-3.5 h-3.5 text-magenta shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-magenta truncate">Branding lebih rapi</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-magenta truncate">{tr("Branding lebih rapi")}</span>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 w-full">
                 <Globe className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-blue-600 truncate">Website profesional</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-blue-600 truncate">{tr("Website profesional")}</span>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-pink-50 px-3 py-2 w-full">
                 <LayoutGrid className="w-3.5 h-3.5 text-pink-600 shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-pink-600 truncate">Konten konsisten</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-pink-600 truncate">{tr("Konten konsisten")}</span>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 w-full">
                 <BarChart2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 truncate">Leads lebih tertata</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 truncate">{tr("Leads lebih tertata")}</span>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-amber-50 px-3 py-2 w-full">
                 <TrendingUp className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-amber-600 truncate">Performa dipantau</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-amber-600 truncate">{tr("Performa dipantau")}</span>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-purple-50 px-3 py-2 w-full">
                 <Users className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-purple-600 truncate">Support lebih cepat</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-purple-600 truncate">{tr("Support lebih cepat")}</span>
               </div>
             </div>
 
@@ -111,7 +114,7 @@ export default function HeroSection() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -top-4 -right-2 lg:-top-6 lg:-right-6 bg-white rounded-xl shadow-xl p-3 sm:p-4 border border-gray-100 flex flex-col items-center justify-center min-w-[100px] sm:min-w-[120px] z-10"
             >
-              <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium mb-1">Proyek Selesai</span>
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium mb-1">{tr("Proyek Selesai")}</span>
               <span className="text-lg sm:text-xl font-bold text-navy">100+</span>
             </motion.div>
 
@@ -127,7 +130,7 @@ export default function HeroSection() {
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-blue-500"></div>
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-pink-500"></div>
               </div>
-              <span className="text-xs sm:text-sm font-bold text-navy pr-1 sm:pr-2">50+ Klien</span>
+              <span className="text-xs sm:text-sm font-bold text-navy pr-1 sm:pr-2">{tr("50+ Klien")}</span>
             </motion.div>
 
           </motion.div>

@@ -54,8 +54,8 @@ class ImportViralogRss extends Command
                 $detail = $this->articleDetail($article['url']);
                 $publishedAt = $this->publishedAt($article['published_at']);
                 $slug = 'rss-'.substr(sha1($article['url']), 0, 24);
-                $summary = Str::limit(trim($article['summary']), 500, '…');
-                $body = Str::limit($detail['body'] ?: $article['summary'], 2200, '…');
+                $summary = $this->limitCompleteText($this->cleanArticleText($article['summary']), 500);
+                $body = $this->limitCompleteText($this->cleanArticleText($detail['body'] ?: $article['summary']), 2200);
 
                 DB::table('viralog_contents')->insert([
                     'slug' => $slug,
@@ -199,7 +199,7 @@ class ImportViralogRss extends Command
             $paragraphs = $xpath->query('//article//p | //main//p');
             $body = collect(iterator_to_array($paragraphs ?: []))
                 ->map(fn ($node) => trim($node->textContent))
-                ->filter(fn ($text) => mb_strlen($text) > 40)
+                ->filter(fn ($text) => mb_strlen($text) > 40 && !$this->isPromotionalBoilerplate($text))
                 ->take(12)
                 ->implode("\n\n");
             return ['image' => $image, 'body' => $body];
@@ -215,6 +215,32 @@ class ImportViralogRss extends Command
         } catch (\Throwable) {
             return now();
         }
+    }
+
+    private function cleanArticleText(string $text): string
+    {
+        return collect(preg_split('/\R{2,}/u', trim($text)))
+            ->map(fn ($paragraph) => trim($paragraph))
+            ->filter(fn ($paragraph) => filled($paragraph) && !$this->isPromotionalBoilerplate($paragraph))
+            ->implode("\n\n");
+    }
+
+    private function isPromotionalBoilerplate(string $text): bool
+    {
+        return (bool) preg_match('/telegram\s+dailyseo|course-?nya\s+dailyseo|topik\s+selanjutnya\s+untuk\s+kami\s+bahas|gabung\s+ke\s+grup\s+telegram/iu', $text);
+    }
+
+    private function limitCompleteText(string $text, int $limit): string
+    {
+        $text = trim($text);
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        $excerpt = mb_substr($text, 0, $limit);
+        $sentenceEnd = max(mb_strrpos($excerpt, '.'), mb_strrpos($excerpt, '!'), mb_strrpos($excerpt, '?'));
+
+        return $sentenceEnd !== false && $sentenceEnd > 0 ? mb_substr($excerpt, 0, $sentenceEnd + 1) : trim($excerpt);
     }
 
     private function categoryFor(array $article): string

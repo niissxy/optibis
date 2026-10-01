@@ -1,0 +1,38 @@
+# robots.txt for OPTIBIS.ID
+# https://optibis.id
+
+User-agent: *
+Allow: /
+Allow: /layanan
+Allow: /paket
+Allow: /tentang
+Allow: /digital-asset
+Allow: /website
+Allow: /digital-growth-team
+Allow: /portofolio
+Allow: /tools
+Allow: /solution-library
+Allow: /marketing-kit
+Allow: /insight
+Allow: /content
+Allow: /trending
+Allow: /short-video
+Allow: /video
+Allow: /kategori/
+Allow: /tag/
+Allow: /author/
+Allow: /assets/
+
+# Disallow admin, private application, and auth endpoints
+Disallow: /app/
+Disallow: /login
+Disallow: /register
+Disallow: /admin/
+Disallow: /api/
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /oauth/
+
+# Host & Sitemap
+Host: https://optibis.id
+Sitemap: https://optibis.id/sitemap.xml

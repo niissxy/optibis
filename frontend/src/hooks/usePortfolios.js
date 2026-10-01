@@ -47,7 +47,7 @@ export function normalizePortfolio(apiItem = {}, fallback = {}) {
     ? apiItem.documents
     : (Array.isArray(fallback.documents) ? fallback.documents : []);
 
-  let categorySlug = "company-profile";
+  let categorySlug = category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "company-profile";
   const catLower = category.toLowerCase();
   if (catLower.includes("bisnis") || catLower.includes("properti")) categorySlug = "website-bisnis";
   else if (catLower.includes("commerce") || catLower.includes("toko") || catLower.includes("kuliner")) categorySlug = "e-commerce";
@@ -57,6 +57,10 @@ export function normalizePortfolio(apiItem = {}, fallback = {}) {
   else if (catLower.includes("landing")) categorySlug = "landing-page";
   else if (catLower.includes("redesign")) categorySlug = "redesign";
   else if (catLower.includes("profile")) categorySlug = "company-profile";
+  else if (catLower.includes("logo") || catLower.includes("brand")) categorySlug = "logo-brand";
+  else if (catLower.includes("sosial") || catLower.includes("social")) categorySlug = "desain-sosial-media";
+  else if (catLower.includes("marketing") || catLower.includes("cetak")) categorySlug = "marketing-kit-cetak";
+  else if (catLower.includes("banner") || catLower.includes("promosi")) categorySlug = "banner-promosi";
 
   return {
     ...fallback,

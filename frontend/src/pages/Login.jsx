@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,10 +34,12 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout
-      icon={LogIn}
-      title="Welcome back"
-      subtitle="Log in to your account"
+    <>
+      <SEO title="Login — Masuk ke Akun OPTIBIS" noindex={true} />
+      <AuthLayout
+        icon={LogIn}
+        title="Welcome back"
+        subtitle="Log in to your account"
       footer={
         <>
           Don't have an account?{" "}
@@ -121,5 +124,6 @@ export default function Login() {
         </Button>
       </form>
     </AuthLayout>
+    </>
   );
 }

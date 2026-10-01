@@ -2,11 +2,13 @@ import React, { useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Newspaper } from "lucide-react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import ViralogContentCard from "@/components/viralog/ViralogContentCard";
 import ViralogAdSlot from "@/components/viralog/ViralogAdSlot";
 import ViralogNewsletter from "@/components/viralog/ViralogNewsletter";
 import { useViralogContent } from "@/hooks/useViralogContent";
+import { useLanguage } from "@/lib/LanguageContext";
 import {
   getContentByCategory,
   getContentByTag,
@@ -16,11 +18,13 @@ import {
   getTrendingContent,
   VIRALOG_CATEGORIES,
 } from "@/data/viralog";
+import { getBreadcrumbSchema } from "@/lib/seoData";
 
 export default function ViralogCategory() {
   const { slug } = useParams();
   const location = useLocation();
   const content = useViralogContent();
+  const { language, tr } = useLanguage();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -38,23 +42,40 @@ export default function ViralogCategory() {
   if (isTag) {
     items = getContentByTag(slug, 20, content);
     title = `#${slug}`;
-    subtitle = `Konten dengan tag "${slug}"`;
+    subtitle = language === "en" ? `Content tagged with "${slug}"` : `Konten dengan tag "${slug}"`;
   } else if (isAuthor) {
     author = getAuthorBySlug(slug);
     items = getContentByAuthor(slug, 20, content);
     title = author?.name || "Author";
-    subtitle = author?.bio || "Konten dari penulis ini";
+    subtitle = author?.bio ? tr(author.bio) : (language === "en" ? "Content from this author" : "Konten dari penulis ini");
   } else {
     category = getCategoryBySlug(slug);
     items = getContentByCategory(slug, 20, content);
-    title = category?.name || "Kategori";
-    subtitle = category ? `Semua konten dalam kategori ${category.name}` : "Semua konten";
+    title = category ? tr(category.name) : tr("Kategori");
+    subtitle = category
+      ? (language === "en" ? `All content in the ${tr(category.name)} category` : `Semua konten dalam kategori ${category.name}`)
+      : (language === "en" ? "All content" : "Semua konten");
   }
 
   const trendingSidebar = getTrendingContent(5, content);
+  const canonicalUrl = `https://optibis.id${location.pathname}`;
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "VIRALOG", url: "/content" },
+      { name: title, url: canonicalUrl },
+    ]),
+  ];
 
   return (
     <PillarLayout>
+      <SEO
+        title={`${title} — VIRALOG Insight`}
+        description={subtitle}
+        canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
+      />
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -93,7 +114,7 @@ export default function ViralogCategory() {
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-navy">{title}</h1>
               </div>
               <p className="text-sm text-muted-foreground">{subtitle}</p>
-              <p className="text-xs text-muted-foreground mt-1">{items.length} konten ditemukan</p>
+              <p className="text-xs text-muted-foreground mt-1">{items.length} {tr("konten ditemukan")}</p>
             </div>
           )}
         </div>
@@ -118,8 +139,8 @@ export default function ViralogCategory() {
             ) : (
               <div className="text-center py-16">
                 <Newspaper className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-navy mb-2">Belum ada konten</h3>
-                <p className="text-sm text-muted-foreground">Konten untuk kategori ini akan segera hadir.</p>
+                <h3 className="text-lg font-bold text-navy mb-2">{tr("Belum ada konten")}</h3>
+                <p className="text-sm text-muted-foreground">{tr("Konten untuk kategori ini akan segera hadir.")}</p>
               </div>
             )}
           </div>
@@ -129,7 +150,7 @@ export default function ViralogCategory() {
             <div className="bg-white rounded-xl border border-gray-100 p-5">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
                 <Newspaper className="w-4 h-4 text-magenta" />
-                <h3 className="font-bold text-navy text-sm uppercase tracking-wide">Trending</h3>
+                <h3 className="font-bold text-navy text-sm uppercase tracking-wide">{tr("Trending")}</h3>
               </div>
               <div className="space-y-0">
                 {trendingSidebar.map((item, i) => (
@@ -143,11 +164,11 @@ export default function ViralogCategory() {
             {/* Other Categories */}
             {!isTag && !isAuthor && (
               <div className="bg-white rounded-xl border border-gray-100 p-5">
-                <h3 className="font-bold text-navy text-sm uppercase tracking-wide mb-3">Kategori Lain</h3>
+                <h3 className="font-bold text-navy text-sm uppercase tracking-wide mb-3">{tr("Kategori Lain")}</h3>
                 <div className="space-y-1">
                   {VIRALOG_CATEGORIES.filter((c) => c.slug !== slug).map((c) => (
                     <Link key={c.slug} to={`/kategori/${c.slug}`} className="block px-3 py-2 rounded-lg text-sm text-navy-300 hover:text-magenta hover:bg-magenta/5 transition-colors">
-                      {c.name}
+                      {tr(c.name)}
                     </Link>
                   ))}
                 </div>

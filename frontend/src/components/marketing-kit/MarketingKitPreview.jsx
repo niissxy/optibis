@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, Share2, FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function MarketingKitPreview({ item, onClose, onDownload }) {
   const { toast } = useToast();
+  const { tr } = useLanguage();
 
   useEffect(() => {
     if (item) {
@@ -24,15 +26,15 @@ export default function MarketingKitPreview({ item, onClose, onDownload }) {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        toast({ title: "Marketing kit dibagikan" });
+        toast({ title: tr("Marketing kit dibagikan") });
         return;
       }
 
       await navigator.clipboard.writeText(shareData.url);
-      toast({ title: "Tautan disalin", description: "Tautan marketing kit telah disalin ke clipboard." });
+      toast({ title: tr("Tautan disalin"), description: tr("Tautan marketing kit telah disalin ke clipboard.") });
     } catch (error) {
       if (error.name !== "AbortError") {
-        toast({ title: "Gagal membagikan", description: "Silakan coba lagi.", variant: "destructive" });
+        toast({ title: tr("Gagal membagikan"), description: tr("Silakan coba lagi."), variant: "destructive" });
       }
     }
   };
@@ -57,7 +59,7 @@ export default function MarketingKitPreview({ item, onClose, onDownload }) {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="px-2 py-0.5 rounded-md bg-magenta/10 text-magenta text-[10px] font-bold uppercase shrink-0">{item.kategori}</span>
+                <span className="px-2 py-0.5 rounded-md bg-magenta/10 text-magenta text-[10px] font-bold uppercase shrink-0">{tr(item.kategori)}</span>
                 <h3 className="text-sm font-bold text-navy truncate">{item.nama_asset}</h3>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -85,25 +87,25 @@ export default function MarketingKitPreview({ item, onClose, onDownload }) {
             </div>
             {/* Footer */}
             <div className="px-5 py-4 border-t border-gray-100">
-              <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">{item.deskripsi}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">{tr(item.deskripsi)}</p>
               <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mb-4">
                 <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {item.format_file} • {item.ukuran_file}</span>
-                <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {item.download_count} downloads</span>
-                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {item.subkategori}</span>
+                <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {item.download_count} {tr("unduhan")}</span>
+                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {tr(item.subkategori)}</span>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={onClose} className="rounded-lg flex-1">
-                  Tutup
+                  {tr("Tutup")}
                 </Button>
                 <Button
                   onClick={() => { onClose(); onDownload(item); }}
                   className="bg-magenta hover:bg-magenta-500 text-white rounded-lg flex-1"
                 >
-                  <Download className="w-4 h-4 mr-1" /> Download Sekarang
+                  <Download className="w-4 h-4 mr-1" /> {tr("Download Sekarang")}
                 </Button>
               </div>
               <p className="text-center text-[11px] text-muted-foreground mt-2">
-                Preview gratis • Download memerlukan login
+                {tr("Preview gratis • Download memerlukan login")}
               </p>
             </div>
           </motion.div>

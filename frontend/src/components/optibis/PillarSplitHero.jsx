@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function PillarSplitHero({ 
   badgeIcon: BadgeIcon = Layers,
@@ -16,6 +17,7 @@ export default function PillarSplitHero({
   imageContainerClassName = ""
 }) {
   const nav = useSafeNav();
+  const { tr } = useLanguage();
 
   const colorStyles = {
     magenta: { text: "text-magenta", bg: "bg-magenta", hover: "hover:bg-magenta-600", lightBg: "bg-magenta-50" },
@@ -30,7 +32,7 @@ export default function PillarSplitHero({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <Link to="/" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-navy transition-colors mb-8 lg:mb-12">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Kembali ke Beranda
+          {tr("Kembali ke Beranda")}
         </Link>
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -41,24 +43,24 @@ export default function PillarSplitHero({
           >
             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${colorStyles.lightBg} ${colorStyles.text} text-xs font-bold tracking-wider uppercase mb-6`}>
               <BadgeIcon className="w-3.5 h-3.5" />
-              {badgeText}
+              {tr(badgeText)}
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold text-navy leading-[1.15] tracking-tight mb-6">
-              {titlePrefix}
-              <span className={`block mt-1 ${colorStyles.text}`}>{titleHighlight}</span>
+              {tr(titlePrefix)}
+              <span className={`block mt-1 ${colorStyles.text}`}>{tr(titleHighlight)}</span>
             </h1>
             
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-8 max-w-xl">
-              {description}
+              {tr(description)}
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Button onClick={() => nav("#konsultasi")} className={`${colorStyles.bg} ${colorStyles.hover} text-white rounded-full px-8 h-12 shadow-lg shadow-${color}/20 w-full sm:w-auto transition-all`}>
-                Konsultasi Sekarang <ArrowRight className="w-4 h-4 ml-2" />
+                {tr("Konsultasi Sekarang")} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <Button variant="outline" onClick={() => nav("#portofolio")} className="rounded-full px-8 h-12 w-full sm:w-auto border-gray-200 text-navy hover:bg-gray-50 dark:text-white dark:hover:bg-magenta/20 dark:hover:text-white transition-all">
-                Lihat Portofolio
+                {tr("Lihat Portofolio")}
               </Button>
             </div>
           </motion.div>

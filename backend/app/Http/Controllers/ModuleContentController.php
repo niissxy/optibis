@@ -14,10 +14,12 @@ class ModuleContentController extends Controller
         'packages' => 'package_items',
         'marketing-kits' => 'marketing_kit_items',
         'insights' => 'insight_items',
+        'insight-categories' => 'site_settings',
         'tools' => 'tool_items',
         'solution-library' => 'solution_library_items',
         'solution-library-categories' => 'site_settings',
         'solution-library-explore-categories' => 'site_settings',
+        'portfolio-categories' => 'site_settings',
         'viralog-content' => 'viralog_contents',
         'viralog-categories' => 'viralog_categories',
         'viralog-authors' => 'viralog_authors',
@@ -44,11 +46,20 @@ class ModuleContentController extends Controller
 
     public function index(string $module)
     {
+        if ($module === 'insights') {
+            $this->syncInsightItemCategories();
+        }
         if ($module === 'solution-library-categories') {
             $this->syncSolutionLibraryCategories();
         }
         if ($module === 'solution-library-explore-categories') {
             $this->syncSolutionLibraryExploreCategories();
+        }
+        if ($module === 'insight-categories') {
+            $this->syncInsightCategories();
+        }
+        if ($module === 'portfolio-categories') {
+            $this->syncPortfolioCategories();
         }
 
         $query = DB::table($this->table($module));
@@ -57,6 +68,12 @@ class ModuleContentController extends Controller
         }
         if ($module === 'solution-library-explore-categories') {
             $query->where('slug', 'like', 'solution-library-explore-category-%');
+        }
+        if ($module === 'insight-categories') {
+            $query->where('slug', 'like', 'insight-category-%');
+        }
+        if ($module === 'portfolio-categories') {
+            $query->where('slug', 'like', 'portfolio-category-%');
         }
 
         $items = $query
@@ -95,6 +112,12 @@ class ModuleContentController extends Controller
         if ($module === 'solution-library-categories' && $current->title !== $updateData['title']) {
             $this->renameSolutionLibraryCategory($current->title, $updateData['title']);
         }
+        if ($module === 'insight-categories' && $current->title !== $updateData['title']) {
+            $this->renameInsightCategory($current->title, $updateData['title']);
+        }
+        if ($module === 'portfolio-categories' && $current->title !== $updateData['title']) {
+            $this->renamePortfolioCategory($current->title, $updateData['title']);
+        }
         $item = DB::table($this->table($module))->find($id);
 
         return response()->json($this->normalize($item));
@@ -129,6 +152,12 @@ class ModuleContentController extends Controller
         }
         if ($module === 'solution-library-explore-categories') {
             $data['slug'] = 'solution-library-explore-category-'.str($data['title'])->slug();
+        }
+        if ($module === 'insight-categories') {
+            $data['slug'] = 'insight-category-'.str($data['title'])->slug();
+        }
+        if ($module === 'portfolio-categories') {
+            $data['slug'] = 'portfolio-category-'.str($data['title'])->slug();
         }
         $data['data'] = json_encode($data['data'] ?? []);
         return $data;
@@ -180,6 +209,51 @@ class ModuleContentController extends Controller
         });
     }
 
+    private function syncInsightCategories(): void
+    {
+        $categories = collect(['Ebook', 'Pelatihan', 'Konsultasi', 'Tools & Produk']);
+
+        $categories->filter()->unique()->each(function ($category) {
+            DB::table('site_settings')->updateOrInsert(
+                ['slug' => 'insight-category-'.str($category)->slug()],
+                ['title' => $category, 'summary' => null, 'image_url' => null, 'data' => json_encode([]), 'is_published' => true, 'created_at' => now(), 'updated_at' => now()]
+            );
+        });
+    }
+
+    private function syncInsightItemCategories(): void
+    {
+        DB::table('insight_items')->orderBy('id')->each(function ($item) {
+            $data = json_decode($item->data, true) ?: [];
+            $category = match (true) {
+                str_starts_with($item->slug, 'ebook-') => 'Ebook',
+                str_starts_with($item->slug, 'pelatihan-') => 'Pelatihan',
+                str_starts_with($item->slug, 'konsultasi-') => 'Konsultasi',
+                default => 'Tools & Produk',
+            };
+            if (($data['category'] ?? null) === $category) {
+                return;
+            }
+            if (filled($data['category'] ?? null) && !filled($data['subkategori'] ?? null)) {
+                $data['subkategori'] = $data['category'];
+            }
+            $data['category'] = $category;
+            DB::table('insight_items')->where('id', $item->id)->update(['data' => json_encode($data), 'updated_at' => now()]);
+        });
+    }
+
+    private function renameInsightCategory(string $previousCategory, string $nextCategory): void
+    {
+        DB::table('insight_items')->orderBy('id')->each(function ($item) use ($previousCategory, $nextCategory) {
+            $data = json_decode($item->data, true) ?: [];
+            if (($data['category'] ?? null) !== $previousCategory) {
+                return;
+            }
+            $data['category'] = $nextCategory;
+            DB::table('insight_items')->where('id', $item->id)->update(['data' => json_encode($data), 'updated_at' => now()]);
+        });
+    }
+
     private function syncSolutionLibraryExploreCategories(): void
     {
         if (DB::table('site_settings')->where('slug', 'solution-library-explore-categories-initialized')->exists()) {
@@ -201,6 +275,71 @@ class ModuleContentController extends Controller
             ['slug' => 'solution-library-explore-categories-initialized'],
             ['title' => 'Solution Library explore categories initialized', 'summary' => null, 'image_url' => null, 'data' => json_encode([]), 'is_published' => false, 'created_at' => now(), 'updated_at' => now()]
         );
+    }
+
+    private function syncPortfolioCategories(): void
+    {
+        if (DB::table('site_settings')->where('slug', 'portfolio-categories-synced-v1')->exists()) {
+            return;
+        }
+
+        $projectCategories = [
+            'Website Company Profile' => ['type' => 'project', 'icon' => 'Layout'],
+            'Website Bisnis' => ['type' => 'project', 'icon' => 'Briefcase'],
+            'E-Commerce' => ['type' => 'project', 'icon' => 'ShoppingCart'],
+            'Sistem Informasi' => ['type' => 'project', 'icon' => 'Server'],
+            'Aplikasi Web' => ['type' => 'project', 'icon' => 'AppWindow'],
+            'Aplikasi Mobile' => ['type' => 'project', 'icon' => 'Smartphone'],
+            'Landing Page' => ['type' => 'project', 'icon' => 'Monitor'],
+            'Redesign' => ['type' => 'project', 'icon' => 'PenTool'],
+        ];
+
+        $digitalAssetCategories = [
+            'Logo Brand' => ['type' => 'digital-asset', 'icon' => 'Palette'],
+            'Desain Sosial Media' => ['type' => 'digital-asset', 'icon' => 'Sparkles'],
+            'Marketing Kit & Cetak' => ['type' => 'digital-asset', 'icon' => 'Printer'],
+            'Banner & Promosi' => ['type' => 'digital-asset', 'icon' => 'Image'],
+        ];
+
+        foreach (array_merge($projectCategories, $digitalAssetCategories) as $title => $meta) {
+            $slug = 'portfolio-category-' . str($title)->slug();
+            DB::table('site_settings')->updateOrInsert(
+                ['slug' => $slug],
+                [
+                    'title' => $title,
+                    'summary' => $meta['type'],
+                    'image_url' => null,
+                    'data' => json_encode($meta),
+                    'is_published' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        DB::table('site_settings')->updateOrInsert(
+            ['slug' => 'portfolio-categories-synced-v1'],
+            [
+                'title' => 'Portfolio categories synced',
+                'summary' => null,
+                'image_url' => null,
+                'data' => json_encode([]),
+                'is_published' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+    }
+
+    private function renamePortfolioCategory(string $previousCategory, string $nextCategory): void
+    {
+        DB::table('portfolios')
+            ->where('category', $previousCategory)
+            ->update([
+                'category' => $nextCategory,
+                'industry' => $nextCategory,
+                'updated_at' => now(),
+            ]);
     }
 
     private function table(string $module): string

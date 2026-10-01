@@ -1,12 +1,14 @@
 import React from "react";
 import { Users, ClipboardList, Camera, Search, BarChart3, Globe } from "lucide-react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import PillarServiceCard from "@/components/optibis/PillarServiceCard";
-import { getPackagesByPillar } from "@/data/packages";
+import { usePackages } from "@/hooks/usePackages";
 import PillarPortfolio from "@/components/optibis/PillarPortfolio";
 import PillarPackagesHero from "@/components/optibis/PillarPackagesHero";
 import SectionHeading from "@/components/optibis/SectionHeading";
 import PillarSplitHero from "@/components/optibis/PillarSplitHero";
+import { getBreadcrumbSchema, getServiceSchema } from "@/lib/seoData";
 export const SERVICES = [
   {
     icon: ClipboardList, name: "Strategi & Planning", desc: "Digital audit, riset kompetitor, content strategy, dan monthly roadmap.",
@@ -40,12 +42,12 @@ export const SERVICES = [
   },
 ];
 
-const PACKAGES = getPackagesByPillar("digital-growth-team").map((p) => ({
-  slug: p.slug, name: p.name, target: p.target, price: p.priceShort || p.price,
-  features: p.included.map((i) => i.title), popular: p.popular,
-}));
-
 export default function DigitalGrowthTeam() {
+  const packages = usePackages();
+  const packageCards = packages.filter((pkg) => pkg.pillarSlug === "digital-growth-team").map((pkg) => ({
+    slug: pkg.slug, name: pkg.name, target: pkg.target, price: pkg.priceShort || pkg.price,
+    features: pkg.included.map((item) => item.title), popular: pkg.popular,
+  }));
   const [hero, setHero] = React.useState({
     badgeText: "PILAR 3 — DIGITAL GROWTH TEAM",
     titlePrefix: "Tingkatkan Pertumbuhan Bisnis dengan ",
@@ -75,8 +77,28 @@ export default function DigitalGrowthTeam() {
       .catch(() => {});
   }, []);
 
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Digital Growth Team", url: "/digital-growth-team" },
+    ]),
+    getServiceSchema({
+      name: "Digital Growth Team & Social Media Management",
+      description: "Pengelolaan digital bulanan terpadu: Strategi konten, Social Media Management, SEO & Web Visibility, dan Digital Advertising (Meta & Google Ads).",
+      url: "/digital-growth-team",
+      serviceType: "Digital Marketing & Growth Management",
+    }),
+  ];
+
   return (
     <PillarLayout showPageRecommendations={false}>
+      <SEO
+        title="Jasa Digital Growth Team & Pengelolaan Media Sosial Bisnis"
+        description="Serahkan pengelolaan digital, konten sosial media, optimasi SEO, dan iklan berbayar bisnis Anda kepada tim profesional Optibis Digital Growth Team."
+        keywords="jasa kelola sosial media, digital marketing agency, jasa admin instagram, optimasi seo bulanan, jasa pasang iklan meta google ads, tim digital bisnis"
+        canonicalUrl="https://optibis.id/digital-growth-team"
+        structuredData={structuredData}
+      />
       {/* Hero */}
       <PillarSplitHero
         badgeIcon={Users}
@@ -93,7 +115,7 @@ export default function DigitalGrowthTeam() {
         title="Paket Bulanan"
         description="Pilih paket bulanan yang sesuai dengan kebutuhan dan budget bisnis Anda."
         pillarSlug="digital-growth-team"
-        packages={PACKAGES}
+        packages={packageCards}
         accent="magenta"
       />
 

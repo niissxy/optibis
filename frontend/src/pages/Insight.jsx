@@ -2,10 +2,14 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BookOpen, GraduationCap, Video, Wrench, Star, Clock, Layers, Check, MessageCircle, Sparkles, TrendingUp, Download, Target, Palette, Globe, Briefcase } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import PillarLayout from "@/components/optibis/PillarLayout";
-import { EBOOKS, TRAININGS, CONSULTATIONS, DIGITAL_TOOLS, formatRupiah } from "@/data/insight";
+import { formatRupiah } from "@/data/insight";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { useInsights } from "@/hooks/useInsights";
+import { getBreadcrumbSchema } from "@/lib/seoData";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const CONSULTATION_ICONS = { Target, Palette, Globe, Briefcase };
 
@@ -18,28 +22,54 @@ const TABS = [
 
 export default function Insight() {
   const nav = useSafeNav();
+  const { language, tr } = useLanguage();
   const [activeTab, setActiveTab] = useState("ebook");
-  const openWhatsApp = (action, item) => window.open(`https://wa.me/6287772577020?text=${encodeURIComponent(`Halo Optibis, saya ingin ${action}: ${item.title}.`)}`, "_blank", "noopener,noreferrer");
+  const insights = useInsights();
+  const ebooks = insights.filter((item) => item.categoryKey === "ebook");
+  const trainings = insights.filter((item) => item.categoryKey === "pelatihan");
+  const consultations = insights.filter((item) => item.categoryKey === "konsultasi");
+  const tools = insights.filter((item) => item.categoryKey === "tool");
+  const openWhatsApp = (action, item) => window.open(`https://wa.me/6287772577020?text=${encodeURIComponent(language === "en" ? `Hello Optibis, I would like to ${action}: ${item.title}.` : `Halo Optibis, saya ingin ${action}: ${item.title}.`)}`, "_blank", "noopener,noreferrer");
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Insight & Produk Digital", url: "/insight" },
+    ]),
+  ];
 
   return (
     <PillarLayout>
+      <SEO
+        title="Insight, Ebook & Pelatihan Bisnis Digital"
+        description="Akses koleksi ebook praktis, program pelatihan, sesi konsultasi, dan tools digital yang dirancang untuk mempercepat pertumbuhan bisnis Anda."
+        keywords="ebook bisnis gratis, pelatihan digital marketing, kursus online bisnis, konsultasi bisnis online, strategi bisnis digital indonesia, optibis insight"
+        canonicalUrl="https://optibis.id/insight"
+        structuredData={structuredData}
+      />
       {/* Hero */}
       <section className="relative py-12 lg:py-20 overflow-hidden bg-gradient-to-b from-magenta-50/30 to-white">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-magenta/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-magenta mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Kembali ke Beranda
+            <ArrowLeft className="w-4 h-4" /> {tr("Kembali ke Beranda")}
           </Link>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
               <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5" /> INSIGHT OPTIBIS
+                <Sparkles className="w-3.5 h-3.5" /> {tr("INSIGHT OPTIBIS")}
               </span>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-navy leading-tight">
-                Insight & Produk Digital untuk <span className="text-magenta">Mempercepat</span> Bisnis Anda
+                {language === "en" ? (
+                  <>Digital Insights & Products to <span className="text-magenta">Accelerate</span> Your Business</>
+                ) : (
+                  <>Insight & Produk Digital untuk <span className="text-magenta">Mempercepat</span> Bisnis Anda</>
+                )}
               </h1>
               <p className="text-base lg:text-lg text-muted-foreground leading-relaxed">
-                Ebook, pelatihan, konsultasi, dan tools digital yang dirancang oleh praktisi Optibis — dipilih berdasarkan pengalaman melayani ratusan klien bisnis.
+                {language === "en"
+                  ? "Ebooks, training, consultation, and digital tools designed by Optibis practitioners — curated based on experience serving hundreds of business clients."
+                  : "Ebook, pelatihan, konsultasi, dan tools digital yang dirancang oleh praktisi Optibis — dipilih berdasarkan pengalaman melayani ratusan klien bisnis."}
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
                 {[
@@ -50,7 +80,7 @@ export default function Insight() {
                 ].map((s) => (
                   <div key={s.label} className="flex items-center gap-2 text-sm text-navy">
                     <s.icon className="w-4 h-4 text-magenta" />
-                    {s.label}
+                    {tr(s.label)}
                   </div>
                 ))}
               </div>
@@ -86,7 +116,7 @@ export default function Insight() {
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {tab.label}
+                {tr(tab.label)}
               </button>
             ))}
           </div>
@@ -103,11 +133,11 @@ export default function Insight() {
                 <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-magenta-50 text-magenta text-xs font-bold mb-3">
                   <BookOpen className="w-3.5 h-3.5" /> EBOOK
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">Ebook Praktis untuk Bisnis</h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">Panduan digital yang bisa langsung Anda terapkan untuk bisnis. Format PDF, akses seumur hidup.</p>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">{tr("Ebook Praktis untuk Bisnis")}</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">{tr("Panduan digital yang bisa langsung Anda terapkan untuk bisnis. Format PDF, akses seumur hidup.")}</p>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {EBOOKS.map((ebook, i) => (
+                {ebooks.map((ebook, i) => (
                   <motion.div
                     key={ebook.id}
                     initial={{ opacity: 0, y: 15 }}
@@ -118,21 +148,21 @@ export default function Insight() {
                     <div className="relative h-60 overflow-hidden">
                       <img src={ebook.cover} alt={ebook.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       {ebook.badge && (
-                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-magenta text-white text-xs font-bold">{ebook.badge}</span>
+                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-magenta text-white text-xs font-bold">{tr(ebook.badge)}</span>
                       )}
                       <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 text-white/90 text-xs">
                         <Clock className="w-3.5 h-3.5" />
-                        {ebook.pages} halaman
+                        {ebook.pages} {tr("halaman")}
                       </div>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-base font-bold text-navy mb-1 leading-tight">{ebook.title}</h3>
-                      <p className="text-xs text-muted-foreground mb-2">oleh {ebook.author}</p>
-                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{ebook.desc}</p>
+                      <h3 className="text-base font-bold text-navy mb-1 leading-tight">{tr(ebook.title)}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">{tr("oleh")} {ebook.author}</p>
+                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{tr(ebook.desc)}</p>
                       <div className="flex items-center justify-between">
                         <div className="text-xl font-extrabold text-navy">{formatRupiah(ebook.price)}</div>
-                        <Button onClick={() => openWhatsApp("membeli ebook", ebook)} className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 group">
-                          <Download className="w-4 h-4 mr-1" /> Beli
+                        <Button onClick={() => openWhatsApp(language === "en" ? "purchase the ebook" : "membeli ebook", ebook)} className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 group">
+                          <Download className="w-4 h-4 mr-1" /> {tr("Beli")}
                         </Button>
                       </div>
                     </div>
@@ -147,13 +177,13 @@ export default function Insight() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="text-center mb-12">
                 <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amethyst-50 text-amethyst text-xs font-bold mb-3">
-                  <GraduationCap className="w-3.5 h-3.5" /> PELATIHAN
+                  <GraduationCap className="w-3.5 h-3.5" /> {tr("PELATIHAN")}
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">Pelatihan Berbayar</h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">Workshop dan bootcamp interaktif bersama praktisi Optibis. Sertifikat penyelesaian disertakan.</p>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">{tr("Pelatihan Berbayar")}</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">{tr("Workshop dan bootcamp interaktif bersama praktisi Optibis. Sertifikat penyelesaian disertakan.")}</p>
               </div>
               <div className="grid sm:grid-cols-2 gap-6">
-                {TRAININGS.map((training, i) => (
+                {trainings.map((training, i) => (
                   <motion.div
                     key={training.id}
                     initial={{ opacity: 0, y: 15 }}
@@ -165,26 +195,26 @@ export default function Insight() {
                       <div className="relative h-48 sm:h-full overflow-hidden">
                         <img src={training.image} alt={training.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         <div className="absolute inset-0 bg-gradient-to-t from-navy/50 to-transparent" />
-                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-navy text-xs font-bold">{training.level}</span>
+                        <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-navy text-xs font-bold">{tr(training.level)}</span>
                       </div>
                       <div className="p-5">
-                        <h3 className="text-base font-bold text-navy mb-2 leading-tight">{training.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{training.desc}</p>
+                        <h3 className="text-base font-bold text-navy mb-2 leading-tight">{tr(training.title)}</h3>
+                        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{tr(training.desc)}</p>
                         <div className="flex flex-wrap gap-2 mb-3">
-                          <span className="flex items-center gap-1 text-xs text-navy-300 bg-gray-50 px-2.5 py-1 rounded-full"><Clock className="w-3 h-3" /> {training.duration}</span>
-                          <span className="flex items-center gap-1 text-xs text-navy-300 bg-gray-50 px-2.5 py-1 rounded-full"><Layers className="w-3 h-3" /> {training.modules} modul</span>
+                          <span className="flex items-center gap-1 text-xs text-navy-300 bg-gray-50 px-2.5 py-1 rounded-full"><Clock className="w-3 h-3" /> {tr(training.duration)}</span>
+                          <span className="flex items-center gap-1 text-xs text-navy-300 bg-gray-50 px-2.5 py-1 rounded-full"><Layers className="w-3 h-3" /> {training.modules} {tr("modul")}</span>
                         </div>
                         <ul className="space-y-1.5 mb-4">
                           {training.topics.map((t) => (
                             <li key={t} className="flex items-start gap-1.5 text-xs text-navy-300">
-                              <Check className="w-3.5 h-3.5 text-amethyst shrink-0 mt-0.5" /> {t}
+                              <Check className="w-3.5 h-3.5 text-amethyst shrink-0 mt-0.5" /> {tr(t)}
                             </li>
                           ))}
                         </ul>
                         <div className="flex items-center justify-between">
                           <div className="text-xl font-extrabold text-navy">{formatRupiah(training.price)}</div>
-                          <Button onClick={() => openWhatsApp("mendaftar pelatihan", training)} className="bg-amethyst hover:bg-amethyst-600 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
-                            Daftar <ArrowRight className="w-4 h-4 ml-1" />
+                          <Button onClick={() => openWhatsApp(language === "en" ? "register for training" : "mendaftar pelatihan", training)} className="bg-amethyst hover:bg-amethyst-600 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                            {tr("Daftar")} <ArrowRight className="w-4 h-4 ml-1" />
                           </Button>
                         </div>
                       </div>
@@ -200,13 +230,13 @@ export default function Insight() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="text-center mb-12">
                 <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-navy-50 text-navy text-xs font-bold mb-3">
-                  <Video className="w-3.5 h-3.5" /> KONSULTASI
+                  <Video className="w-3.5 h-3.5" /> {tr("KONSULTASI")}
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">Konsultasi Berbayar 1-on-1</h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">Sesi langsung dengan ahli Optibis. Dapatkan rekomendasi konkret dan roadmap untuk bisnis Anda.</p>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">{tr("Konsultasi Berbayar 1-on-1")}</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">{tr("Sesi langsung dengan ahli Optibis. Dapatkan rekomendasi konkret dan roadmap untuk bisnis Anda.")}</p>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {CONSULTATIONS.map((cons, i) => {
+                {consultations.map((cons, i) => {
                   const IconComp = CONSULTATION_ICONS[cons.icon] || Target;
                   return (
                     <motion.div
@@ -219,22 +249,22 @@ export default function Insight() {
                       <div className="w-12 h-12 rounded-xl bg-navy-50 text-navy flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                         <IconComp className="w-6 h-6" />
                       </div>
-                      <h3 className="text-base font-bold text-navy mb-2 leading-tight">{cons.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed flex-1">{cons.desc}</p>
+                      <h3 className="text-base font-bold text-navy mb-2 leading-tight">{tr(cons.title)}</h3>
+                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed flex-1">{tr(cons.desc)}</p>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="flex items-center gap-1 text-xs text-navy-300 bg-gray-50 px-2.5 py-1 rounded-full"><Clock className="w-3 h-3" /> {cons.duration}</span>
+                        <span className="flex items-center gap-1 text-xs text-navy-300 bg-gray-50 px-2.5 py-1 rounded-full"><Clock className="w-3 h-3" /> {tr(cons.duration)}</span>
                       </div>
-                      <div className="text-xs text-navy-300 mb-3">{cons.format}</div>
+                      <div className="text-xs text-navy-300 mb-3">{tr(cons.format)}</div>
                       <ul className="space-y-1.5 mb-4">
                         {cons.includes.map((inc) => (
                           <li key={inc} className="flex items-start gap-1.5 text-xs text-navy-300">
-                            <Check className="w-3.5 h-3.5 text-magenta shrink-0 mt-0.5" /> {inc}
+                            <Check className="w-3.5 h-3.5 text-magenta shrink-0 mt-0.5" /> {tr(inc)}
                           </li>
                         ))}
                       </ul>
                       <div className="text-xl font-extrabold text-navy mb-3">{formatRupiah(cons.price)}</div>
-                      <Button onClick={() => openWhatsApp("booking sesi konsultasi", cons)} className="w-full bg-navy hover:bg-navy-400 text-white rounded-full h-9 text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-95">
-                        Booking Sesi <ArrowRight className="w-4 h-4 ml-1" />
+                      <Button onClick={() => openWhatsApp(language === "en" ? "book a consultation session" : "booking sesi konsultasi", cons)} className="w-full bg-navy hover:bg-navy-400 text-white rounded-full h-9 text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-95">
+                        {tr("Booking Sesi")} <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </motion.div>
                   );
@@ -248,13 +278,13 @@ export default function Insight() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="text-center mb-12">
                 <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold mb-3">
-                  <Wrench className="w-3.5 h-3.5" /> TOOLS & PRODUK DIGITAL
+                  <Wrench className="w-3.5 h-3.5" /> {tr("TOOLS & PRODUK DIGITAL")}
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">Tools & Produk Digital</h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">Template, checklist, dan tool digital siap pakai untuk menghemat waktu dan tenaga tim Anda.</p>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">{tr("Tools & Produk Digital")}</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">{tr("Template, checklist, dan tool digital siap pakai untuk menghemat waktu dan tenaga tim Anda.")}</p>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {DIGITAL_TOOLS.map((tool, i) => (
+                {tools.map((tool, i) => (
                   <motion.div
                     key={tool.id}
                     initial={{ opacity: 0, y: 15 }}
@@ -265,16 +295,16 @@ export default function Insight() {
                     <div className="relative h-40 overflow-hidden">
                       <img src={tool.image} alt={tool.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-navy/40 to-transparent" />
-                      <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-navy text-xs font-bold">{tool.category}</span>
+                      <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-navy text-xs font-bold">{tr(tool.category)}</span>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-base font-bold text-navy mb-1 leading-tight">{tool.title}</h3>
-                      <p className="text-xs text-muted-foreground mb-2">Format: {tool.format}</p>
-                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{tool.desc}</p>
+                      <h3 className="text-base font-bold text-navy mb-1 leading-tight">{tr(tool.title)}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">Format: {tr(tool.format)}</p>
+                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{tr(tool.desc)}</p>
                       <div className="flex items-center justify-between">
                         <div className="text-xl font-extrabold text-navy">{formatRupiah(tool.price)}</div>
-                        <Button onClick={() => openWhatsApp("membeli tools atau produk", tool)} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
-                          <Download className="w-4 h-4 mr-1" /> Beli
+                        <Button onClick={() => openWhatsApp(language === "en" ? "purchase tools or products" : "membeli tools atau produk", tool)} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-5 h-9 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                          <Download className="w-4 h-4 mr-1" /> {tr("Beli")}
                         </Button>
                       </div>
                     </div>
@@ -290,8 +320,8 @@ export default function Insight() {
       <section className="py-12 lg:py-16 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">Kenapa Beli dari Insight Optibis?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Produk digital kami dibuat berdasarkan pengalaman melayani ratusan klien bisnis dari berbagai industri.</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-3">{tr("Kenapa Beli dari Insight Optibis?")}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{tr("Produk digital kami dibuat berdasarkan pengalaman melayani ratusan klien bisnis dari berbagai industri.")}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -311,8 +341,8 @@ export default function Insight() {
                 <div className="w-12 h-12 mx-auto rounded-xl bg-magenta-50 text-magenta flex items-center justify-center mb-3">
                   <b.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-navy mb-1">{b.title}</h3>
-                <p className="text-xs text-muted-foreground">{b.desc}</p>
+                <h3 className="text-sm font-bold text-navy mb-1">{tr(b.title)}</h3>
+                <p className="text-xs text-muted-foreground">{tr(b.desc)}</p>
               </motion.div>
             ))}
           </div>
@@ -333,11 +363,11 @@ export default function Insight() {
           className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-amethyst/10 rounded-full blur-3xl"
         />
         <div className="max-w-2xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4">Butuh Solusi Lebih Lengkap?</h2>
-          <p className="text-white/70 mb-8">Selain produk digital, Optibis menyediakan layanan branding, website, dan digital growth team untuk bisnis Anda.</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4">{tr("Butuh Solusi Lebih Lengkap?")}</h2>
+          <p className="text-white/70 mb-8">{tr("Selain produk digital, Optibis menyediakan layanan branding, website, dan digital growth team untuk bisnis Anda.")}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button onClick={() => nav("/")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-8 h-12 shadow-xl shadow-magenta/30 w-full sm:w-auto transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 group">
-              Lihat Semua Layanan <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+              {tr("Lihat Semua Layanan")} <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
             <a
               href="https://wa.me/6287772577020"
@@ -345,7 +375,7 @@ export default function Insight() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors w-full sm:w-auto"
             >
-              <MessageCircle className="w-4 h-4" /> Chat WhatsApp
+              <MessageCircle className="w-4 h-4" /> {tr("Chat WhatsApp")}
             </a>
           </div>
         </div>

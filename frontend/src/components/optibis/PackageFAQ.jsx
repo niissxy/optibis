@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function PackageFAQ({ faqs = [] }) {
   const [open, setOpen] = useState(0);
+  const { tr } = useLanguage();
 
   if (!faqs.length) return null;
 
@@ -14,14 +16,14 @@ export default function PackageFAQ({ faqs = [] }) {
             onClick={() => setOpen(open === i ? -1 : i)}
             className="w-full flex items-center justify-between gap-4 p-5 text-left"
           >
-            <span className="text-sm font-semibold text-navy">{item.q}</span>
+            <span className="text-sm font-semibold text-navy">{tr(item.q)}</span>
             <ChevronDown
               className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open === i ? "rotate-180" : ""}`}
             />
           </button>
           {open === i && (
             <div className="px-5 pb-5">
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.a}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{tr(item.a)}</p>
             </div>
           )}
         </div>

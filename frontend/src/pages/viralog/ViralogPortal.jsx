@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, TrendingUp, Flame, ArrowRight, Clock, Eye, Sparkles, Newspaper, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import ViralogContentCard from "@/components/viralog/ViralogContentCard";
 import ViralogAdSlot from "@/components/viralog/ViralogAdSlot";
 import ViralogNewsletter from "@/components/viralog/ViralogNewsletter";
 import { useViralogContent } from "@/hooks/useViralogContent";
+import { useLanguage } from "@/lib/LanguageContext";
 import {
   VIRALOG_CATEGORIES,
   VIRALOG_TAGS,
@@ -21,9 +23,11 @@ import {
   formatViews,
   formatDate,
 } from "@/data/viralog";
+import { getBreadcrumbSchema } from "@/lib/seoData";
 
 export default function ViralogPortal() {
   const navigate = useNavigate();
+  const { language, tr } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [articlePage, setArticlePage] = useState(1);
   const content = useViralogContent();
@@ -46,14 +50,28 @@ export default function ViralogPortal() {
     }
   };
 
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Viralog Content Portal", url: "/content" },
+    ]),
+  ];
+
   return (
     <PillarLayout>
+      <SEO
+        title="VIRALOG — Portal Tren & Insight Konten Bisnis Digital"
+        description="Portal intelijen konten, tren media sosial, strategi SEO, dan panduan pertumbuhan digital terlengkap untuk pelaku bisnis di Indonesia."
+        keywords="portal berita digital, tren sosial media, strategi konten tiktok instagram, tips bisnis online, belajar seo gratis, virallog optibis"
+        canonicalUrl="https://optibis.id/content"
+        structuredData={structuredData}
+      />
       {/* Category Bar */}
       <div className="bg-white border-b border-gray-100 sticky top-16 lg:top-18 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
             <Link to="/content" className="shrink-0 px-3 py-1.5 rounded-full bg-navy text-white text-xs font-semibold whitespace-nowrap">
-              Semua
+              {tr("Semua")}
             </Link>
             {VIRALOG_CATEGORIES.map((cat) => (
               <Link
@@ -61,7 +79,7 @@ export default function ViralogPortal() {
                 to={`/kategori/${cat.slug}`}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors hover:bg-${cat.color}/10 hover:text-${cat.color} text-navy-300`}
               >
-                {cat.name}
+                {tr(cat.name)}
               </Link>
             ))}
           </div>
@@ -81,7 +99,7 @@ export default function ViralogPortal() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari artikel, video, tutorial..."
+            placeholder={language === "en" ? "Search articles, videos, tutorials..." : "Cari artikel, video, tutorial..."}
             className="w-full pl-11 pr-4 h-11 rounded-full border border-gray-200 bg-slate-50 focus:bg-white focus:border-magenta focus:outline-none focus:ring-2 focus:ring-magenta/10 text-sm font-medium"
           />
         </form>
@@ -98,7 +116,7 @@ export default function ViralogPortal() {
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
               <Flame className="w-5 h-5 text-magenta" />
-              <h3 className="font-bold text-navy text-sm uppercase tracking-wide">Trending</h3>
+              <h3 className="font-bold text-navy text-sm uppercase tracking-wide">{tr("Trending")}</h3>
             </div>
             <div className="space-y-0">
               {trending.map((item, i) => (
@@ -113,7 +131,7 @@ export default function ViralogPortal() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-magenta" />
-          <h2 className="text-lg font-bold text-navy">Sedang Naik Daun</h2>
+          <h2 className="text-lg font-bold text-navy">{tr("Sedang Naik Daun")}</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {getLatestContent(4, content).map((item, i) => (
@@ -137,7 +155,7 @@ export default function ViralogPortal() {
               <h2 className="text-lg font-bold text-white">Short Video Hub</h2>
             </div>
             <Link to="/short-video" className="text-xs font-semibold text-magenta flex items-center gap-1 hover:gap-2 transition-all">
-              Lihat Semua <ArrowRight className="w-3.5 h-3.5" />
+              {tr("Lihat Semua")} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 snap-x">
@@ -156,7 +174,7 @@ export default function ViralogPortal() {
                       {video.embed_platform === "tiktok" ? "TikTok" : video.embed_platform === "youtube_shorts" ? "YT" : "Reels"}
                     </span>
                     <div className="absolute bottom-2 left-2 right-2">
-                      <h3 className="text-[11px] font-bold text-white leading-tight line-clamp-2 mb-0.5">{video.title}</h3>
+                      <h3 className="text-[11px] font-bold text-white leading-tight line-clamp-2 mb-0.5">{tr(video.title)}</h3>
                       <span className="flex items-center gap-0.5 text-white/60 text-[8px]"><Eye className="w-2.5 h-2.5" /> {formatViews(video.views)}</span>
                     </div>
                   </div>
@@ -174,7 +192,7 @@ export default function ViralogPortal() {
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <Newspaper className="w-5 h-5 text-navy" />
-              <h2 className="text-lg font-bold text-navy">Artikel Terbaru</h2>
+              <h2 className="text-lg font-bold text-navy">{tr("Artikel Terbaru")}</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {pagedArticles.map((item, i) => (
@@ -183,7 +201,7 @@ export default function ViralogPortal() {
             </div>
             {articlePageCount > 1 && (
               <nav className="flex items-center justify-center gap-2 mt-6" aria-label="Halaman artikel">
-                <button onClick={() => setArticlePage(Math.max(1, articlePage - 1))} disabled={articlePage === 1} className="w-9 h-9 rounded-lg bg-slate-100 text-navy disabled:cursor-not-allowed disabled:opacity-40 hover:bg-magenta/10 hover:text-magenta" aria-label="Halaman sebelumnya"><ChevronLeft className="w-4 h-4 mx-auto" /></button>
+                <button onClick={() => setArticlePage(Math.max(1, articlePage - 1))} disabled={articlePage === 1} className="w-9 h-9 rounded-lg bg-slate-100 text-navy disabled:cursor-not-allowed disabled:opacity-40 hover:bg-magenta/10 hover:text-magenta" aria-label={tr("Halaman sebelumnya")}><ChevronLeft className="w-4 h-4 mx-auto" /></button>
                 {pageNumbers.map((page, index) => (
                   <React.Fragment key={page}>
                     {index > 0 && pageNumbers[index - 1] !== page - 1 && <span className="text-sm text-muted-foreground">…</span>}
@@ -196,7 +214,7 @@ export default function ViralogPortal() {
                   </button>
                   </React.Fragment>
                 ))}
-                <button onClick={() => setArticlePage(Math.min(articlePageCount, articlePage + 1))} disabled={articlePage === articlePageCount} className="w-9 h-9 rounded-lg bg-slate-100 text-navy disabled:cursor-not-allowed disabled:opacity-40 hover:bg-magenta/10 hover:text-magenta" aria-label="Halaman berikutnya"><ChevronRight className="w-4 h-4 mx-auto" /></button>
+                <button onClick={() => setArticlePage(Math.min(articlePageCount, articlePage + 1))} disabled={articlePage === articlePageCount} className="w-9 h-9 rounded-lg bg-slate-100 text-navy disabled:cursor-not-allowed disabled:opacity-40 hover:bg-magenta/10 hover:text-magenta" aria-label={tr("Halaman berikutnya")}><ChevronRight className="w-4 h-4 mx-auto" /></button>
               </nav>
             )}
             <div className="my-6">
@@ -211,7 +229,7 @@ export default function ViralogPortal() {
 
             {/* Popular Tags */}
             <div className="bg-white rounded-xl border border-gray-100 p-5">
-              <h3 className="font-bold text-navy text-sm uppercase tracking-wide mb-3">Tag Populer</h3>
+              <h3 className="font-bold text-navy text-sm uppercase tracking-wide mb-3">{tr("Tag Populer")}</h3>
               <div className="flex flex-wrap gap-2">
                 {VIRALOG_TAGS.slice(0, 10).map((tag) => (
                   <Link key={tag} to={`/search?q=${encodeURIComponent(tag)}`} className="px-2.5 py-1 rounded-lg bg-slate-50 text-xs font-medium text-navy-300 hover:bg-magenta hover:text-white transition-colors">
@@ -225,7 +243,7 @@ export default function ViralogPortal() {
             <div className="bg-white rounded-xl border border-gray-100 p-5">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
                 <Sparkles className="w-4 h-4 text-amethyst" />
-                <h3 className="font-bold text-navy text-sm uppercase tracking-wide">Editor's Pick</h3>
+                <h3 className="font-bold text-navy text-sm uppercase tracking-wide">{tr("Editor's Pick")}</h3>
               </div>
               <div className="space-y-0">
                 {editorsPick.map((item, i) => (
@@ -243,10 +261,10 @@ export default function ViralogPortal() {
       {/* Sponsored Content */}
       {sponsored.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="bg-amber-50/50 rounded-2xl p-5 border border-amber-100">
+          <div className="bg-amber-50/50 rounded-2xl p-5 border border-amber-100 dark:bg-[#102842] dark:border-amber-300/25">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-4 h-4 text-amber-600" />
-              <h3 className="font-bold text-navy text-sm">Sponsored Content</h3>
+              <h3 className="font-bold text-navy text-sm dark:text-white">{tr("Sponsored Content")}</h3>
               <span className="ml-auto px-2 py-0.5 rounded bg-amber-200 text-amber-800 text-[10px] font-bold">ADS</span>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -263,7 +281,7 @@ export default function ViralogPortal() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-2 mb-4">
             <Play className="w-5 h-5 text-navy" />
-            <h2 className="text-lg font-bold text-navy">Video & Podcast</h2>
+            <h2 className="text-lg font-bold text-navy">{tr("Video & Podcast")}</h2>
           </div>
           <div className="grid sm:grid-cols-3 gap-4">
             {longVideos.map((item, i) => (
@@ -275,7 +293,7 @@ export default function ViralogPortal() {
 
       {/* Category Cluster */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-lg font-bold text-navy mb-4">Jelajah Kategori</h2>
+        <h2 className="text-lg font-bold text-navy mb-4">{tr("Jelajah Kategori")}</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {VIRALOG_CATEGORIES.map((cat, i) => {
             const count = getLatestContent(8, content).filter((c) => c.category_slug === cat.slug).length;
@@ -285,8 +303,8 @@ export default function ViralogPortal() {
                   <div className={`w-10 h-10 rounded-lg bg-${cat.color}/10 flex items-center justify-center mb-3`}>
                     <Newspaper className={`w-5 h-5 text-${cat.color}`} />
                   </div>
-                  <h3 className="font-bold text-navy text-sm mb-1 group-hover:text-magenta transition-colors">{cat.name}</h3>
-                  <p className="text-xs text-muted-foreground">{count} konten</p>
+                  <h3 className="font-bold text-navy text-sm mb-1 group-hover:text-magenta transition-colors">{tr(cat.name)}</h3>
+                  <p className="text-xs text-muted-foreground">{count} {tr("konten")}</p>
                 </Link>
               </motion.div>
             );

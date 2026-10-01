@@ -1,75 +1,65 @@
-# React + TypeScript + Vite
+# OPTIBIS Admin Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Dashboard administrasi dan Content Management System (CMS) untuk platform **OPTIBIS.ID**, dibangun dengan React, TypeScript, Vite, Tailwind CSS, dan Lucide Icons.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Fitur Admin Dashboard
 
-## React Compiler
+1. **Dashboard & Analitik**:
+   - Ringkasan total kunjungan website, unique visitors, dan perolehan leads baru.
+   - Grafik distribusi perangkat pengunjung (Desktop vs Mobile).
+   - Daftar sumber rujukan (*top referrers*) dan halaman paling sering dikunjungi (*top pages*).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. **Manajemen Portofolio**:
+   - Tambah, ubah, dan hapus studi kasus portofolio.
+   - Upload gambar thumbnail & galeri portofolio ke backend storage.
+   - Atur status publikasi (`is_published`).
 
-## Expanding the ESLint configuration
+3. **Manajemen Konten Modul (Dynamic Modules)**:
+   - Manajemen konten Pilar Layanan, Paket Harga, dan Detail Service.
+   - Manajemen Ensiklopedia Solution Library & Kategori.
+   - Manajemen Tools & Platform Showcase.
+   - Manajemen Resource Marketing Kit.
+   - Manajemen Konten VIRALOG (Artikel, Kategori, Tag, Author, Slot Iklan, dan Newsletter).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+4. **Manajemen Akun Administrator**:
+   - Pembuatan akun admin baru dan pengaturan hak akses.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Menjalankan Admin Dashboard
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Masuk ke direktori admin:
+   ```bash
+   cd admin
+   ```
 
-```
+2. Pasang dependensi:
+   ```bash
+   npm install
+   ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+3. Konfigurasi variabel lingkungan:
+   Buat file `.env` untuk menentukan endpoint API backend:
+   ```env
+   VITE_API_URL=http://localhost:8000/api/v1
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+4. Jalankan server lokal:
+   ```bash
+   npm run dev
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+5. Build untuk production:
+   ```bash
+   npm run build
+   ```
 
-```
+---
+
+## 🔒 Catatan Keamanan
+
+- Akses ke dashboard admin memerlukan autentikasi login yang valid dari backend.
+- Token autentikasi disimpan di `localStorage` klien dengan format Bearer Token dan diverifikasi pada setiap request.
+- Jangan simpan kredensial atau password akun di dalam file repositori.

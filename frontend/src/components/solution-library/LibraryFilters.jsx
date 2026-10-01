@@ -1,6 +1,7 @@
 import React from "react";
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const LEVELS = [
   { value: "basic", label: "Basic" },
@@ -42,6 +43,7 @@ export default function LibraryFilters({
   onReset,
   resultCount,
 }) {
+  const { tr } = useLanguage();
   const additionalJenis = JENIS.filter(
     (jenis) => !categories.some((category) => category.label.toLowerCase() === jenis.label.toLowerCase())
   );
@@ -50,18 +52,18 @@ export default function LibraryFilters({
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-navy flex items-center gap-2">
-          <Filter className="w-4 h-4 text-magenta" /> Filter
+          <Filter className="w-4 h-4 text-magenta" /> {tr("Filter")}
         </h3>
         <button onClick={onReset} className="text-xs text-muted-foreground hover:text-magenta transition-colors flex items-center gap-1">
-          <X className="w-3 h-3" /> Reset
+          <X className="w-3 h-3" /> {tr("Reset")}
         </button>
       </div>
 
-      <div className="text-xs text-muted-foreground">{resultCount} hasil ditemukan</div>
+      <div className="text-xs text-muted-foreground">{resultCount} {tr("hasil ditemukan")}</div>
 
       {/* Kategori */}
       <div>
-        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">Kategori</p>
+        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">{tr("Kategori")}</p>
         <div className="grid grid-cols-2 gap-1">
           {categories.map((cat) => (
             <button
@@ -76,7 +78,7 @@ export default function LibraryFilters({
                   : "text-navy-400 hover:bg-magenta-50 dark:hover:bg-magenta-900/40 hover:text-magenta"
               }`}
             >
-              {cat.label}
+              {tr(cat.label)}
             </button>
           ))}
           {additionalJenis.map((jns) => (
@@ -92,7 +94,7 @@ export default function LibraryFilters({
                   : "text-navy-400 hover:bg-magenta-50 dark:hover:bg-magenta-900/40 hover:text-magenta"
               }`}
             >
-              {jns.label}
+              {tr(jns.label)}
             </button>
           ))}
         </div>
@@ -100,7 +102,7 @@ export default function LibraryFilters({
 
       {/* Level */}
       <div>
-        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">Level</p>
+        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">{tr("Level")}</p>
         <div className="flex flex-wrap gap-1.5">
           {LEVELS.map((lvl) => (
             <button
@@ -112,7 +114,7 @@ export default function LibraryFilters({
                   : "bg-white text-navy-400 border-gray-200 hover:border-navy hover:text-navy"
               }`}
             >
-              {lvl.label}
+              {tr(lvl.label)}
             </button>
           ))}
         </div>
@@ -120,14 +122,14 @@ export default function LibraryFilters({
 
       {/* Sort */}
       <div>
-        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">Urutkan</p>
+        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">{tr("Urutkan")}</p>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 text-navy bg-white outline-none focus:border-magenta transition-colors cursor-pointer"
         >
           {SORT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>{tr(opt.label)}</option>
           ))}
         </select>
       </div>

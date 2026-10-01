@@ -262,7 +262,7 @@ export default function ViralogContentCard({ content, variant = "compact", index
       </Link>
       {originalSourceUrl && (
         <a href={originalSourceUrl} target="_blank" rel="noopener noreferrer" className="mx-4 mb-4 inline-flex w-fit items-center justify-center gap-1 rounded-md border border-navy/15 bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-navy transition-colors hover:border-magenta hover:bg-magenta hover:text-white">
-          <Link2 className="w-3 h-3" /> Baca sumber asli
+          <Link2 className="w-3 h-3" /> {tr("Baca sumber asli")}
         </a>
       )}
       </div>

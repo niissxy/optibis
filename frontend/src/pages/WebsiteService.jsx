@@ -1,49 +1,64 @@
 import React from "react";
-import { Globe, Layout, Settings, TrendingUp, Shield, Monitor } from "lucide-react";
+import { Globe, Monitor, FileText, ShoppingCart } from "lucide-react";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import PillarServiceCard from "@/components/optibis/PillarServiceCard";
-import { getPackagesByPillar } from "@/data/packages";
 import PillarPortfolio from "@/components/optibis/PillarPortfolio";
-import PillarPackagesHero from "@/components/optibis/PillarPackagesHero";
 import SectionHeading from "@/components/optibis/SectionHeading";
 import PillarSplitHero from "@/components/optibis/PillarSplitHero";
+import SEO from "@/components/SEO";
+import { getBreadcrumbSchema, getServiceSchema } from "@/lib/seoData";
+
 export const SERVICES = [
   {
-    icon: Layout, name: "Landing Page", desc: "Halaman fokus untuk promosi, event, campaign, atau lead generation.",
-    image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop",
-    features: ["1 halaman responsif", "Form inquiry & WhatsApp", "Integrasi Google Analytics", "SEO dasar", "Loading cepat (<3s)", "SSL certificate (HTTPS)", "Sosial media integration"],
+    slug: "landing-page",
+    icon: Monitor,
+    name: "Landing Page",
+    desc: "Satu halaman landing page yang fokus konversi — cepat, responsif, dan dioptimasi untuk promosi, event, atau lead generation.",
+    image: "/assets/paket-website/landing-page.png",
+    features: [
+      "Website live (1 halaman landing page)",
+      "Akses hosting & domain .com (1 tahun)",
+      "Form inquiry terintegrasi email + database",
+      "Google Analytics & Search Console terpasang",
+      "Panduan update konten dasar",
+      "Sertifikat SSL (HTTPS) terpasang",
+      "Mobile responsive & loading cepat (<3s)",
+    ],
   },
   {
-    icon: Globe, name: "Company Website", desc: "Website company profile, corporate, portfolio, dan layanan profesional.",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop",
-    features: ["Multi halaman", "CMS sederhana", "Gallery & portfolio", "Blog/artikel", "Form kontak", "Google Maps integration", "Multi-bahasa ready"],
+    slug: "multi-page",
+    icon: FileText,
+    name: "Multi Page",
+    desc: "Website company profile multi-halaman dengan CMS sederhana — bisnis Anda tampil profesional dan mudah diperbarui, lengkap dengan gallery, portfolio, dan form kontak.",
+    image: "/assets/paket-website/multi-page.png",
+    features: [
+      "Website live (5–8 halaman)",
+      "Akses CMS admin dashboard",
+      "Gallery & portfolio terintegrasi dengan filter",
+      "Blog/artikel system dengan CMS",
+      "Google Analytics & Search Console terintegrasi",
+      "Sertifikat SSL (HTTPS) terpasang",
+      "Dokumentasi & training CMS",
+      "Maintenance 3 bulan",
+    ],
   },
   {
-    icon: Settings, name: "Website Growth System", desc: "Website custom dengan CMS, CRM, booking, dan sistem terintegrasi.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-    features: ["Custom dashboard admin", "CRM & lead management", "Booking/reservation system", "Multi-user & role", "API integration", "Auto-followup & notification", "Real-time reporting & analytics"],
-  },
-  {
-    icon: TrendingUp, name: "Website Improvement", desc: "Redesign, remake, optimasi kecepatan, SEO, dan konversi website.",
-    image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=600&h=400&fit=crop",
-    features: ["Audit & analisis website", "Redesign UI/UX", "Optimasi kecepatan", "SEO optimization", "Conversion rate optimization", "Security hardening", "Content migration assistance"],
-  },
-  {
-    icon: Shield, name: "Website Maintenance", desc: "Update berkala, backup, keamanan, dan dukungan teknis website.",
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop",
-    features: ["Update sistem & plugin", "Backup harian/mingguan", "Monitoring keamanan", "Perbaikan bug", "Dukungan teknis prioritas", "Uptime monitoring 24/7", "Monthly performance report"],
-  },
-  {
-    icon: Monitor, name: "Website by Function", desc: "Website sesuai kebutuhan fungsi bisnis: toko online, booking, dll.",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
-    features: ["Toko online/e-commerce", "Booking & reservation", "Membership portal", "Business directory", "Multi-cabang/franchise", "Payment gateway integration", "Learning management system (LMS)"],
+    slug: "toko-online",
+    icon: ShoppingCart,
+    name: "Toko Online",
+    desc: "Website custom dengan dashboard admin, CRM ringan, lead management, dan booking system — bukan sekadar website, tapi sistem yang bekerja untuk bisnis Anda.",
+    image: "/assets/paket-website/toko-online.png",
+    features: [
+      "Website + sistem custom live",
+      "Dashboard admin lengkap dengan role management",
+      "CRM & lead management system",
+      "Booking/reservation system dengan kalender",
+      "Reporting & analytics dashboard",
+      "API documentation & user manual",
+      "Training tim (2 sesi)",
+    ],
   },
 ];
-
-const PACKAGES = getPackagesByPillar("website").map((p) => ({
-  slug: p.slug, name: p.name, target: p.target, price: p.priceShort || p.price,
-  features: p.included.map((i) => i.title), popular: p.popular,
-}));
 
 export default function WebsiteService() {
   const [hero, setHero] = React.useState({
@@ -52,7 +67,7 @@ export default function WebsiteService() {
     titleHighlight: "Website Modern",
     description: "Website profesional yang responsif, cepat, dan dioptimasi untuk menghasilkan konversi serta merepresentasikan brand Anda di dunia digital.",
     imageSrc: "/assets/paket-website/landing-page.png",
-    color: "amethyst"
+    color: "amethyst",
   });
 
   React.useEffect(() => {
@@ -68,15 +83,35 @@ export default function WebsiteService() {
             titleHighlight: d.title_highlight || "Website Modern",
             description: item.summary || d.desc || "Website profesional yang responsif, cepat, dan dioptimasi untuk menghasilkan konversi serta merepresentasikan brand Anda di dunia digital.",
             imageSrc: item.image_url || d.flyer_image || "/assets/paket-website/landing-page.png",
-            color: d.color || "amethyst"
+            color: d.color || "amethyst",
           });
         }
       })
       .catch(() => {});
   }, []);
 
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Website", url: "/website" },
+    ]),
+    getServiceSchema({
+      name: "Jasa Pembuatan Website Profesional",
+      description: "Layanan pembuatan website modern: Landing Page, Multi Page, dan Toko Online dengan performa tinggi dan ramah SEO.",
+      url: "/website",
+      serviceType: "Web Development",
+    }),
+  ];
+
   return (
     <PillarLayout showPageRecommendations={false}>
+      <SEO
+        title="Jasa Pembuatan Website Profesional & Toko Online Cepat"
+        description="Solusi pembuatan website modern: Landing Page, Multi Page, dan Toko Online yang responsif, cepat, dan ramah SEO."
+        keywords="jasa pembuatan website profesional, jasa bikin website jakarta, landing page murah berkualitas, company profile multi page, pembuatan toko online ecommerce, website company profile"
+        canonicalUrl="https://optibis.id/website"
+        structuredData={structuredData}
+      />
       {/* Hero */}
       <PillarSplitHero
         badgeIcon={Globe}
@@ -89,18 +124,10 @@ export default function WebsiteService() {
         imageContainerClassName="max-w-sm"
       />
 
-      <PillarPackagesHero
-        title="Paket Website"
-        description="Pilih paket website yang sesuai dengan kebutuhan bisnis Anda."
-        pillarSlug="website"
-        packages={PACKAGES}
-        accent="amethyst"
-      />
-
       {/* Services */}
       <section className="py-12 lg:py-20 bg-slate-50/50" id="layanan">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading eyebrow="Website Optibis" title="Layanan Website" description="Enam layanan website untuk berbagai kebutuhan bisnis Anda." className="mb-12" />
+          <SectionHeading eyebrow="Website Optibis" title="Layanan Website" description="Pilihan layanan website untuk berbagai kebutuhan bisnis Anda." className="mb-12" />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {SERVICES.map((s, i) => <PillarServiceCard key={s.name} service={s} pillarSlug="website" index={i} color="amethyst" />)}
           </div>

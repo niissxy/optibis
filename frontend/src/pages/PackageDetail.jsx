@@ -2,20 +2,25 @@ import React, { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Star, Clock, Target, Package as PackageIcon, Layers } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import PackageHighlights from "@/components/optibis/PackageHighlights";
 import PackageFAQ from "@/components/optibis/PackageFAQ";
 import ClientLogosSlider from "@/components/optibis/ClientLogosSlider";
-import { getPackageBySlug, getNextPackage } from "@/data/packages";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { usePackages } from "@/hooks/usePackages";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema, getServiceSchema, getFAQSchema } from "@/lib/seoData";
+import PaketCustomSelector from "@/components/optibis/PaketCustomSelector";
 
 export default function PackageDetail() {
   const { pillarSlug, packageSlug } = useParams();
   const navigate = useNavigate();
   const nav = useSafeNav();
-
-  const pkg = getPackageBySlug(packageSlug);
+  const { tr } = useLanguage();
+  const packages = usePackages();
+  const pkg = packages.find((item) => item.slug === packageSlug);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -24,11 +29,12 @@ export default function PackageDetail() {
   if (!pkg) {
     return (
       <PillarLayout>
+        <SEO title="Paket Tidak Ditemukan" noindex={true} />
         <div className="max-w-2xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-2xl font-extrabold text-navy mb-4">Paket tidak ditemukan</h1>
-          <p className="text-muted-foreground mb-6">Paket yang Anda cari tidak tersedia.</p>
+          <h1 className="text-2xl font-extrabold text-navy mb-4">{tr("Paket tidak ditemukan")}</h1>
+          <p className="text-muted-foreground mb-6">{tr("Paket yang Anda cari tidak tersedia.")}</p>
           <Button onClick={() => navigate("/")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full">
-            Kembali ke Beranda
+            {tr("Kembali ke Beranda")}
           </Button>
         </div>
       </PillarLayout>
@@ -36,17 +42,42 @@ export default function PackageDetail() {
   }
 
   const t = pkg.theme;
-  const nextPkg = getNextPackage(pkg.slug);
+  const packageIndex = packages.findIndex((item) => item.slug === pkg.slug);
+  const nextPkg = packageIndex >= 0 ? packages[packageIndex + 1] : null;
   const pillarRoute = `/${pkg.pillarSlug}`;
+  const canonicalUrl = `https://optibis.id/paket/${pkg.pillarSlug}/${pkg.slug}`;
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: pkg.pillar || "Layanan", url: pillarRoute },
+      { name: `Paket ${pkg.name}`, url: canonicalUrl },
+    ]),
+    getServiceSchema({
+      name: `Paket ${pkg.name} — ${pkg.pillar}`,
+      description: pkg.heroDesc || `Detail paket ${pkg.name} untuk ${pkg.target}.`,
+      url: canonicalUrl,
+      image: pkg.heroImage,
+      price: pkg.price,
+    }),
+    ...(pkg.faq && pkg.faq.length ? [getFAQSchema(pkg.faq)] : []),
+  ];
 
   return (
     <PillarLayout>
+      <SEO
+        title={`Paket ${pkg.name} (${pkg.pillar}) — Harga & Fitur Lengkap`}
+        description={pkg.heroDesc || `Dapatkan paket ${pkg.name} (${pkg.pillar}) dengan harga ${pkg.price}. Lengkap dengan fitur ${pkg.included?.map((i) => i.title).slice(0, 3).join(", ")}.`}
+        image={pkg.heroImage}
+        canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
+      />
       {/* Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-navy transition-colors">Beranda</Link>
+          <Link to="/" className="hover:text-navy transition-colors">{tr("Beranda")}</Link>
           <span>/</span>
-          <Link to={pillarRoute} className="hover:text-navy transition-colors">{pkg.pillar}</Link>
+          <Link to={pillarRoute} className="hover:text-navy transition-colors">{tr(pkg.pillar)}</Link>
           <span>/</span>
           <span className="text-navy font-medium">{pkg.name}</span>
         </nav>
@@ -57,7 +88,7 @@ export default function PackageDetail() {
         <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${t.glow} rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link to={pillarRoute} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-navy mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Kembali ke {pkg.pillar}
+            <ArrowLeft className="w-4 h-4" /> {tr("Kembali ke")} {tr(pkg.pillar)}
           </Link>
           <div className="grid lg:grid-cols-5 gap-10 items-start">
             <motion.div
@@ -67,28 +98,28 @@ export default function PackageDetail() {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full ${t.badge} text-xs font-bold`}>
-                  <Layers className="w-3.5 h-3.5" /> {pkg.pillar.toUpperCase()}
+                  <Layers className="w-3.5 h-3.5" /> {tr(pkg.pillar).toUpperCase()}
                 </span>
                 {pkg.popular && (
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-magenta text-white text-xs font-bold">
-                    <Star className="w-3 h-3" /> Paling Populer
+                    <Star className="w-3 h-3" /> {tr("Paling Populer")}
                   </span>
                 )}
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-navy leading-tight">
-                Paket {pkg.name}
+                {tr("Paket")} {pkg.name}
               </h1>
               <p className="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-xl">
-                {pkg.heroDesc}
+                {tr(pkg.heroDesc)}
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
                 <div className="flex items-center gap-2 text-sm text-navy">
                   <Target className={`w-4 h-4 ${t.check}`} />
-                  {pkg.target}
+                  {tr(pkg.target)}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-navy">
                   <Clock className={`w-4 h-4 ${t.check}`} />
-                  {pkg.timeline}
+                  {tr(pkg.timeline)}
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -96,7 +127,7 @@ export default function PackageDetail() {
                   onClick={() => nav("#konsultasi")}
                   className={`${t.btn} text-white rounded-full px-8 h-12 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95 group`}
                 >
-                  Konsultasi Sekarang <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                  {tr("Konsultasi Sekarang")} <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               </div>
             </motion.div>
@@ -115,20 +146,20 @@ export default function PackageDetail() {
               ) : (
                 <div className={`bg-white rounded-2xl border-2 ${pkg.popular ? t.border : "border-gray-300"} shadow-xl p-6 lg:sticky lg:top-24`}>
                   <div className="text-center pb-5 border-b border-gray-50">
-                    <p className="text-xs text-muted-foreground mb-1">Mulai dari</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tr("Mulai dari")}</p>
                     <div className="text-3xl font-extrabold text-navy">{pkg.price}</div>
-                    <p className="text-xs text-muted-foreground mt-1">{pkg.priceNote}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{tr(pkg.priceNote)}</p>
                   </div>
                   <ul className="space-y-2.5 py-5">
                     {pkg.included.slice(0, 7).map((item) => (
                       <li key={item.title} className="flex items-start gap-2 text-sm text-navy">
                         <Check className={`w-4 h-4 ${t.check} shrink-0 mt-0.5`} />
-                        <span><strong className="font-semibold">{item.title}</strong></span>
+                        <span><strong className="font-semibold">{tr(item.title)}</strong></span>
                       </li>
                     ))}
                   </ul>
-                  <Button onClick={() => nav("#konsultasi")} className={`w-full ${t.btn} text-white rounded-full h-11 font-semibold mb-2 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg active:scale-95`}>Pilih Paket Ini</Button>
-                  <p className="text-center text-xs text-muted-foreground mt-2">Konsultasi gratis - Tanpa biaya tersembunyi</p>
+                  <Button onClick={() => nav("#konsultasi")} className={`w-full ${t.btn} text-white rounded-full h-11 font-semibold mb-2 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg active:scale-95`}>{tr("Pilih Paket Ini")}</Button>
+                  <p className="text-center text-xs text-muted-foreground mt-2">{tr("Konsultasi gratis - Tanpa biaya tersembunyi")}</p>
                 </div>
               )}
             </motion.div>
@@ -142,15 +173,18 @@ export default function PackageDetail() {
       {/* Highlights */}
       <PackageHighlights highlights={pkg.highlights} theme={t} />
 
+      {/* Package Selector — only for Paket Khusus */}
+      {pkg.pillarSlug === "khusus" && <PaketCustomSelector />}
+
       {/* What's Included */}
       <section className="py-12 lg:py-16 bg-slate-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full ${t.badge} text-xs font-bold mb-3`}>
-              <PackageIcon className="w-3.5 h-3.5" /> YANG ANDA DAPATKAN
+              <PackageIcon className="w-3.5 h-3.5" /> {tr("YANG ANDA DAPATKAN")}
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-3">Detail Layanan dalam Paket</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Setiap item dirancang untuk memberikan dampak nyata bagi bisnis Anda.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-3">{tr("Detail Layanan dalam Paket")}</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">{tr("Setiap item dirancang untuk memberikan dampak nyata bagi bisnis Anda.")}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {pkg.included.map((item, i) => (
@@ -164,7 +198,7 @@ export default function PackageDetail() {
               >
                 <div className="relative h-36 overflow-hidden">
                   <img
-                    src={item.image}
+                    src={item.image || pkg.heroImage}
                     alt={item.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -173,10 +207,10 @@ export default function PackageDetail() {
                   <div className={`absolute top-3 left-3 w-8 h-8 rounded-lg ${t.badge} flex items-center justify-center backdrop-blur-sm`}>
                     <Check className={`w-4 h-4 ${t.check}`} />
                   </div>
-                  <h3 className="absolute bottom-3 left-3 right-3 text-sm font-bold text-white leading-tight">{item.title}</h3>
+                  <h3 className="absolute bottom-3 left-3 right-3 text-sm font-bold text-white leading-tight">{tr(item.title)}</h3>
                 </div>
                 <div className="p-4">
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{tr(item.desc)}</p>
                 </div>
               </motion.div>
             ))}
@@ -188,8 +222,8 @@ export default function PackageDetail() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-3">File & Deliverables</h2>
-            <p className="text-muted-foreground">Semua file dan akses yang akan Anda terima setelah proyek selesai.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-3">{tr("File & Deliverables")}</h2>
+            <p className="text-muted-foreground">{tr("Semua file dan akses yang akan Anda terima setelah proyek selesai.")}</p>
           </div>
           <div className="bg-slate-50/50 rounded-2xl p-6 lg:p-8">
             <ul className="grid sm:grid-cols-2 gap-3">
@@ -198,7 +232,7 @@ export default function PackageDetail() {
                   <div className={`w-5 h-5 rounded-full ${t.badge} flex items-center justify-center shrink-0 mt-0.5`}>
                     <Check className={`w-3 h-3 ${t.check}`} />
                   </div>
-                  {d}
+                  {tr(d)}
                 </li>
               ))}
             </ul>
@@ -210,8 +244,8 @@ export default function PackageDetail() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-3">Pertanyaan Umum</h2>
-            <p className="text-muted-foreground">Hal-hal yang sering ditanyakan tentang paket ini.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-3">{tr("Pertanyaan Umum")}</h2>
+            <p className="text-muted-foreground">{tr("Hal-hal yang sering ditanyakan tentang paket ini.")}</p>
           </div>
           <PackageFAQ faqs={pkg.faqs} />
         </div>
@@ -226,14 +260,14 @@ export default function PackageDetail() {
               className="flex flex-col sm:flex-row items-center justify-between gap-4 group"
             >
               <div className="text-center sm:text-left">
-                <p className="text-xs text-muted-foreground mb-1">Paket Berikutnya</p>
+                <p className="text-xs text-muted-foreground mb-1">{tr("Paket Berikutnya")}</p>
                 <h3 className="text-lg font-bold text-navy group-hover:text-magenta transition-colors">
                   {nextPkg.name}
                 </h3>
-                <p className="text-xs text-muted-foreground">{nextPkg.pillar} • {nextPkg.price}</p>
+                <p className="text-xs text-muted-foreground">{tr(nextPkg.pillar)} • {nextPkg.price}</p>
               </div>
               <div className="flex items-center gap-2 text-magenta font-semibold text-sm">
-                Lihat Paket <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                {tr("Lihat Paket")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
           </div>

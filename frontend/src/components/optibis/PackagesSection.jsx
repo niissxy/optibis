@@ -11,14 +11,14 @@ import SectionHeading from "@/components/optibis/SectionHeading";
 
 const PILLAR_SLUGS = {
   "Digital Asset": "digital-asset",
-  "Website": "website",
   "Digital Growth Team": "digital-growth-team",
+  "Paket Khusus": "khusus",
 };
 
 const PACKAGES = {
   "Digital Asset": getPackagesByPillar("digital-asset").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
-  "Website": getPackagesByPillar("website").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
   "Digital Growth Team": getPackagesByPillar("digital-growth-team").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
+  "Paket Khusus": getPackagesByPillar("khusus").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
 };
 
 export default function PackagesSection() {
@@ -35,11 +35,11 @@ export default function PackagesSection() {
             <TabsTrigger value="Digital Asset" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
               Digital Asset
             </TabsTrigger>
-            <TabsTrigger value="Website" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
-              Website
-            </TabsTrigger>
             <TabsTrigger value="Digital Growth Team" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
               Growth Team
+            </TabsTrigger>
+            <TabsTrigger value="Paket Khusus" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
+              Paket Khusus
             </TabsTrigger>
           </TabsList>
 

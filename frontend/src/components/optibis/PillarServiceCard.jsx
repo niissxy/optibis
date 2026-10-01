@@ -13,7 +13,13 @@ export default function PillarServiceCard({ service, pillarSlug, index = 0, colo
     navy: { bg: "bg-blue-50", text: "text-blue-600", border: "hover:border-navy/20", btn: "bg-navy hover:bg-navy-400" },
   };
   const c = colorMap[color] || colorMap.magenta;
-  const detailPath = getServicePath(pillarSlug, service.name);
+  const detailPath = service.slug ? `/layanan/${pillarSlug}/${service.slug}` : getServicePath(pillarSlug, service.name);
+
+  const isFlyer = Boolean(
+    service.image?.includes("paket-website") ||
+    pillarSlug === "website" ||
+    ["landing-page", "multi-page", "toko-online"].includes(service.slug)
+  );
 
   return (
     <motion.div
@@ -24,18 +30,37 @@ export default function PillarServiceCard({ service, pillarSlug, index = 0, colo
       className={`group overflow-hidden rounded-2xl border border-gray-300 bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-gray-200/50 ${c.border}`}
     >
       <Link to={detailPath} aria-label={`Lihat detail layanan ${service.name}`} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-navy">
-        <div className="relative h-40 overflow-hidden">
-          <img
-            src={service.image}
-            alt={service.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
-          <div className={`absolute top-3 left-3 w-11 h-11 rounded-xl ${c.bg} ${c.text} flex items-center justify-center backdrop-blur-sm shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
-            <service.icon className="w-5 h-5" />
+        {isFlyer ? (
+          <div className="relative h-72 sm:h-80 overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100/70 flex items-center justify-center p-3">
+            <img
+              src={service.image}
+              alt={service.name}
+              loading="lazy"
+              className="h-full w-auto max-w-full object-contain rounded-lg drop-shadow-md transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white to-transparent opacity-60 pointer-events-none" />
+            {service.icon && (
+              <div className={`absolute top-3 left-3 w-10 h-10 rounded-xl ${c.bg} ${c.text} flex items-center justify-center backdrop-blur-sm shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 z-10`}>
+                <service.icon className="w-5 h-5" />
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="relative h-40 overflow-hidden">
+            <img
+              src={service.image}
+              alt={service.name}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+            {service.icon && (
+              <div className={`absolute top-3 left-3 w-11 h-11 rounded-xl ${c.bg} ${c.text} flex items-center justify-center backdrop-blur-sm shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                <service.icon className="w-5 h-5" />
+              </div>
+            )}
+          </div>
+        )}
         <div className="p-6 pt-3">
           <h3 className="mb-2 text-lg font-bold text-navy">{tr(service.name)}</h3>
           <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{tr(service.desc)}</p>

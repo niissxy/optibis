@@ -2,11 +2,14 @@ import React, { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, MessageCircle, Clock, Wallet, Star, Layers, ChevronRight, Lightbulb, Code, ListChecks, GitBranch, Boxes, Link2 } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import LibraryCard from "@/components/solution-library/LibraryCard";
 import { SOLUTION_ITEMS } from "@/data/solutionLibrary";
 import { useSafeNav } from "@/hooks/useSafeNav";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema } from "@/lib/seoData";
 
 const LEVEL_LABEL = { basic: "Basic", intermediate: "Intermediate", advanced: "Advanced", enterprise: "Enterprise" };
 const LEVEL_COLOR = {
@@ -19,6 +22,7 @@ const LEVEL_COLOR = {
 export default function SolutionLibraryDetail() {
   const { slug } = useParams();
   const nav = useSafeNav();
+  const { tr } = useLanguage();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -29,16 +33,37 @@ export default function SolutionLibraryDetail() {
   if (!item) {
     return (
       <PillarLayout>
+        <SEO title="Istilah Tidak Ditemukan" noindex={true} />
         <div className="max-w-2xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-2xl font-extrabold text-navy mb-4">Istilah tidak ditemukan</h1>
-          <p className="text-muted-foreground mb-6">Istilah yang Anda cari tidak tersedia di library.</p>
+          <h1 className="text-2xl font-extrabold text-navy mb-4">{tr("Istilah tidak ditemukan")}</h1>
+          <p className="text-muted-foreground mb-6">{tr("Istilah yang Anda cari tidak tersedia di library.")}</p>
           <Button onClick={() => nav("/solution-library")} className="bg-magenta hover:bg-magenta-500 text-white rounded-full">
-            Kembali ke Library
+            {tr("Kembali ke Library")}
           </Button>
         </div>
       </PillarLayout>
     );
   }
+
+  const canonicalUrl = `https://optibis.id/solution-library/${item.slug}`;
+  const pageDesc = item.fungsi || `Pelajari fungsi, manfaat, dan penerapan ${item.nama_awam} (${item.nama_teknis}) untuk efisiensi bisnis Anda.`;
+
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Solution Library", url: "/solution-library" },
+      { name: item.nama_awam, url: canonicalUrl },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "DefinedTerm",
+      "name": item.nama_awam,
+      "termCode": item.nama_teknis,
+      "description": item.fungsi,
+      "inDefinedTermSet": "https://optibis.id/solution-library",
+      "url": canonicalUrl,
+    },
+  ];
 
   const related = SOLUTION_ITEMS
     .filter((it) => it.slug !== item.slug && (it.kategori === item.kategori || (item.fitur_terkait || []).includes(it.nama_teknis)))
@@ -48,8 +73,8 @@ export default function SolutionLibraryDetail() {
 
   const DetailRow = ({ label, value }) => (
     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide sm:w-40 shrink-0 pt-0.5">{label}</span>
-      <span className="text-sm text-navy leading-relaxed">{value}</span>
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide sm:w-40 shrink-0 pt-0.5">{tr(label)}</span>
+      <span className="text-sm text-navy leading-relaxed">{typeof value === "string" ? tr(value) : value}</span>
     </div>
   );
 
@@ -60,7 +85,7 @@ export default function SolutionLibraryDetail() {
           <div className="w-8 h-8 rounded-lg bg-magenta/10 flex items-center justify-center">
             <Icon className="w-4 h-4 text-magenta" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-navy">{title}</h2>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-navy">{tr(title)}</h2>
         </div>
         {children}
       </div>
@@ -84,7 +109,7 @@ export default function SolutionLibraryDetail() {
               transition={{ delay: i * 0.08 }}
               className={`px-5 py-2.5 rounded-xl ${c.dot} text-sm font-medium shadow-sm`}
             >
-              {step}
+              {tr(step)}
             </motion.div>
             {i < steps.length - 1 && (
               <div className={`w-0.5 h-8 ${c.line}`} />
@@ -97,10 +122,16 @@ export default function SolutionLibraryDetail() {
 
   return (
     <PillarLayout>
+      <SEO
+        title={`${item.nama_awam} (${item.nama_teknis}) — Panduan & Solusi Digital`}
+        description={pageDesc}
+        canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
+      />
       {/* Breadcrumb */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-          <Link to="/" className="hover:text-navy transition-colors">Beranda</Link>
+          <Link to="/" className="hover:text-navy transition-colors">{tr("Beranda")}</Link>
           <ChevronRight className="w-3 h-3" />
           <Link to="/solution-library" className="hover:text-navy transition-colors">Solution Library</Link>
           <ChevronRight className="w-3 h-3" />
@@ -112,7 +143,7 @@ export default function SolutionLibraryDetail() {
       <section className="py-8 lg:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link to="/solution-library" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-navy mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Kembali ke Library
+            <ArrowLeft className="w-4 h-4" /> {tr("Kembali ke Library")}
           </Link>
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -120,7 +151,7 @@ export default function SolutionLibraryDetail() {
             className="space-y-4"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-magenta/10 text-magenta text-xs font-bold uppercase tracking-wide">{item.kategori}</span>
+              <span className="px-3 py-1 rounded-full bg-magenta/10 text-magenta text-xs font-bold uppercase tracking-wide">{tr(item.kategori)}</span>
               <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${LEVEL_COLOR[item.level]}`}>{LEVEL_LABEL[item.level]}</span>
               <span className="px-2.5 py-1 rounded-full bg-navy/10 text-navy text-xs font-medium uppercase">{item.jenis}</span>
             </div>
@@ -128,18 +159,18 @@ export default function SolutionLibraryDetail() {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-navy leading-tight">{item.nama_awam}</h1>
               <p className="text-lg text-muted-foreground mt-1">{item.nama_teknis}</p>
             </div>
-            <p className="text-base text-navy-400 leading-relaxed max-w-2xl">{item.fungsi}</p>
+            <p className="text-base text-navy-400 leading-relaxed max-w-2xl">{tr(item.fungsi)}</p>
             <div className="flex flex-wrap gap-4 pt-2">
               <div className="flex items-center gap-2 text-sm text-navy">
                 <Star className="w-4 h-4 text-amber-400" />
                 <span>{"★".repeat(item.tingkat_kesulitan || 3)}{"☆".repeat(5 - (item.tingkat_kesulitan || 3))}</span>
-                <span className="text-muted-foreground">Tingkat Kesulitan</span>
+                <span className="text-muted-foreground">{tr("Tingkat Kesulitan")}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-navy">
-                <Clock className="w-4 h-4 text-magenta" /> {item.estimasi_development}
+                <Clock className="w-4 h-4 text-magenta" /> {tr(item.estimasi_development)}
               </div>
               <div className="flex items-center gap-2 text-sm text-navy">
-                <Wallet className="w-4 h-4 text-magenta" /> {item.estimasi_biaya}
+                <Wallet className="w-4 h-4 text-magenta" /> {tr(item.estimasi_biaya)}
               </div>
             </div>
           </motion.div>
@@ -151,7 +182,7 @@ export default function SolutionLibraryDetail() {
         <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:p-8 shadow-sm">
           <DetailRow label="Nama Awam" value={item.nama_awam} />
           <DetailRow label="Nama Teknis" value={item.nama_teknis} />
-          <DetailRow label="Kategori" value={`${item.kategori} → ${item.subkategori || "-"}`} />
+          <DetailRow label="Kategori" value={`${tr(item.kategori)} → ${item.subkategori || "-"}`} />
           <DetailRow label="Level" value={LEVEL_LABEL[item.level]} />
           <DetailRow label="Jenis" value={item.jenis} />
           <DetailRow label="Fungsi" value={item.fungsi} />
@@ -159,9 +190,9 @@ export default function SolutionLibraryDetail() {
           <DetailRow label="Cara Kerja" value={item.cara_kerja} />
           <DetailRow label="Input" value={item.input} />
           <DetailRow label="Output" value={item.output} />
-          <DetailRow label="Komponen" value={(item.komponen || []).join(", ")} />
-          <DetailRow label="Digunakan Pada" value={(item.digunakan_pada || []).join(", ")} />
-          <DetailRow label="Integrasi" value={(item.integrasi || []).join(", ")} />
+          <DetailRow label="Komponen" value={(item.komponen || []).map((k) => tr(k)).join(", ")} />
+          <DetailRow label="Digunakan Pada" value={(item.digunakan_pada || []).map((d) => tr(d)).join(", ")} />
+          <DetailRow label="Integrasi" value={(item.integrasi || []).map((ig) => tr(ig)).join(", ")} />
           <DetailRow label="Tingkat Kesulitan" value={"★".repeat(item.tingkat_kesulitan || 3) + "☆".repeat(5 - (item.tingkat_kesulitan || 3))} />
           <DetailRow label="Estimasi Dev" value={item.estimasi_development} />
           <DetailRow label="Estimasi Biaya" value={item.estimasi_biaya} />
@@ -187,14 +218,14 @@ export default function SolutionLibraryDetail() {
       {/* Penjelasan Awam */}
       <Section icon={Lightbulb} title="Penjelasan Bahasa Awam" bg="bg-white">
         <div className="bg-amber-50/50 border border-amber-100 dark:bg-[#3c2a12] dark:border-amber-700 rounded-2xl p-6">
-          <p className="text-base text-navy leading-relaxed">{item.penjelasan_awam}</p>
+          <p className="text-base text-navy leading-relaxed">{tr(item.penjelasan_awam)}</p>
         </div>
       </Section>
 
       {/* Penjelasan Teknis */}
       <Section icon={Code} title="Penjelasan Teknis" bg="bg-slate-50/50">
         <div className="bg-navy/5 border border-navy/10 rounded-2xl p-6">
-          <p className="text-sm text-navy leading-relaxed">{item.penjelasan_teknis}</p>
+          <p className="text-sm text-navy leading-relaxed">{tr(item.penjelasan_teknis)}</p>
         </div>
       </Section>
 
@@ -205,7 +236,7 @@ export default function SolutionLibraryDetail() {
             {item.manfaat.map((m, i) => (
               <div key={i} className="flex items-center gap-2.5 bg-green-50/50 dark:bg-[#103328] rounded-xl p-3 border border-green-100 dark:border-green-700">
                 <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-                <span className="text-sm text-navy font-medium">{m}</span>
+                <span className="text-sm text-navy font-medium">{tr(m)}</span>
               </div>
             ))}
           </div>
@@ -218,7 +249,7 @@ export default function SolutionLibraryDetail() {
           <div className="flex flex-wrap gap-2">
             {item.contoh_nyata.map((ex, i) => (
               <span key={i} className="px-4 py-2 bg-white rounded-xl border border-gray-100 text-sm font-medium text-navy shadow-sm">
-                {ex}
+                {tr(ex)}
               </span>
             ))}
           </div>
@@ -231,7 +262,7 @@ export default function SolutionLibraryDetail() {
           <div className="flex flex-wrap gap-2">
             {item.ketergantungan.map((dep, i) => (
               <span key={i} className="px-3 py-1.5 bg-magenta/5 border border-magenta/20 rounded-lg text-sm text-magenta font-medium">
-                {dep}
+                {tr(dep)}
               </span>
             ))}
           </div>
@@ -245,7 +276,7 @@ export default function SolutionLibraryDetail() {
             {item.rekomendasi_fitur.map((rec, i) => (
               <div key={i} className="flex items-center gap-2.5 bg-white rounded-xl p-3 border border-gray-100">
                 <ArrowRight className="w-4 h-4 text-amethyst shrink-0" />
-                <span className="text-sm text-navy font-medium">{rec}</span>
+                <span className="text-sm text-navy font-medium">{tr(rec)}</span>
               </div>
             ))}
           </div>
@@ -257,8 +288,8 @@ export default function SolutionLibraryDetail() {
         <section className="py-12 lg:py-16 bg-white border-t border-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-navy mb-2">Istilah Terkait</h2>
-              <p className="text-sm text-muted-foreground">Orang yang melihat ini juga melihat</p>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-navy mb-2">{tr("Istilah Terkait")}</h2>
+              <p className="text-sm text-muted-foreground">{tr("Orang yang melihat ini juga melihat")}</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
               {related.map((rel, i) => (
@@ -274,17 +305,17 @@ export default function SolutionLibraryDetail() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(233,30,99,0.15),transparent_60%)]" />
         <div className="max-w-2xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4">
-            Butuh Fitur Ini untuk Bisnis Anda?
+            {tr("Butuh Fitur Ini untuk Bisnis Anda?")}
           </h2>
           <p className="text-white/70 mb-8">
-            Konsultasikan kebutuhan Anda secara gratis. Tim kami akan bantu menyusun requirement dan estimasi.
+            {tr("Konsultasikan kebutuhan Anda secara gratis. Tim kami akan bantu menyusun requirement dan estimasi.")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               onClick={() => nav("#konsultasi")}
               className="bg-magenta hover:bg-magenta-500 text-white rounded-full px-8 h-12 shadow-xl shadow-magenta/30 w-full sm:w-auto transition-all duration-300 hover:scale-105 active:scale-95 group"
             >
-              Konsultasi Gratis <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              {tr("Konsultasi Gratis")} <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
             <a
               href="https://wa.me/6287772577020"
@@ -292,7 +323,7 @@ export default function SolutionLibraryDetail() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors w-full sm:w-auto"
             >
-              <MessageCircle className="w-4 h-4" /> Chat WhatsApp
+              <MessageCircle className="w-4 h-4" /> {tr("Chat WhatsApp")}
             </a>
           </div>
         </div>

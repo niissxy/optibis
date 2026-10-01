@@ -1,0 +1,21 @@
+{
+  "name": "OPTIBIS.ID — Digital Solution Partner",
+  "short_name": "OPTIBIS",
+  "description": "Satu Partner untuk Branding, Website, dan Pertumbuhan Digital Bisnis Anda di Indonesia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000B26",
+  "icons": [
+    {
+      "src": "/assets/optibis-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/optibis-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

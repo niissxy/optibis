@@ -24,6 +24,7 @@ class FrontendContentSeeder extends Seeder
         $this->seedServices(dirname($path).'/pages/DigitalAsset.jsx', 'digital-asset', 'Digital Asset');
         $this->seedServices(dirname($path).'/pages/WebsiteService.jsx', 'website', 'Website');
         $this->seedServices(dirname($path).'/pages/DigitalGrowthTeam.jsx', 'digital-growth-team', 'Digital Growth Team');
+        $this->seedSoftwareServices();
         $this->seedMatches($path.'/marketingKit.js', 'marketing-kits', '/nama_asset:\s*"(?<title>[^"]+)",\s*slug:\s*"(?<slug>[^"]+)",\s*deskripsi:\s*"(?<summary>[^"]+)",\s*kategori:\s*"(?<category>[^"]+)"/s');
         $this->seedMatches($path.'/insight.js', 'insights', '/id:\s*"(?<slug>[^"]+)",\s*title:\s*"(?<title>[^"]+)".*?desc:\s*"(?<summary>[^"]+)"/s');
         $this->seedMatches($path.'/tools.js', 'tools', '/\{\s*name:\s*"(?<title>[^"]+)",\s*url:\s*"(?<url>[^"]+)",\s*category:\s*"(?<category>[^"]+)",\s*tagline:\s*"(?<tagline>[^"]+)",\s*description:\s*"(?<summary>[^"]+)"\s*\}/');
@@ -807,181 +808,6 @@ class FrontendContentSeeder extends Seeder
                 'is_published' => true,
             ],
 
-            // ===== WEBSITE =====
-            [
-                'slug' => 'landing-page',
-                'title' => 'Landing Page',
-                'summary' => 'Promosi & campaign',
-                'image_url' => '/assets/paket-website/landing-page.png',
-                'data' => [
-                    'name' => 'Landing Page',
-                    'pillar' => 'Website',
-                    'pillar_slug' => 'website',
-                    'target' => 'Promosi & campaign',
-                    'timeline' => '5–7 hari kerja',
-                    'price' => 'Rp 3.500.000',
-                    'price_short' => 'Rp 3,5jt',
-                    'price_note' => 'Sekali bayar',
-                    'popular' => false,
-                    'hero_desc' => 'Satu halaman landing page yang fokus konversi — cepat, responsif, dan dioptimasi untuk promosi, event, atau lead generation.',
-                    'flyer_image' => '/assets/paket-website/landing-page.png',
-                    'highlights' => [
-                        ['title' => 'Fokus Konversi', 'desc' => 'Satu halaman yang dirancang khusus untuk mengubah pengunjung menjadi lead dengan CTA yang jelas.'],
-                        ['title' => 'Loading Cepat', 'desc' => 'Dioptimasi untuk loading di bawah 3 detik di semua perangkat, karena setiap detik berpengaruh pada konversi.'],
-                        ['title' => 'SEO Ready', 'desc' => 'Struktur HTML dan meta tags yang ramah Google sejak hari pertama agar mudah ditemukan.'],
-                    ],
-                    'included' => [
-                        ['title' => '1 Halaman Landing Page', 'desc' => 'Satu halaman responsif dengan section hero, fitur, testimoni, dan CTA yang terstruktur.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7ck3bjCR8GNjgVWyXDVSmo1gi-2fa7NqB9Bta_NxfuA&s=10'],
-                        ['title' => 'Mobile Responsive', 'desc' => 'Tampil optimal di desktop, tablet, dan mobile dengan desain yang adaptif.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8J7SID0VLWgS0mF6iIUp3iqfjXk34VAewuraRG33HSQ&s'],
-                        ['title' => 'Form Inquiry', 'desc' => 'Form kontak yang terhubung ke email dan database untuk capture lead secara otomatis.', 'image' => 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&q=80'],
-                        ['title' => 'WhatsApp Integration', 'desc' => 'Tombol WhatsApp mengambang dan click-to-chat untuk konversi langsung.', 'image' => 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&q=80'],
-                        ['title' => 'SEO Dasar', 'desc' => 'Meta tags, structured data, sitemap, dan optimasi kecepatan dasar untuk Google.', 'image' => 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80'],
-                        ['title' => 'Google Analytics', 'desc' => 'Pemasangan Google Analytics dan Search Console untuk tracking pengunjung.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
-                        ['title' => 'Hosting 1 Tahun', 'desc' => 'Hosting dan domain .com selama 1 tahun pertama sudah termasuk.', 'image' => 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80'],
-                    ],
-                    'deliverables' => [
-                        'Website live (1 halaman landing page)',
-                        'Akses hosting & domain .com (1 tahun)',
-                        'Form inquiry terintegrasi email + database',
-                        'Google Analytics & Search Console terpasang',
-                        'Panduan update konten dasar',
-                        'Sertifikat SSL (HTTPS) terpasang',
-                    ],
-                    'faqs' => [
-                        ['q' => 'Apakah domain sudah termasuk?', 'a' => 'Ya, domain .com dan hosting 1 tahun sudah termasuk dalam paket.'],
-                        ['q' => 'Bisa tambah halaman?', 'a' => 'Paket ini untuk 1 halaman. Tambahan halaman tersedia mulai Rp 500.000/halaman.'],
-                        ['q' => 'Apakah bisa diupdate sendiri?', 'a' => 'Konten dasar bisa diupdate sendiri. Untuk perubahan struktur, tim kami siap membantu.'],
-                        ['q' => 'Berapa lama hosting aktif?', 'a' => 'Hosting aktif 1 tahun. Perpanjangan tahun berikutnya mulai Rp 500.000/tahun.'],
-                        ['q' => 'Apakah website loading-nya cepat?', 'a' => 'Ya, website dioptimasi untuk loading di bawah 3 detik dengan compressi gambar dan caching.'],
-                        ['q' => 'Bisa integrasi dengan WhatsApp?', 'a' => 'Ya, tombol WhatsApp mengambang dan click-to-chat sudah termasuk dalam paket.'],
-                    ],
-                    'ideal_for' => [
-                        'Bisnis yang menjalankan campaign atau promo khusus',
-                        'Event organizer yang butuh halaman registrasi',
-                        'Startup yang ingin launch produk dengan halaman fokus',
-                        'Bisnis yang ingin mengumpulkan lead dengan form inquiry',
-                    ],
-                    'theme' => ['color' => 'amethyst', 'gradient' => 'from-amethyst-50/30 to-white', 'glow' => 'bg-amethyst/5', 'badge' => 'bg-amethyst-50 text-amethyst', 'btn' => 'bg-amethyst hover:bg-amethyst-600', 'check' => 'text-amethyst', 'border' => 'border-amethyst/20'],
-                ],
-                'is_published' => true,
-            ],
-            [
-                'slug' => 'multi-page',
-                'title' => 'Multi Page',
-                'summary' => 'Company profile online',
-                'image_url' => '/assets/paket-website/multi-page.png',
-                'data' => [
-                    'name' => 'Multi Page',
-                    'pillar' => 'Website',
-                    'pillar_slug' => 'website',
-                    'target' => 'Company profile online',
-                    'timeline' => '14–21 hari kerja',
-                    'price' => 'Rp 7.500.000',
-                    'price_short' => 'Rp 7,5jt',
-                    'price_note' => 'Sekali bayar',
-                    'popular' => true,
-                    'hero_desc' => 'Website company profile multi-halaman dengan CMS sederhana — bisnis Anda tampil profesional dan mudah diperbarui, lengkap dengan gallery, portfolio, dan form kontak.',
-                    'flyer_image' => '/assets/paket-website/multi-page.png',
-                    'highlights' => [
-                        ['title' => 'CMS Mandiri', 'desc' => 'Update konten, blog, dan portfolio sendiri tanpa bantuan teknis melalui dashboard admin yang intuitif.'],
-                        ['title' => 'Multi-Halaman Lengkap', 'desc' => '5-8 halaman terstruktur: Home, About, Services, Portfolio, Blog, Contact yang siap profesional.'],
-                        ['title' => 'SEO & Analytics', 'desc' => 'Google Analytics dan Search Console terintegrasi sejak awal untuk tracking performa website.'],
-                    ],
-                    'included' => [
-                        ['title' => 'Multi Halaman', 'desc' => '5–8 halaman: Home, About, Services, Portfolio, Blog, dan Contact — terstruktur profesional.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT733siFmNQb7BsceEeZGJA7-5USoKKMdUnQ9jLXdBFog&s=10'],
-                        ['title' => 'CMS Sederhana', 'desc' => 'Dashboard admin untuk update konten, blog, dan portfolio sendiri tanpa pengetahuan teknis.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
-                        ['title' => 'Gallery & Portfolio', 'desc' => 'Halaman gallery dan portfolio dengan filter kategori yang interaktif.', 'image' => 'https://images.unsplash.com/photo-1554189097-ffe88e998a2b?w=600&q=80'],
-                        ['title' => 'Form Kontak', 'desc' => 'Form kontak dengan notifikasi email otomatis untuk setiap inquiry yang masuk.', 'image' => 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&q=80'],
-                        ['title' => 'Google Analytics', 'desc' => 'Integrasi Google Analytics dan Search Console untuk tracking pengunjung dan performa.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
-                        ['title' => 'SEO Optimization', 'desc' => 'Optimasi SEO on-page: meta tags, sitemap, structured data, dan heading structure.', 'image' => 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80'],
-                        ['title' => 'Maintenance 3 Bulan', 'desc' => 'Dukungan teknis, update sistem, dan perbaikan bug selama 3 bulan pertama.', 'image' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80'],
-                    ],
-                    'deliverables' => [
-                        'Website live (5–8 halaman)',
-                        'Akses CMS admin dashboard',
-                        'Gallery & portfolio terintegrasi dengan filter',
-                        'Blog/artikel system dengan CMS',
-                        'Google Analytics & Search Console terintegrasi',
-                        'Sertifikat SSL (HTTPS) terpasang',
-                        'Dokumentasi & training CMS',
-                    ],
-                    'faqs' => [
-                        ['q' => 'Berapa halaman yang saya dapatkan?', 'a' => '5–8 halaman standar (Home, About, Services, Portfolio, Blog, Contact). Halaman tambahan mulai Rp 500.000.'],
-                        ['q' => 'Apakah CMS mudah dipakai?', 'a' => 'Ya, CMS dirancang untuk pengguna non-teknis. Kami berikan training dan dokumentasi lengkap.'],
-                        ['q' => 'Apakah bisa tambah fitur e-commerce?', 'a' => 'Bisa, sebagai add-on. Fitur toko online mulai Rp 2.000.000 dengan keranjang dan pembayaran.'],
-                        ['q' => 'Apa yang terjadi setelah 3 bulan maintenance?', 'a' => 'Anda bisa melanjutkan dengan paket maintenance bulanan mulai Rp 500.000/bulan.'],
-                        ['q' => 'Apakah website sudah SEO friendly?', 'a' => 'Ya, website dibangun dengan struktur SEO-friendly: meta tags, sitemap, structured data, dan heading yang terorganisir.'],
-                        ['q' => 'Bisa pindah dari website lama?', 'a' => 'Tentu. Kami bantu migrasi konten dari website lama Anda tanpa kehilangan data.'],
-                    ],
-                    'ideal_for' => [
-                        'Perusahaan yang butuh website company profile profesional',
-                        'Bisnis jasa yang ingin showcase portfolio dan layanan',
-                        'Brand yang ingin punya blog/artikel untuk SEO',
-                        'Bisnis yang butuh form kontak dan inquiry management',
-                    ],
-                    'theme' => ['color' => 'amethyst', 'gradient' => 'from-amethyst-50/30 to-white', 'glow' => 'bg-amethyst/5', 'badge' => 'bg-amethyst-50 text-amethyst', 'btn' => 'bg-amethyst hover:bg-amethyst-600', 'check' => 'text-amethyst', 'border' => 'border-amethyst/20'],
-                ],
-                'is_published' => true,
-            ],
-            [
-                'slug' => 'toko-online',
-                'title' => 'Toko Online',
-                'summary' => 'Bisnis yang butuh sistem',
-                'image_url' => '/assets/paket-website/toko-online.png',
-                'data' => [
-                    'name' => 'Toko Online',
-                    'pillar' => 'Website',
-                    'pillar_slug' => 'website',
-                    'target' => 'Bisnis yang butuh sistem',
-                    'timeline' => '30–45 hari kerja',
-                    'price' => 'Rp 15.000.000',
-                    'price_short' => 'Rp 15jt',
-                    'price_note' => 'Sekali bayar',
-                    'popular' => false,
-                    'hero_desc' => 'Website custom dengan dashboard admin, CRM ringan, lead management, dan booking system — bukan sekadar website, tapi sistem yang bekerja untuk bisnis Anda.',
-                    'flyer_image' => '/assets/paket-website/toko-online.png',
-                    'highlights' => [
-                        ['title' => 'Bukan Sekadar Website', 'desc' => 'Sistem terintegrasi: website + dashboard admin + CRM + booking system dalam satu platform.'],
-                        ['title' => 'CRM & Lead Pipeline', 'desc' => 'Kelola leads, klien, dan pipeline penjualan dari satu dashboard terpusat yang mudah digunakan.'],
-                        ['title' => 'Booking Otomatis', 'desc' => 'Sistem reservasi online dengan kalender real-time, notifikasi otomatis, dan manajemen slot.'],
-                    ],
-                    'included' => [
-                        ['title' => 'Website Custom', 'desc' => 'Website custom multi-halaman dengan desain premium dan fitur khusus sesuai kebutuhan bisnis.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1Mll7exIfybaV-27BYX7P3pBCBVWCCTbH4Aim_A7qTw&s=10'],
-                        ['title' => 'Dashboard Admin', 'desc' => 'Dashboard admin lengkap untuk mengelola seluruh sistem: konten, leads, booking, dan laporan.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
-                        ['title' => 'CRM Ringan', 'desc' => 'Sistem CRM untuk manajemen leads, klien, pipeline penjualan, dan riwayat komunikasi.', 'image' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80'],
-                        ['title' => 'Lead Management', 'desc' => 'Form, tracking, auto-followup, dan scoring untuk setiap lead yang masuk ke sistem.', 'image' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&q=80'],
-                        ['title' => 'Booking System', 'desc' => 'Sistem booking/reservation online dengan kalender real-time, notifikasi email & WhatsApp.', 'image' => 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&q=80'],
-                        ['title' => 'Multi-User & Role', 'desc' => 'Sistem multi-user dengan role berbeda (admin, staff, viewer) dan permission control.', 'image' => 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=80'],
-                        ['title' => 'Reporting & Analytics', 'desc' => 'Laporan penjualan, leads, booking, dan performa website real-time dalam dashboard.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
-                    ],
-                    'deliverables' => [
-                        'Website + sistem custom live',
-                        'Dashboard admin lengkap dengan role management',
-                        'CRM & lead management system',
-                        'Booking/reservation system dengan kalender',
-                        'Reporting & analytics dashboard',
-                        'API documentation & user manual',
-                        'Training tim (2 sesi)',
-                    ],
-                    'faqs' => [
-                        ['q' => 'Apakah CRM bisa diintegrasikan dengan WhatsApp?', 'a' => 'Ya, sistem bisa diintegrasikan dengan WhatsApp Business API untuk auto-reply dan notifikasi otomatis.'],
-                        ['q' => 'Berapa user yang bisa mengakses dashboard?', 'a' => 'Default 5 user dengan role berbeda. Tambahan user tersedia mulai Rp 100.000/user/bulan.'],
-                        ['q' => 'Apakah sistem bisa dikembangkan lebih lanjut?', 'a' => 'Tentu, sistem dibangun dengan arsitektur yang scalable untuk pengembangan future.'],
-                        ['q' => 'Apakah termasuk maintenance?', 'a' => 'Termasuk 3 bulan maintenance. Setelah itu, paket maintenance mulai Rp 1.000.000/bulan.'],
-                        ['q' => 'Bisa custom fitur sesuai kebutuhan?', 'a' => 'Ya, sistem dibangun custom. Fitur khusus bisa didiskusikan dan dikembangkan sesuai kebutuhan bisnis.'],
-                        ['q' => 'Apakah sistem mendukung multi-cabang?', 'a' => 'Default untuk 1 lokasi. Module multi-cabang tersedia sebagai add-on mulai Rp 3.000.000.'],
-                    ],
-                    'ideal_for' => [
-                        'Bisnis yang butuh website + sistem management terintegrasi',
-                        'Klinik, studio, atau jasa yang butuh sistem booking online',
-                        'Perusahaan yang butuh CRM dan lead tracking terstruktur',
-                        'Bisnis multi-cabang yang butuh dashboard terpusat',
-                    ],
-                    'theme' => ['color' => 'amethyst', 'gradient' => 'from-amethyst-50/30 to-white', 'glow' => 'bg-amethyst/5', 'badge' => 'bg-amethyst-50 text-amethyst', 'btn' => 'bg-amethyst hover:bg-amethyst-600', 'check' => 'text-amethyst', 'border' => 'border-amethyst/20'],
-                ],
-                'is_published' => true,
-            ],
-
             // ===== DIGITAL GROWTH TEAM =====
             [
                 'slug' => 'growth-starter',
@@ -1157,7 +983,56 @@ class FrontendContentSeeder extends Seeder
                 ],
                 'is_published' => true,
             ],
+            [
+                'slug' => 'paket-custom',
+                'title' => 'Paket Custom',
+                'summary' => 'Bisnis dengan kebutuhan spesifik & custom',
+                'image_url' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
+                'data' => [
+                    'name' => 'Paket Custom',
+                    'pillar' => 'Paket Khusus',
+                    'pillar_slug' => 'khusus',
+                    'target' => 'Bisnis dengan kebutuhan spesifik & custom',
+                    'timeline' => 'Fleksibel sesuai kesepakatan',
+                    'price' => 'Sesuai Kebutuhan',
+                    'price_short' => 'Custom',
+                    'price_note' => 'Konsultasi gratis',
+                    'popular' => false,
+                    'hero_desc' => 'Solusi paket fleksibel yang dirancang khusus mengikuti skala, alur kerja, dan target pertumbuhan bisnis Anda.',
+                    'flyer_image' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
+                    'highlights' => [
+                        ['title' => 'Solusi Fleksibel', 'desc' => 'Kombinasi layanan branding, website, software, atau digital growth yang disesuaikan penuh.'],
+                        ['title' => 'Sesuai Budget', 'desc' => 'Skema biaya dan timeline pengerjaan yang diselaraskan dengan prioritas dan kapasitas bisnis.'],
+                        ['title' => 'Dedicated Support', 'desc' => 'Konsultasi mendalam dan pendampingan intensif dari tim spesialis Optibis.'],
+                    ],
+                    'included' => [
+                        ['title' => 'Kustomisasi Ruang Lingkup', 'desc' => 'Penyusunan fitur, aset, dan deliverable sesuai kebutuhan nyata bisnis Anda.', 'image' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80'],
+                        ['title' => 'Analisis & Scoping Gratis', 'desc' => 'Sesi discovery untuk membedah problem, workflow, dan arsitektur solusi.', 'image' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&q=80'],
+                        ['title' => 'Timeline Fleksibel', 'desc' => 'Jadwal pengerjaan bertahap sesuai kesiapan data dan operasional tim Anda.', 'image' => 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&q=80'],
+                    ],
+                    'deliverables' => [
+                        'Proposal solusi & technical specification',
+                        'Deliverable gabungan sesuai kesepakatan',
+                        'Handover & sesi training',
+                        'Garansi & dukungan purna jual',
+                    ],
+                    'faqs' => [
+                        ['q' => 'Bagaimana cara menentukan harga paket custom?', 'a' => 'Harga ditentukan setelah sesi konsultasi dan penyusunan scope of work (SOW) yang transparan.'],
+                        ['q' => 'Apakah konsultasi awal berbayar?', 'a' => 'Tidak. Sesi konsultasi awal dan pembuatan estimasi biaya 100% gratis.'],
+                    ],
+                    'ideal_for' => [
+                        'Bisnis dengan model operasional atau workflow khusus',
+                        'Perusahaan yang ingin menggabungkan berbagai layanan dalam satu kontrak',
+                        'Bisnis yang butuh milestone atau fase rilis bertahap',
+                    ],
+                    'theme' => ['color' => 'magenta', 'gradient' => 'from-magenta-50/30 to-white', 'glow' => 'bg-magenta/5', 'badge' => 'bg-magenta-50 text-magenta', 'btn' => 'bg-magenta hover:bg-magenta-500', 'check' => 'text-magenta', 'border' => 'border-magenta/20'],
+                ],
+                'is_published' => true,
+            ],
         ];
+
+        $validSlugs = array_column($packages, 'slug');
+        DB::table('package_items')->whereNotIn('slug', $validSlugs)->delete();
 
         foreach ($packages as $pkg) {
             DB::table('package_items')->updateOrInsert(
@@ -1182,6 +1057,94 @@ class FrontendContentSeeder extends Seeder
             return;
         }
 
+        $websiteDetails = [
+            'landing-page' => [
+                'price' => 'Rp 3.500.000',
+                'price_note' => 'Sekali bayar',
+                'target' => 'Promosi & campaign',
+                'timeline' => '5–7 hari kerja',
+                'highlights' => [
+                    ['title' => 'Fokus Konversi', 'desc' => 'Satu halaman yang dirancang khusus untuk mengubah pengunjung menjadi lead dengan CTA yang jelas.'],
+                    ['title' => 'Loading Cepat', 'desc' => 'Dioptimasi untuk loading di bawah 3 detik di semua perangkat, karena setiap detik berpengaruh pada konversi.'],
+                    ['title' => 'SEO Ready', 'desc' => 'Struktur HTML dan meta tags yang ramah Google sejak hari pertama agar mudah ditemukan.'],
+                ],
+                'included' => [
+                    ['title' => '1 Halaman Landing Page', 'desc' => 'Satu halaman responsif dengan section hero, fitur, testimoni, dan CTA yang terstruktur.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7ck3bjCR8GNjgVWyXDVSmo1gi-2fa7NqB9Bta_NxfuA&s=10'],
+                    ['title' => 'Mobile Responsive', 'desc' => 'Tampil optimal di desktop, tablet, dan mobile dengan desain yang adaptif.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8J7SID0VLWgS0mF6iIUp3iqfjXk34VAewuraRG33HSQ&s'],
+                    ['title' => 'Form Inquiry', 'desc' => 'Form kontak yang terhubung ke email dan database untuk capture lead secara otomatis.', 'image' => 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&q=80'],
+                    ['title' => 'WhatsApp Integration', 'desc' => 'Tombol WhatsApp mengambang dan click-to-chat untuk konversi langsung.', 'image' => 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&q=80'],
+                    ['title' => 'SEO Dasar', 'desc' => 'Meta tags, structured data, sitemap, dan optimasi kecepatan dasar untuk Google.', 'image' => 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80'],
+                    ['title' => 'Google Analytics', 'desc' => 'Pemasangan Google Analytics dan Search Console untuk tracking pengunjung.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                    ['title' => 'Hosting 1 Tahun', 'desc' => 'Hosting dan domain .com selama 1 tahun pertama sudah termasuk.', 'image' => 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80'],
+                ],
+                'faqs' => [
+                    ['q' => 'Apakah domain sudah termasuk?', 'a' => 'Ya, domain .com dan hosting 1 tahun sudah termasuk dalam paket.'],
+                    ['q' => 'Bisa tambah halaman?', 'a' => 'Paket ini untuk 1 halaman. Tambahan halaman tersedia mulai Rp 500.000/halaman.'],
+                    ['q' => 'Apakah bisa diupdate sendiri?', 'a' => 'Konten dasar bisa diupdate sendiri. Untuk perubahan struktur, tim kami siap membantu.'],
+                    ['q' => 'Berapa lama hosting aktif?', 'a' => 'Hosting aktif 1 tahun. Perpanjangan tahun berikutnya mulai Rp 500.000/tahun.'],
+                    ['q' => 'Apakah website loading-nya cepat?', 'a' => 'Ya, website dioptimasi untuk loading di bawah 3 detik dengan kompresi gambar dan caching.'],
+                    ['q' => 'Bisa integrasi dengan WhatsApp?', 'a' => 'Ya, tombol WhatsApp mengambang dan click-to-chat sudah termasuk dalam paket.'],
+                ],
+            ],
+            'multi-page' => [
+                'price' => 'Rp 7.500.000',
+                'price_note' => 'Sekali bayar',
+                'target' => 'Company profile online',
+                'timeline' => '14–21 hari kerja',
+                'highlights' => [
+                    ['title' => 'CMS Mandiri', 'desc' => 'Update konten, blog, dan portfolio sendiri tanpa bantuan teknis melalui dashboard admin yang intuitif.'],
+                    ['title' => 'Multi-Halaman Lengkap', 'desc' => '5-8 halaman terstruktur: Home, About, Services, Portfolio, Blog, Contact yang siap profesional.'],
+                    ['title' => 'SEO & Analytics', 'desc' => 'Google Analytics dan Search Console terintegrasi sejak awal untuk tracking performa website.'],
+                ],
+                'included' => [
+                    ['title' => 'Multi Halaman', 'desc' => '5–8 halaman: Home, About, Services, Portfolio, Blog, dan Contact — terstruktur profesional.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT733siFmNQb7BsceEeZGJA7-5USoKKMdUnQ9jLXdBFog&s=10'],
+                    ['title' => 'CMS Sederhana', 'desc' => 'Dashboard admin untuk update konten, blog, dan portfolio sendiri tanpa pengetahuan teknis.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                    ['title' => 'Gallery & Portfolio', 'desc' => 'Halaman gallery dan portfolio dengan filter kategori yang interaktif.', 'image' => 'https://images.unsplash.com/photo-1554189097-ffe88e998a2b?w=600&q=80'],
+                    ['title' => 'Form Kontak', 'desc' => 'Form kontak dengan notifikasi email otomatis untuk setiap inquiry yang masuk.', 'image' => 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&q=80'],
+                    ['title' => 'Google Analytics', 'desc' => 'Integrasi Google Analytics dan Search Console untuk tracking pengunjung dan performa.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                    ['title' => 'SEO Optimization', 'desc' => 'Optimasi SEO on-page: meta tags, sitemap, structured data, dan heading structure.', 'image' => 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80'],
+                    ['title' => 'Maintenance 3 Bulan', 'desc' => 'Dukungan teknis, update sistem, dan perbaikan bug selama 3 bulan pertama.', 'image' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80'],
+                ],
+                'faqs' => [
+                    ['q' => 'Berapa halaman yang saya dapatkan?', 'a' => '5–8 halaman standar (Home, About, Services, Portfolio, Blog, Contact). Halaman tambahan mulai Rp 500.000.'],
+                    ['q' => 'Apakah CMS mudah dipakai?', 'a' => 'Ya, CMS dirancang untuk pengguna non-teknis. Kami berikan training dan dokumentasi lengkap.'],
+                    ['q' => 'Apakah bisa tambah fitur e-commerce?', 'a' => 'Bisa, sebagai add-on. Fitur toko online mulai Rp 2.000.000 dengan keranjang dan pembayaran.'],
+                    ['q' => 'Apa yang terjadi setelah 3 bulan maintenance?', 'a' => 'Anda bisa melanjutkan dengan paket maintenance bulanan mulai Rp 500.000/bulan.'],
+                    ['q' => 'Apakah website sudah SEO friendly?', 'a' => 'Ya, website dibangun dengan struktur SEO-friendly: meta tags, sitemap, structured data, dan heading yang terorganisir.'],
+                    ['q' => 'Bisa pindah dari website lama?', 'a' => 'Tentu. Kami bantu migrasi konten dari website lama Anda tanpa kehilangan data.'],
+                ],
+            ],
+            'toko-online' => [
+                'price' => 'Rp 15.000.000',
+                'price_note' => 'Sekali bayar',
+                'target' => 'Bisnis yang butuh sistem',
+                'timeline' => '30–45 hari kerja',
+                'highlights' => [
+                    ['title' => 'Bukan Sekadar Website', 'desc' => 'Sistem terintegrasi: website + dashboard admin + CRM + booking system dalam satu platform.'],
+                    ['title' => 'CRM & Lead Pipeline', 'desc' => 'Kelola leads, klien, dan pipeline penjualan dari satu dashboard terpusat yang mudah digunakan.'],
+                    ['title' => 'Booking Otomatis', 'desc' => 'Sistem reservasi online dengan kalender real-time, notifikasi otomatis, dan manajemen slot.'],
+                ],
+                'included' => [
+                    ['title' => 'Website Custom', 'desc' => 'Website custom multi-halaman dengan desain premium dan fitur khusus sesuai kebutuhan bisnis.', 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1Mll7exIfybaV-27BYX7P3pBCBVWCCTbH4Aim_A7qTw&s=10'],
+                    ['title' => 'Dashboard Admin', 'desc' => 'Dashboard admin lengkap untuk mengelola seluruh sistem: konten, leads, booking, dan laporan.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                    ['title' => 'CRM Ringan', 'desc' => 'Sistem CRM untuk manajemen leads, klien, pipeline penjualan, dan riwayat komunikasi.', 'image' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80'],
+                    ['title' => 'Lead Management', 'desc' => 'Form, tracking, auto-followup, dan scoring untuk setiap lead yang masuk ke sistem.', 'image' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&q=80'],
+                    ['title' => 'Booking System', 'desc' => 'Sistem booking/reservation online dengan kalender real-time, notifikasi email & WhatsApp.', 'image' => 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&q=80'],
+                    ['title' => 'Multi-User & Role', 'desc' => 'Sistem multi-user dengan role berbeda (admin, staff, viewer) dan permission control.', 'image' => 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600&q=80'],
+                    ['title' => 'Reporting & Analytics', 'desc' => 'Laporan penjualan, leads, booking, dan performa website real-time dalam dashboard.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                ],
+                'faqs' => [
+                    ['q' => 'Apakah CRM bisa diintegrasikan dengan WhatsApp?', 'a' => 'Ya, sistem bisa diintegrasikan dengan WhatsApp Business API untuk auto-reply dan notifikasi otomatis.'],
+                    ['q' => 'Berapa user yang bisa mengakses dashboard?', 'a' => 'Default 5 user dengan role berbeda. Tambahan user tersedia mulai Rp 100.000/user/bulan.'],
+                    ['q' => 'Apakah sistem bisa dikembangkan lebih lanjut?', 'a' => 'Tentu, sistem dibangun dengan arsitektur yang scalable untuk pengembangan future.'],
+                    ['q' => 'Apakah termasuk maintenance?', 'a' => 'Termasuk 3 bulan maintenance. Setelah itu, paket maintenance mulai Rp 1.000.000/bulan.'],
+                    ['q' => 'Bisa custom fitur sesuai kebutuhan?', 'a' => 'Ya, sistem dibangun custom. Fitur khusus bisa didiskusikan dan dikembangkan sesuai kebutuhan bisnis.'],
+                    ['q' => 'Apakah sistem mendukung multi-cabang?', 'a' => 'Default untuk 1 lokasi. Module multi-cabang tersedia sebagai add-on mulai Rp 3.000.000.'],
+                ],
+            ],
+        ];
+
+        $seededSlugs = [];
         foreach ($this->objectBlocks($source, 'SERVICES') as $block) {
             $fields = $this->parseObject($block, $this->constants($source));
             $title = $this->firstValue($fields, ['title', 'name']);
@@ -1199,6 +1162,11 @@ class FrontendContentSeeder extends Seeder
             if (!isset($data['features']) || !is_array($data['features'])) {
                 $data['features'] = [];
             }
+            if ($pillarSlug === 'website' && isset($websiteDetails[$slug])) {
+                $data = array_merge($data, $websiteDetails[$slug]);
+            }
+
+            $seededSlugs[] = $slug;
 
             DB::table('service_items')->updateOrInsert(
                 ['slug' => $slug],
@@ -1208,6 +1176,112 @@ class FrontendContentSeeder extends Seeder
                     'image_url' => $image,
                     'data' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     'is_published' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        if (!empty($seededSlugs)) {
+            DB::table('service_items')
+                ->where('data->pillar', $pillarSlug)
+                ->whereNotIn('slug', $seededSlugs)
+                ->delete();
+        }
+    }
+
+    private function seedSoftwareServices(): void
+    {
+        $softwareServices = [
+            [
+                'slug' => 'web-application',
+                'title' => 'Web Application',
+                'summary' => 'Pengembangan web application kustom yang interaktif, scalable, dan modern untuk operasional bisnis serta layanan pelanggan.',
+                'image_url' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+                'data' => [
+                    'name' => 'Web Application',
+                    'pillar' => 'software',
+                    'pillar_name' => 'Software & Sistem Bisnis',
+                    'price' => 'Sesuai Kebutuhan',
+                    'price_note' => 'Konsultasi & estimasi gratis',
+                    'target' => 'Bisnis & startup digital',
+                    'timeline' => '14–30 hari kerja',
+                    'features' => [
+                        'Custom Frontend & Backend Architecture',
+                        'User Authentication & Role-Based Access Control',
+                        'Database Design & API Integration',
+                        'Dashboard Analytics & Reporting',
+                        'Cloud Deployment & High Availability Setup',
+                        'Security Auditing & SSL Integration',
+                        'Dokumentasi Teknis & Training Admin',
+                    ],
+                    'highlights' => [
+                        ['title' => 'Arsitektur Modern', 'desc' => 'Dibangun dengan teknologi modern yang cepat, aman, dan mudah dikembangkan di masa depan.'],
+                        ['title' => 'Scalable & Cloud-Ready', 'desc' => 'Mendukung pertumbuhan pengguna dan transaksi tanpa hambatan performa.'],
+                        ['title' => 'UI/UX Responsif', 'desc' => 'Tampilan intuitif yang memudahkan pengguna di desktop, tablet, maupun smartphone.'],
+                    ],
+                    'included' => [
+                        ['title' => 'Arsitektur Kustom', 'desc' => 'Perancangan arsitektur scalable sesuai model bisnis Anda.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                        ['title' => 'Dashboard & Reporting', 'desc' => 'Panel admin untuk memonitor data, pengguna, dan analitik.', 'image' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80'],
+                        ['title' => 'Testing & Security', 'desc' => 'Pengujian keamanan, performa beban, dan integrasi SSL.', 'image' => 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=600&q=80'],
+                    ],
+                    'faqs' => [
+                        ['q' => 'Berapa lama proses pembuatan web application?', 'a' => 'Rata-rata 14–30 hari kerja tergantung kompleksitas fitur dan kesiapan data.'],
+                        ['q' => 'Apakah source code menjadi milik klien?', 'a' => 'Ya, seluruh source code dan hak kepemilikan diserahkan penuh kepada klien.'],
+                    ],
+                ],
+                'is_published' => true,
+            ],
+            [
+                'slug' => 'custom-system',
+                'title' => 'Custom System',
+                'summary' => 'Sistem informasi bisnis, ERP ringan, manajemen inventaris, dan workflow automation yang dirancang spesifik mengikuti proses bisnis Anda.',
+                'image_url' => 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+                'data' => [
+                    'name' => 'Custom System',
+                    'pillar' => 'software',
+                    'pillar_name' => 'Software & Sistem Bisnis',
+                    'price' => 'Sesuai Kebutuhan',
+                    'price_note' => 'Konsultasi & estimasi gratis',
+                    'target' => 'Perusahaan & UMKM berkembang',
+                    'timeline' => '21–45 hari kerja',
+                    'features' => [
+                        'Sistem Informasi & Workflow Management Custom',
+                        'Manajemen Inventaris, Transaksi & Operasional',
+                        'Integrasi WhatsApp API & Notifikasi Otomatis',
+                        'Multi-Cabang & Multi-Gudang Terpusat',
+                        'Audit Trail & Log Aktivitas Pengguna',
+                        'Otomasi Export Data (PDF, Excel, CSV)',
+                        'Garansi & Dukungan Teknis Purna Jual',
+                    ],
+                    'highlights' => [
+                        ['title' => 'Sesuai Alur Bisnis', 'desc' => 'Sistem mengikuti cara kerja bisnis Anda, bukan memaksa Anda mengikuti template kaku.'],
+                        ['title' => 'Otomasi Terintegrasi', 'desc' => 'Mengurangi kesalahan manual dengan notifikasi otomatis dan integrasi WhatsApp.'],
+                        ['title' => 'Multi-User & Hak Akses', 'desc' => 'Pengaturan peran admin, manager, dan staf dengan batasan data yang aman.'],
+                    ],
+                    'included' => [
+                        ['title' => 'Modul Kustom Sesuai Kebutuhan', 'desc' => 'Pengembangan modul inventaris, transaksi, atau alur kerja operasional.', 'image' => 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80'],
+                        ['title' => 'Integrasi WhatsApp API', 'desc' => 'Notifikasi real-time ke admin dan pelanggan via WhatsApp.', 'image' => 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&q=80'],
+                        ['title' => 'Export & Reporting', 'desc' => 'Laporan berkala dalam format PDF dan Excel siap cetak.', 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80'],
+                    ],
+                    'faqs' => [
+                        ['q' => 'Apakah bisa dihubungkan dengan WhatsApp?', 'a' => 'Bisa. Sistem dapat mengirimkan notifikasi transaksi, invoice, dan reminder via WhatsApp.'],
+                        ['q' => 'Apakah ada garansi purna jual?', 'a' => 'Ya, kami menyediakan garansi pemeliharaan dan perbaikan bug selama masa garansi.'],
+                    ],
+                ],
+                'is_published' => true,
+            ],
+        ];
+
+        foreach ($softwareServices as $srv) {
+            DB::table('service_items')->updateOrInsert(
+                ['slug' => $srv['slug']],
+                [
+                    'title' => $srv['title'],
+                    'summary' => $srv['summary'],
+                    'image_url' => $srv['image_url'],
+                    'data' => json_encode($srv['data'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'is_published' => $srv['is_published'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]

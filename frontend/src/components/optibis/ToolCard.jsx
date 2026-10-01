@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Wallet, Building2, Plane, Users, Moon, Sparkles, Megaphone, Zap, GraduationCap, Package } from "lucide-react";
+import { getToolImage } from "@/data/tools";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const CATEGORY_CONFIG = {
   finance: { icon: Wallet, bg: "bg-magenta/10", text: "text-magenta" },
@@ -16,6 +18,7 @@ const CATEGORY_CONFIG = {
 };
 
 export default function ToolCard({ tool, index, onClick }) {
+  const { tr } = useLanguage();
   const config = CATEGORY_CONFIG[tool.category] || CATEGORY_CONFIG.other;
   const Icon = config.icon;
 
@@ -34,6 +37,10 @@ export default function ToolCard({ tool, index, onClick }) {
           src={tool.image}
           alt={tool.name}
           loading="lazy"
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = tool.fallbackImage || getToolImage(tool);
+          }}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-navy/70 to-transparent" />
@@ -45,7 +52,7 @@ export default function ToolCard({ tool, index, onClick }) {
       {/* Body */}
       <div className="p-4 flex-1 flex flex-col">
         <h3 className="text-sm font-bold text-navy leading-tight mb-1">{tool.name}</h3>
-        <p className="text-xs text-muted-foreground leading-relaxed flex-1">{tool.tagline}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed flex-1">{tr(tool.tagline)}</p>
       </div>
     </motion.button>
   );

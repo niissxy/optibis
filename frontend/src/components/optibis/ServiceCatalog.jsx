@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Palette, Globe, Users, ArrowRight, FileText, Megaphone, Camera, Mail, Layout, Settings, TrendingUp, Search, BarChart3, ClipboardList } from "lucide-react";
+import { Palette, Globe, Users, ArrowRight, FileText, Megaphone, Camera, Mail, Layout, Settings, TrendingUp, Search, BarChart3, ClipboardList, Monitor, ShoppingCart } from "lucide-react";
 import { useSafeNav } from "@/hooks/useSafeNav";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
@@ -22,12 +22,9 @@ const SERVICES = {
     { icon: Mail, name: "Digital Channel Setup", desc: "Email bisnis, Google Business, WhatsApp Business, dan akun digital." },
   ],
   "Website": [
-    { icon: Layout, name: "Landing Page", desc: "Halaman fokus untuk promosi, event, campaign, atau lead generation." },
-    { icon: Globe, name: "Company Website", desc: "Website company profile, corporate, portfolio, dan layanan profesional." },
-    { icon: Settings, name: "Website Growth System", desc: "Website custom dengan CMS, CRM, booking, dan sistem terintegrasi." },
-    { icon: TrendingUp, name: "Website Improvement", desc: "Redesign, remake, optimasi kecepatan, SEO, dan konversi website." },
-    { icon: Settings, name: "Website Maintenance", desc: "Update berkala, backup, keamanan, dan dukungan teknis website." },
-    { icon: Globe, name: "Website Berdasarkan Fungsi", desc: "Toko online, booking, membership, directory, dan multi-cabang." },
+    { icon: Monitor, name: "Landing Page", desc: "Satu halaman landing page yang fokus konversi — cepat, responsif, dan dioptimasi untuk promosi, event, atau lead generation." },
+    { icon: FileText, name: "Multi Page", desc: "Website company profile multi-halaman dengan CMS sederhana — bisnis Anda tampil profesional dan mudah diperbarui, lengkap dengan gallery, portfolio, dan form kontak." },
+    { icon: ShoppingCart, name: "Toko Online", desc: "Website custom dengan dashboard admin, CRM ringan, lead management, dan booking system — bukan sekadar website, tapi sistem yang bekerja untuk bisnis Anda." },
   ],
   "Digital Growth Team": [
     { icon: ClipboardList, name: "Strategi & Planning", desc: "Digital audit, riset kompetitor, content strategy, dan monthly roadmap." },

@@ -591,12 +591,54 @@ export const PACKAGE_DATA = {
       { q: "Apakah termasuk website maintenance?", a: "Ya, paket Professional termasuk update konten, maintenance, dan monitoring performa website." },
     ],
   },
+
+  // ===== PAKET KHUSUS =====
+  "paket-custom": {
+    slug: "paket-custom",
+    pillar: "Paket Khusus",
+    pillarSlug: "khusus",
+    name: "Paket Custom",
+    heroImage: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80",
+    target: "Bisnis dengan kebutuhan spesifik & custom",
+    price: "Sesuai Kebutuhan",
+    priceShort: "Custom",
+    priceNote: "Konsultasi & scoping gratis",
+    popular: false,
+    theme: { color: "magenta", gradient: "from-magenta-50/30 to-white", glow: "bg-magenta/5", badge: "bg-magenta-50 text-magenta", btn: "bg-magenta hover:bg-magenta-500", check: "text-magenta", border: "border-magenta/20" },
+    heroDesc: "Solusi paket fleksibel yang dirancang khusus mengikuti skala, alur kerja, dan target pertumbuhan bisnis Anda.",
+    highlights: [
+      { title: "Solusi Fleksibel", desc: "Kombinasi layanan branding, website, software, atau digital growth yang disesuaikan penuh." },
+      { title: "Sesuai Budget", desc: "Skema biaya dan timeline pengerjaan yang diselaraskan dengan prioritas dan kapasitas bisnis." },
+      { title: "Dedicated Support", desc: "Konsultasi mendalam dan pendampingan intensif dari tim spesialis Optibis." },
+    ],
+    idealFor: [
+      "Bisnis dengan model operasional atau workflow khusus",
+      "Perusahaan yang ingin menggabungkan berbagai layanan dalam satu kontrak",
+      "Bisnis yang butuh milestone atau fase rilis bertahap",
+    ],
+    included: [
+      { title: "Kustomisasi Ruang Lingkup", desc: "Penyusunan fitur, aset, dan deliverable sesuai kebutuhan nyata bisnis Anda.", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" },
+      { title: "Analisis & Scoping Gratis", desc: "Sesi discovery untuk membedah problem, workflow, dan arsitektur solusi.", image: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&q=80" },
+      { title: "Timeline Fleksibel", desc: "Jadwal pengerjaan bertahap sesuai kesiapan data dan operasional tim Anda.", image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&q=80" },
+    ],
+    deliverables: [
+      "Proposal solusi & technical specification",
+      "Deliverable gabungan sesuai kesepakatan",
+      "Handover & sesi training",
+      "Garansi & dukungan purna jual",
+    ],
+    faqs: [
+      { q: "Bagaimana cara menentukan harga paket custom?", a: "Harga ditentukan setelah sesi konsultasi dan penyusunan scope of work (SOW) yang transparan." },
+      { q: "Apakah konsultasi awal berbayar?", a: "Tidak. Sesi konsultasi awal dan pembuatan estimasi biaya 100% gratis." },
+    ],
+  },
 };
 
 export const PILLAR_PACKAGES = {
   "Digital Asset": ["siap-usaha", "citra-usaha", "bisnis-profesional"],
-  "Website": ["landing-page", "multi-page", "toko-online"],
+  "Website": [],
   "Digital Growth Team": ["growth-starter", "growth", "growth-professional"],
+  "Paket Khusus": ["paket-custom"],
 };
 
 const PACKAGE_SLUG_ALIASES = {
@@ -610,6 +652,7 @@ export function getPackageBySlug(slug) {
 }
 
 export function getPackagesByPillar(pillarSlug) {
+  if (pillarSlug === "website") return [];
   return Object.entries(PACKAGE_DATA)
     .filter(([, pkg]) => pkg.pillarSlug === pillarSlug)
     .map(([slug, pkg]) => ({ slug, ...pkg }));

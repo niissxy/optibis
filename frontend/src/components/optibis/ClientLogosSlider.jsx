@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const CLIENT_LOGOS = [
   "MyTravelink",
@@ -15,13 +16,14 @@ const CLIENT_LOGOS = [
 ];
 
 export default function ClientLogosSlider() {
+  const { tr } = useLanguage();
   const doubled = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
 
   return (
     <section className="py-10 bg-white border-b border-gray-100 dark:bg-[#071321] dark:border-navy-300 overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground mb-6">
-          Dipercaya oleh 50+ bisnis & brand
+          {tr("Dipercaya oleh 50+ bisnis & brand")}
         </p>
         <div className="relative">
           <div className="flex gap-8 animate-scroll hover:[animation-play-state:paused]">

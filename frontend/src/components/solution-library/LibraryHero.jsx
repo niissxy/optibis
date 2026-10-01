@@ -2,8 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Search, BookOpen, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function LibraryHero({ query, setQuery, onExplore }) {
+  const { tr } = useLanguage();
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-navy via-navy-400 to-navy text-white py-20 lg:py-28">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(233,30,99,0.15),transparent_60%)]" />
@@ -25,7 +28,7 @@ export default function LibraryHero({ query, setQuery, onExplore }) {
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-medium mb-6"
         >
           <Sparkles className="w-3.5 h-3.5 text-magenta-200" />
-          Ensiklopedia Fitur Digital
+          {tr("Ensiklopedia Fitur Digital")}
         </motion.div>
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -33,7 +36,7 @@ export default function LibraryHero({ query, setQuery, onExplore }) {
           transition={{ delay: 0.05 }}
           className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-5 leading-tight"
         >
-          Digital Solution Library
+          {tr("Digital Solution Library")}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -41,7 +44,7 @@ export default function LibraryHero({ query, setQuery, onExplore }) {
           transition={{ delay: 0.1 }}
           className="text-base lg:text-lg text-white/70 mb-8 max-w-2xl mx-auto leading-relaxed"
         >
-          Pelajari seluruh istilah, fitur, modul, struktur website, aplikasi, ERP, SaaS, AI, dan teknologi menggunakan bahasa yang mudah dipahami.
+          {tr("Pelajari seluruh istilah, fitur, modul, struktur website, aplikasi, ERP, SaaS, AI, dan teknologi menggunakan bahasa yang mudah dipahami.")}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -56,14 +59,14 @@ export default function LibraryHero({ query, setQuery, onExplore }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && onExplore()}
-              placeholder="Cari... (Login, CRM, ERP, Booking, Payment, AI, Dashboard, Hosting, API, SSL, Database, Cloud)"
+              placeholder={tr("Cari... (Login, CRM, ERP, Booking, Payment, AI, Dashboard, Hosting, API, SSL, Database, Cloud)")}
               className="flex-1 bg-transparent border-0 outline-none text-sm text-navy placeholder:text-muted-foreground/70 py-2"
             />
             <Button
               onClick={onExplore}
               className="bg-magenta hover:bg-magenta-500 text-white rounded-xl px-5 h-10 font-semibold shrink-0 transition-all duration-300 hover:scale-105 active:scale-95"
             >
-              Explore <ArrowRight className="w-4 h-4" />
+              {tr("Explore")} <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
@@ -84,9 +87,9 @@ export default function LibraryHero({ query, setQuery, onExplore }) {
           transition={{ delay: 0.3 }}
           className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-10 text-xs text-white/50"
         >
-          <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" /> 300+ Istilah</span>
-          <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Bahasa Awam</span>
-          <span className="flex items-center gap-1.5"><ArrowRight className="w-3.5 h-3.5" /> Estimasi Biaya & Waktu</span>
+          <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" /> {tr("300+ Istilah")}</span>
+          <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> {tr("Bahasa Awam")}</span>
+          <span className="flex items-center gap-1.5"><ArrowRight className="w-3.5 h-3.5" /> {tr("Estimasi Biaya & Waktu")}</span>
         </motion.div>
       </div>
     </section>

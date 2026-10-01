@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, Wallet, Star } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const KATEGORI_STYLE = {
   Website: { bg: "bg-magenta/10", text: "text-magenta", border: "border-magenta/20" },
@@ -26,6 +27,7 @@ const LEVEL_COLOR = {
 };
 
 export default function LibraryCard({ item, index, onClick }) {
+  const { tr } = useLanguage();
   const style = KATEGORI_STYLE[item.kategori] || KATEGORI_STYLE.Backend;
 
   return (
@@ -40,7 +42,7 @@ export default function LibraryCard({ item, index, onClick }) {
       <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-3">
           <span className={`px-2.5 py-1 rounded-full ${style.bg} ${style.text} text-[10px] font-bold uppercase tracking-wide`}>
-            {item.kategori}
+            {tr(item.kategori)}
           </span>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${LEVEL_COLOR[item.level]}`}>
             {LEVEL_LABEL[item.level]}
@@ -48,22 +50,22 @@ export default function LibraryCard({ item, index, onClick }) {
         </div>
         <h3 className="text-base font-bold text-navy leading-tight mb-1">{item.nama_awam}</h3>
         <p className="text-xs font-medium text-muted-foreground mb-2">{item.nama_teknis}</p>
-        <p className="text-xs text-muted-foreground leading-relaxed flex-1 mb-3 line-clamp-2">{item.fungsi}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed flex-1 mb-3 line-clamp-2">{tr(item.fungsi)}</p>
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
           <span className="flex items-center gap-1">
             <Star className="w-3 h-3 text-amber-400" />
             {"★".repeat(item.tingkat_kesulitan || 3)}{"☆".repeat(5 - (item.tingkat_kesulitan || 3))}
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" /> {item.estimasi_development}
+            <Clock className="w-3 h-3" /> {tr(item.estimasi_development)}
           </span>
         </div>
         <div className="flex items-center justify-between pt-3 border-t border-gray-50">
           <span className="flex items-center gap-1 text-xs font-semibold text-navy">
-            <Wallet className="w-3.5 h-3.5 text-magenta" /> {item.estimasi_biaya}
+            <Wallet className="w-3.5 h-3.5 text-magenta" /> {tr(item.estimasi_biaya)}
           </span>
           <span className={`flex items-center gap-1 text-xs font-medium ${style.text} group-hover:gap-2 transition-all`}>
-            Detail <ArrowRight className="w-3.5 h-3.5" />
+            {tr("Detail")} <ArrowRight className="w-3.5 h-3.5" />
           </span>
         </div>
       </div>

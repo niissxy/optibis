@@ -1,11 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Code2, HeartHandshake, Lightbulb, MapPin, Megaphone, MessageCircle, Palette, Target, Users } from "lucide-react";
+import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import OptibisPageHero from "@/components/optibis/OptibisPageHero";
 import ConsultationForm from "@/components/optibis/ConsultationForm";
 import SectionHeading from "@/components/optibis/SectionHeading";
 import { useLanguage } from "@/lib/LanguageContext";
+import { getBreadcrumbSchema, getOrganizationSchema } from "@/lib/seoData";
 
 const VALUES = [
   {
@@ -51,8 +53,23 @@ const TEAMS = [
 export default function Tentang() {
   const { tr } = useLanguage();
 
+  const structuredData = [
+    getBreadcrumbSchema([
+      { name: "Beranda", url: "/" },
+      { name: "Tentang Kami", url: "/tentang" },
+    ]),
+    getOrganizationSchema(),
+  ];
+
   return (
     <PillarLayout>
+      <SEO
+        title="Tentang Kami — Partner Solusi Digital Bisnis"
+        description="Pelajari visi, misi, dan nilai-nilai Optibis. Kami hadir sebagai partner terpercaya untuk mendampingi bisnis Anda tumbuh melalui branding, website, dan strategi digital yang terukur."
+        keywords="tentang optibis, agensi digital indonesia, konsultan bisnis digital, tim ahli branding website, partner digital terpercaya"
+        canonicalUrl="https://optibis.id/tentang"
+        structuredData={structuredData}
+      />
       <OptibisPageHero
         eyebrow="Tentang Optibis"
         title="Satu Partner untuk Pertumbuhan Digital Bisnis Anda"
