@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class ModuleContentController extends Controller
@@ -47,6 +48,12 @@ class ModuleContentController extends Controller
 
     public function index(string $module)
     {
+        // Karir is optional on deployments made before its migration is applied.
+        // Return an empty collection so public pages remain available.
+        if ($module === 'careers' && !Schema::hasTable('career_items')) {
+            return response()->json([]);
+        }
+
         if ($module === 'insights') {
             $this->syncInsightItemCategories();
         }
