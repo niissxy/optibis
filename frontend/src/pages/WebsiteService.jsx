@@ -7,6 +7,7 @@ import SectionHeading from "@/components/optibis/SectionHeading";
 import PillarSplitHero from "@/components/optibis/PillarSplitHero";
 import SEO from "@/components/SEO";
 import { getBreadcrumbSchema, getServiceSchema } from "@/lib/seoData";
+import { useServices } from "@/hooks/useServices";
 
 export const SERVICES = [
   {
@@ -61,6 +62,10 @@ export const SERVICES = [
 ];
 
 export default function WebsiteService() {
+  const { getServicesByPillar } = useServices();
+  const dynamicServices = getServicesByPillar("website");
+  const displayServices = dynamicServices.length > 0 ? dynamicServices : SERVICES;
+
   const [hero, setHero] = React.useState({
     badgeText: "PILAR 2 — WEBSITE",
     titlePrefix: "Kembangkan Bisnis Anda dengan ",
@@ -129,7 +134,7 @@ export default function WebsiteService() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading eyebrow="Website Optibis" title="Layanan Website" description="Pilihan layanan website untuk berbagai kebutuhan bisnis Anda." className="mb-12" />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {SERVICES.map((s, i) => <PillarServiceCard key={s.name} service={s} pillarSlug="website" index={i} color="amethyst" />)}
+            {displayServices.map((s, i) => <PillarServiceCard key={s.slug || s.name} service={s} pillarSlug="website" index={i} color="amethyst" />)}
           </div>
         </div>
       </section>

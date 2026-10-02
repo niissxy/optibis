@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Portfolio;
+use App\Support\WebsiteFlyerPackages;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -46,7 +47,7 @@ class FrontendContentSeeder extends Seeder
         $this->seedStringCollection($path.'/viralog.js', 'VIRALOG_TAGS', 'viralog-tags');
         $this->seedStringCollection($path.'/evolis/objectives.js', 'PRIORITY_METRICS', 'evolis-settings');
 
-        DB::table('site_settings')->updateOrInsert(['slug' => 'general'], ['title' => 'Pengaturan Website', 'summary' => 'Kontak, identitas bisnis, SEO, dan navigasi frontend.', 'data' => json_encode(['site_name' => 'Optibis', 'email' => 'hello@optibis.id']), 'is_published' => true, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('site_settings')->updateOrInsert(['slug' => 'general'], ['title' => 'Pengaturan Website', 'summary' => 'Kontak, identitas bisnis, SEO, dan navigasi frontend.', 'data' => json_encode(['site_name' => 'Optibis', 'email' => 'optibis.id@gmail.com']), 'is_published' => true, 'created_at' => now(), 'updated_at' => now()]);
     }
 
     private function seedPortfolios(string $file): void
@@ -1029,7 +1030,214 @@ class FrontendContentSeeder extends Seeder
                 ],
                 'is_published' => true,
             ],
+
+            // ===== WEBSITE - LANDING PAGE =====
+            [
+                'slug' => 'landing-page-ekonomis',
+                'title' => 'Ekonomis',
+                'summary' => 'UMKM & promosi cepat',
+                'image_url' => '/assets/paket-website/landing-page.png',
+                'data' => [
+                    'name' => 'Ekonomis',
+                    'service' => 'landing-page',
+                    'service_slug' => 'landing-page',
+                    'pillar' => 'Website',
+                    'pillar_slug' => 'website',
+                    'target' => 'UMKM & promosi cepat',
+                    'timeline' => '5–7 hari kerja',
+                    'price' => 'Rp 990RB',
+                    'original_price' => 'Rp 1.4JT',
+                    'discount' => 'Diskon 410RB',
+                    'price_short' => 'Rp 990RB',
+                    'price_note' => 'Perpanjang Rp. 650.000 / Tahun',
+                    'renewal' => 'Perpanjang Rp. 650.000 / Tahun',
+                    'popular' => false,
+                    'badge' => '',
+                    'hero_desc' => 'Landing page ekonomis untuk UMKM dan bisnis baru — website 1 halaman, hosting non-cpanel 1 tahun, include domain my.id/web.id, dan fitur WhatsApp.',
+                    'flyer_image' => '/assets/paket-website/landing-page.png',
+                    'features' => [
+                        ['text' => 'Include Domain my.id / web.id', 'included' => true],
+                        ['text' => 'Hosting Non Cpanel 1 Tahun', 'included' => true],
+                        ['text' => 'Fitur Click to WhatsApp', 'included' => true],
+                        ['text' => 'Bantu Setup SEO Basic', 'included' => true],
+                        ['text' => '100% Konten Dari Klien', 'included' => true],
+                        ['text' => 'Kecepatan Optimal', 'included' => true],
+                        ['text' => 'Website 1 Halaman', 'included' => true],
+                        ['text' => 'Desain Menjual', 'included' => true],
+                        ['text' => 'Mobile Friendly', 'included' => true],
+                        ['text' => 'Tanpa E-Mail Bisnis', 'included' => false],
+                        ['text' => 'Tanpa Source Code', 'included' => false],
+                        ['text' => 'Tanpa Akses Edit Sendiri', 'included' => false],
+                    ],
+                    'highlights' => [
+                        ['title' => 'Harga Terjangkau', 'desc' => 'Hemat biaya promosi dengan paket lengkap website 1 halaman siap pakai.'],
+                        ['title' => 'Direct to WhatsApp', 'desc' => 'Calon pelanggan langsung diarahkan untuk chat WhatsApp bisnis Anda.'],
+                        ['title' => 'Hosting & Domain Termasuk', 'desc' => 'Sudah termasuk domain my.id/web.id dan hosting 1 tahun tanpa biaya tersembunyi.'],
+                    ],
+                    'included' => [
+                        ['title' => 'Domain my.id / web.id', 'desc' => 'Domain Indonesia 1 tahun pertama gratis.'],
+                        ['title' => 'Hosting Non Cpanel 1 Tahun', 'desc' => 'Server cepat dan handal untuk landing page Anda.'],
+                        ['title' => 'Click to WhatsApp', 'desc' => 'Tombol dan CTA langsung terhubung ke nomor WhatsApp Anda.'],
+                        ['title' => 'Setup SEO Basic', 'desc' => 'Optimasi meta title, meta tag, dan indexing awal di Google.'],
+                    ],
+                    'deliverables' => [
+                        'Website live 1 halaman',
+                        'Domain my.id / web.id aktif 1 tahun',
+                        'Hosting non cpanel aktif 1 tahun',
+                        'Integrasi WhatsApp click to chat',
+                    ],
+                    'faqs' => [
+                        ['q' => 'Apakah domain my.id/web.id sudah termasuk?', 'a' => 'Ya, sudah termasuk gratis untuk 1 tahun pertama.'],
+                        ['q' => 'Berapa biaya perpanjangan tahun berikutnya?', 'a' => 'Biaya perpanjangan domain dan hosting adalah Rp 650.000 / tahun.'],
+                    ],
+                    'theme' => ['color' => 'magenta', 'gradient' => 'from-magenta-50/30 to-white', 'glow' => 'bg-magenta/5', 'badge' => 'bg-magenta-50 text-magenta', 'btn' => 'bg-magenta hover:bg-magenta-500', 'check' => 'text-magenta', 'border' => 'border-magenta/20'],
+                ],
+                'is_published' => true,
+            ],
+            [
+                'slug' => 'landing-page-standard',
+                'title' => 'Standard',
+                'summary' => 'Bisnis berkembang',
+                'image_url' => '/assets/paket-website/landing-page.png',
+                'data' => [
+                    'name' => 'Standard',
+                    'service' => 'landing-page',
+                    'service_slug' => 'landing-page',
+                    'pillar' => 'Website',
+                    'pillar_slug' => 'website',
+                    'target' => 'Bisnis berkembang',
+                    'timeline' => '5–7 hari kerja',
+                    'price' => 'Rp 1.4JT',
+                    'original_price' => 'Rp 2.0JT',
+                    'discount' => 'Diskon 600RB',
+                    'price_short' => 'Rp 1.4JT',
+                    'price_note' => 'Perpanjang Rp. 950rb / Tahun',
+                    'renewal' => 'Perpanjang Rp. 950rb / Tahun',
+                    'popular' => true,
+                    'badge' => 'PAKET TERLARIS',
+                    'hero_desc' => 'Paket terlaris landing page untuk bisnis berkembang — desain modern & kekinian, include domain .com/.id, advance SEO, dan bonus email bisnis.',
+                    'flyer_image' => '/assets/paket-website/landing-page.png',
+                    'features' => [
+                        ['text' => 'Desain Modern & Kekinian', 'included' => true],
+                        ['text' => 'Fitur Click to WhatsApp', 'included' => true],
+                        ['text' => '75% Konten Dari Klien', 'included' => true],
+                        ['text' => 'Kecepatan Optimal', 'included' => true],
+                        ['text' => 'Advance SEO Setup', 'included' => true],
+                        ['text' => 'Website 1 Halaman', 'included' => true],
+                        ['text' => 'Bonus E-Mail Bisnis', 'included' => true],
+                        ['text' => 'Mobile Friendly', 'included' => true],
+                        ['text' => 'Include Domain .com / .id', 'included' => true],
+                        ['text' => 'Hosting Non Cpanel 1 Tahun', 'included' => true],
+                        ['text' => 'Tanpa Akses Edit Sendiri', 'included' => false],
+                        ['text' => 'Tanpa Source Code', 'included' => false],
+                    ],
+                    'highlights' => [
+                        ['title' => 'Paket Paling Diminati', 'desc' => 'Pilihan utama bisnis berkembang dengan fitur esensial lengkap dan rasio konversi tinggi.'],
+                        ['title' => 'Domain .com / .id Termasuk', 'desc' => 'Tingkatkan kredibilitas brand Anda dengan ekstensi domain papan atas.'],
+                        ['title' => 'Bonus Email Bisnis', 'desc' => 'Tampil lebih meyakinkan dengan alamat email profesional (nama@domainanda.com).'],
+                    ],
+                    'included' => [
+                        ['title' => 'Domain .com / .id', 'desc' => 'Include domain profesional pilihan (.com atau .id) selama 1 tahun.'],
+                        ['title' => 'Advance SEO Setup', 'desc' => 'Konfigurasi meta tags lanjutan, sitemap XML, dan schema markup untuk ranking optimal.'],
+                        ['title' => 'Bonus E-Mail Bisnis', 'desc' => 'Alamat email bisnis profesional untuk korespondensi resmi.'],
+                        ['title' => 'Desain Modern & Kekinian', 'desc' => 'Tampilan visual elegan disesuaikan dengan identitas brand bisnis Anda.'],
+                    ],
+                    'deliverables' => [
+                        'Website live 1 halaman modern',
+                        'Domain .com / .id aktif 1 tahun',
+                        'Hosting non-cpanel aktif 1 tahun',
+                        'Akun email bisnis profesional',
+                        'Integrasi WhatsApp click to chat',
+                        'Laporan setup advance SEO',
+                    ],
+                    'faqs' => [
+                        ['q' => 'Apakah domain .com atau .id sudah termasuk?', 'a' => 'Ya, Anda bebas memilih domain .com atau .id yang sudah termasuk untuk 1 tahun pertama.'],
+                        ['q' => 'Berapa biaya perpanjangannya?', 'a' => 'Biaya perpanjangan tahun berikutnya adalah Rp 950.000 / tahun (termasuk domain, hosting, dan email bisnis).'],
+                    ],
+                    'theme' => ['color' => 'magenta', 'gradient' => 'from-magenta-50/30 to-white', 'glow' => 'bg-magenta/5', 'badge' => 'bg-magenta-50 text-magenta', 'btn' => 'bg-magenta hover:bg-magenta-500', 'check' => 'text-magenta', 'border' => 'border-magenta/20'],
+                ],
+                'is_published' => true,
+            ],
+            [
+                'slug' => 'landing-page-premium',
+                'title' => 'Premium',
+                'summary' => 'Solusi kustom & skala besar',
+                'image_url' => '/assets/paket-website/landing-page.png',
+                'data' => [
+                    'name' => 'Premium',
+                    'service' => 'landing-page',
+                    'service_slug' => 'landing-page',
+                    'pillar' => 'Website',
+                    'pillar_slug' => 'website',
+                    'target' => 'Solusi kustom & skala besar',
+                    'timeline' => '7–10 hari kerja',
+                    'price' => 'Rp 2.9JT',
+                    'original_price' => 'Rp 3.8JT',
+                    'discount' => 'Diskon 910RB',
+                    'price_short' => 'Rp 2.9JT',
+                    'price_note' => 'Perpanjang Rp. 1.5JT / Tahun',
+                    'renewal' => 'Perpanjang Rp. 1.5JT / Tahun',
+                    'popular' => false,
+                    'badge' => '',
+                    'hero_desc' => 'Landing page kustom performa tinggi berbasis ReactJS/NextJS & Laravel — 3 halaman, 100% source code, full akses admin panel, dan hosting cPanel 1 tahun.',
+                    'flyer_image' => '/assets/paket-website/landing-page.png',
+                    'features' => [
+                        ['text' => 'Menggunakan ReactJS / NextJS & Laravel', 'included' => true],
+                        ['text' => 'Fitur Click to WhatsApp', 'included' => true],
+                        ['text' => 'Bantu Buat 3 Halaman', 'included' => true],
+                        ['text' => '50% Konten Dari Klien', 'included' => true],
+                        ['text' => 'Kecepatan Optimal', 'included' => true],
+                        ['text' => 'Desain Premium', 'included' => true],
+                        ['text' => 'Mobile Friendly', 'included' => true],
+                        ['text' => '100% Source Code', 'included' => true],
+                        ['text' => 'Advance SEO Setup', 'included' => true],
+                        ['text' => 'Bonus E-Mail Bisnis', 'included' => true],
+                        ['text' => 'Full Akses Admin Panel', 'included' => true],
+                        ['text' => 'Hosting Cpanel 1 Tahun', 'included' => true],
+                        ['text' => 'Include Domain .com / .id', 'included' => true],
+                    ],
+                    'highlights' => [
+                        ['title' => 'Full Source Code & Admin Panel', 'desc' => 'Anda memiliki kepemilikan penuh 100% kode sumber dan kendali dashboard admin panel sendiri.'],
+                        ['title' => 'Tech Stack Modern', 'desc' => 'Dibangun dengan teknologi enterprise: ReactJS / NextJS & Laravel untuk kecepatan kilat dan stabilitas tinggi.'],
+                        ['title' => 'Hingga 3 Halaman', 'desc' => 'Cakupan hingga 3 halaman terstruktur untuk menjelaskan produk atau penawaran komprehensif.'],
+                    ],
+                    'included' => [
+                        ['title' => 'Tech Stack ReactJS / NextJS & Laravel', 'desc' => 'Arsitektur website modern ultra cepat dan scalable.'],
+                        ['title' => 'Full Akses Admin Panel', 'desc' => 'Kemudahan mengedit dan memperbarui konten sendiri kapan pun.'],
+                        ['title' => '100% Source Code', 'desc' => 'Seluruh source code diserahkan penuh kepada Anda tanpa ikatan.'],
+                        ['title' => 'Hosting cPanel 1 Tahun', 'desc' => 'Akses penuh ke cPanel server hosting Anda selama 1 tahun.'],
+                    ],
+                    'deliverables' => [
+                        'Website live hingga 3 halaman',
+                        'Full source code (Git repository / Zip)',
+                        'Akses login Admin Panel mandiri',
+                        'Akses akun cPanel hosting (1 tahun)',
+                        'Domain .com / .id aktif 1 tahun',
+                        'Email bisnis profesional',
+                    ],
+                    'faqs' => [
+                        ['q' => 'Apakah source code benar-benar diberikan 100%?', 'a' => 'Ya, Anda mendapatkan kepemilikan penuh source code tanpa enkripsi.'],
+                        ['q' => 'Berapa biaya perpanjangan tahun berikutnya?', 'a' => 'Biaya perpanjangan domain, hosting cPanel, dan email bisnis adalah Rp 1.500.000 / tahun.'],
+                    ],
+                    'theme' => ['color' => 'magenta', 'gradient' => 'from-magenta-50/30 to-white', 'glow' => 'bg-magenta/5', 'badge' => 'bg-magenta-50 text-magenta', 'btn' => 'bg-magenta hover:bg-magenta-500', 'check' => 'text-magenta', 'border' => 'border-magenta/20'],
+                ],
+                'is_published' => true,
+            ],
         ];
+
+        foreach (WebsiteFlyerPackages::services() as $serviceSlug) {
+            foreach (WebsiteFlyerPackages::packages($serviceSlug) as $package) {
+                $data = WebsiteFlyerPackages::packageData($serviceSlug, $package);
+                $packages[] = [
+                    'slug' => $package['slug'],
+                    'title' => $package['name'],
+                    'summary' => $package['target'],
+                    'image_url' => WebsiteFlyerPackages::flyer($serviceSlug),
+                    'data' => $data,
+                    'is_published' => true,
+                ];
+            }
+        }
 
         $validSlugs = array_column($packages, 'slug');
         DB::table('package_items')->whereNotIn('slug', $validSlugs)->delete();
@@ -1084,6 +1292,102 @@ class FrontendContentSeeder extends Seeder
                     ['q' => 'Berapa lama hosting aktif?', 'a' => 'Hosting aktif 1 tahun. Perpanjangan tahun berikutnya mulai Rp 500.000/tahun.'],
                     ['q' => 'Apakah website loading-nya cepat?', 'a' => 'Ya, website dioptimasi untuk loading di bawah 3 detik dengan kompresi gambar dan caching.'],
                     ['q' => 'Bisa integrasi dengan WhatsApp?', 'a' => 'Ya, tombol WhatsApp mengambang dan click-to-chat sudah termasuk dalam paket.'],
+                ],
+                'packages' => [
+                    [
+                        'slug' => 'landing-page-ekonomis',
+                        'name' => 'Ekonomis',
+                        'target' => 'UMKM & promosi cepat',
+                        'price' => 'Rp 990RB',
+                        'original_price' => 'Rp 1.4JT',
+                        'discount' => 'Diskon 410RB',
+                        'price_short' => 'Rp 990RB',
+                        'price_note' => 'Perpanjang Rp. 650.000 / Tahun',
+                        'renewal' => 'Perpanjang Rp. 650.000 / Tahun',
+                        'popular' => false,
+                        'badge' => '',
+                        'features' => [
+                            ['text' => 'Include Domain my.id / web.id', 'included' => true],
+                            ['text' => 'Hosting Non Cpanel 1 Tahun', 'included' => true],
+                            ['text' => 'Fitur Click to WhatsApp', 'included' => true],
+                            ['text' => 'Bantu Setup SEO Basic', 'included' => true],
+                            ['text' => '100% Konten Dari Klien', 'included' => true],
+                            ['text' => 'Kecepatan Optimal', 'included' => true],
+                            ['text' => 'Website 1 Halaman', 'included' => true],
+                            ['text' => 'Desain Menjual', 'included' => true],
+                            ['text' => 'Mobile Friendly', 'included' => true],
+                            ['text' => 'Tanpa E-Mail Bisnis', 'included' => false],
+                            ['text' => 'Tanpa Source Code', 'included' => false],
+                            ['text' => 'Tanpa Akses Edit Sendiri', 'included' => false],
+                        ],
+                    ],
+                    [
+                        'slug' => 'landing-page-standard',
+                        'name' => 'Standard',
+                        'target' => 'Bisnis berkembang',
+                        'price' => 'Rp 1.4JT',
+                        'original_price' => 'Rp 2.0JT',
+                        'discount' => 'Diskon 600RB',
+                        'price_short' => 'Rp 1.4JT',
+                        'price_note' => 'Perpanjang Rp. 950rb / Tahun',
+                        'renewal' => 'Perpanjang Rp. 950rb / Tahun',
+                        'popular' => true,
+                        'badge' => 'PAKET TERLARIS',
+                        'features' => [
+                            ['text' => 'Desain Modern & Kekinian', 'included' => true],
+                            ['text' => 'Fitur Click to WhatsApp', 'included' => true],
+                            ['text' => '75% Konten Dari Klien', 'included' => true],
+                            ['text' => 'Kecepatan Optimal', 'included' => true],
+                            ['text' => 'Advance SEO Setup', 'included' => true],
+                            ['text' => 'Website 1 Halaman', 'included' => true],
+                            ['text' => 'Bonus E-Mail Bisnis', 'included' => true],
+                            ['text' => 'Mobile Friendly', 'included' => true],
+                            ['text' => 'Include Domain .com / .id', 'included' => true],
+                            ['text' => 'Hosting Non Cpanel 1 Tahun', 'included' => true],
+                            ['text' => 'Tanpa Akses Edit Sendiri', 'included' => false],
+                            ['text' => 'Tanpa Source Code', 'included' => false],
+                        ],
+                    ],
+                    [
+                        'slug' => 'landing-page-premium',
+                        'name' => 'Premium',
+                        'target' => 'Solusi kustom & skala besar',
+                        'price' => 'Rp 2.9JT',
+                        'original_price' => 'Rp 3.8JT',
+                        'discount' => 'Diskon 910RB',
+                        'price_short' => 'Rp 2.9JT',
+                        'price_note' => 'Perpanjang Rp. 1.5JT / Tahun',
+                        'renewal' => 'Perpanjang Rp. 1.5JT / Tahun',
+                        'popular' => false,
+                        'badge' => '',
+                        'features' => [
+                            ['text' => 'Menggunakan ReactJS / NextJS & Laravel', 'included' => true],
+                            ['text' => 'Fitur Click to WhatsApp', 'included' => true],
+                            ['text' => 'Bantu Buat 3 Halaman', 'included' => true],
+                            ['text' => '50% Konten Dari Klien', 'included' => true],
+                            ['text' => 'Kecepatan Optimal', 'included' => true],
+                            ['text' => 'Desain Premium', 'included' => true],
+                            ['text' => 'Mobile Friendly', 'included' => true],
+                            ['text' => '100% Source Code', 'included' => true],
+                            ['text' => 'Advance SEO Setup', 'included' => true],
+                            ['text' => 'Bonus E-Mail Bisnis', 'included' => true],
+                            ['text' => 'Full Akses Admin Panel', 'included' => true],
+                            ['text' => 'Hosting Cpanel 1 Tahun', 'included' => true],
+                            ['text' => 'Include Domain .com / .id', 'included' => true],
+                        ],
+                    ],
+                ],
+                'package_addons' => [
+                    [
+                        'title' => 'Tambah Halaman',
+                        'price' => 'Rp. 200.000 - 350.000 / Halaman',
+                        'desc' => 'Penambahan halaman baru sesuai kebutuhan konten atau struktur website Anda.',
+                    ],
+                    [
+                        'title' => 'Pembelian Domain',
+                        'price' => 'Penyesuaian Harga Khusus',
+                        'desc' => 'Penyesuaian harga khusus untuk domain tertentu, misalnya (.ai, .io, .net, atau org dll).',
+                    ],
                 ],
             ],
             'multi-page' => [
@@ -1143,6 +1447,13 @@ class FrontendContentSeeder extends Seeder
                 ],
             ],
         ];
+
+        foreach (WebsiteFlyerPackages::services() as $serviceSlug) {
+            $websiteDetails[$serviceSlug] = array_merge(
+                $websiteDetails[$serviceSlug] ?? [],
+                WebsiteFlyerPackages::details($serviceSlug)
+            );
+        }
 
         $seededSlugs = [];
         foreach ($this->objectBlocks($source, 'SERVICES') as $block) {

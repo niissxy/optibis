@@ -43,6 +43,10 @@ Dashboard administrasi dan Content Management System (CMS) untuk platform **OPTI
 3. Konfigurasi variabel lingkungan:
    Buat file `.env` untuk menentukan endpoint API backend:
    ```env
+   # Mode Production:
+   VITE_API_URL=https://api.optibis.id/api
+
+   # Mode Lokal (Development):
    VITE_API_URL=http://localhost:8000/api/v1
    ```
 

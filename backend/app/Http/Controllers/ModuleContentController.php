@@ -12,6 +12,7 @@ class ModuleContentController extends Controller
         'services' => 'service_items',
         'service-pillars' => 'service_pillars',
         'packages' => 'package_items',
+        'careers' => 'career_items',
         'marketing-kits' => 'marketing_kit_items',
         'insights' => 'insight_items',
         'insight-categories' => 'site_settings',
@@ -93,6 +94,13 @@ class ModuleContentController extends Controller
         $id = DB::table($this->table($module))->insertGetId($data);
         $item = DB::table($this->table($module))->find($id);
 
+        if ($module === 'services') {
+            $this->syncServicePackages($item);
+            $item = DB::table($this->table($module))->find($id);
+        } elseif ($module === 'packages') {
+            $this->syncPackageToService($item);
+        }
+
         return response()->json($this->normalize($item), 201);
     }
 
@@ -118,6 +126,13 @@ class ModuleContentController extends Controller
         if ($module === 'portfolio-categories' && $current->title !== $updateData['title']) {
             $this->renamePortfolioCategory($current->title, $updateData['title']);
         }
+        if ($module === 'services') {
+            $item = DB::table($this->table($module))->find($id);
+            $this->syncServicePackages($item);
+        } elseif ($module === 'packages') {
+            $item = DB::table($this->table($module))->find($id);
+            $this->syncPackageToService($item);
+        }
         $item = DB::table($this->table($module))->find($id);
 
         return response()->json($this->normalize($item));
@@ -125,8 +140,19 @@ class ModuleContentController extends Controller
 
     public function destroy(string $module, $id)
     {
-        $this->item($module, $id);
+        $current = $this->item($module, $id);
         DB::table($this->table($module))->where('id', $id)->delete();
+
+        if ($module === 'services') {
+            DB::table('package_items')
+                ->where(function ($q) use ($current) {
+                    $q->where('data->service_slug', $current->slug)
+                      ->orWhere('data->service', $current->slug);
+                })
+                ->delete();
+        } elseif ($module === 'packages') {
+            $this->removePackageFromService($current);
+        }
 
         return response()->json(['message' => 'Konten dihapus.']);
     }
@@ -340,6 +366,175 @@ class ModuleContentController extends Controller
                 'industry' => $nextCategory,
                 'updated_at' => now(),
             ]);
+    }
+
+    private function syncServicePackages(object $service): void
+    {
+        $serviceData = json_decode($service->data, true) ?: [];
+        $packages = $serviceData['packages'] ?? null;
+
+        if (!is_array($packages)) {
+            return;
+        }
+
+        $activeSlugs = [];
+        $updatedPackages = [];
+
+        foreach ($packages as $pkg) {
+            $name = trim($pkg['name'] ?? $pkg['title'] ?? 'Paket Baru');
+            $rawSlug = trim($pkg['slug'] ?? '');
+
+            if (empty($rawSlug) || preg_match('/^paket-\d+$/', $rawSlug)) {
+                $baseSlug = str($service->slug . '-' . $name)->slug();
+            } else {
+                $baseSlug = str($rawSlug)->slug();
+            }
+
+            $pkgSlug = (string) $baseSlug;
+            $counter = 1;
+            while (
+                DB::table('package_items')
+                    ->where('slug', $pkgSlug)
+                    ->where(function ($q) use ($service) {
+                        $q->where('data->service_slug', '!=', $service->slug)
+                          ->where('data->service', '!=', $service->slug);
+                    })
+                    ->exists()
+            ) {
+                $counter++;
+                $pkgSlug = "{$baseSlug}-{$counter}";
+            }
+
+            $activeSlugs[] = $pkgSlug;
+            $pkg['slug'] = $pkgSlug;
+            $pkg['name'] = $name;
+            $updatedPackages[] = $pkg;
+
+            $packageData = [
+                'name' => $name,
+                'title' => $name,
+                'service' => $service->slug,
+                'service_slug' => $service->slug,
+                'service_name' => $service->title,
+                'is_service_package' => true,
+                'pillar' => $serviceData['pillar'] ?? $serviceData['pillar_slug'] ?? 'website',
+                'pillar_slug' => $serviceData['pillar_slug'] ?? $serviceData['pillar'] ?? 'website',
+                'pillar_name' => $serviceData['pillar_name'] ?? ($serviceData['pillar'] ?? 'Website'),
+                'price' => $pkg['price'] ?? '',
+                'price_short' => $pkg['price'] ?? '',
+                'original_price' => $pkg['original_price'] ?? '',
+                'discount' => $pkg['discount'] ?? '',
+                'renewal' => $pkg['renewal'] ?? '',
+                'price_period' => $pkg['renewal'] ?? $pkg['price_period'] ?? 'sekali bayar',
+                'price_note' => $pkg['renewal'] ?? $pkg['price_period'] ?? '',
+                'target' => $pkg['target'] ?? '',
+                'popular' => !empty($pkg['popular']) || !empty($pkg['is_popular']),
+                'badge' => $pkg['badge'] ?? '',
+                'heroImage' => $service->image_url,
+                'flyer_image' => $service->image_url,
+                'features' => $pkg['features'] ?? [],
+                'highlights' => $pkg['highlights'] ?? [],
+                'included' => $pkg['included'] ?? [],
+                'deliverables' => $pkg['deliverables'] ?? [],
+                'faqs' => $pkg['faqs'] ?? [],
+            ];
+
+            DB::table('package_items')->updateOrInsert(
+                ['slug' => $pkgSlug],
+                [
+                    'title' => $name,
+                    'summary' => $pkg['target'] ?? $service->summary ?? '',
+                    'image_url' => $service->image_url,
+                    'data' => json_encode($packageData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'is_published' => $service->is_published ?? true,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
+
+        // Delete packages previously associated with this service that were removed
+        DB::table('package_items')
+            ->where(function ($q) use ($service) {
+                $q->where('data->service_slug', $service->slug)
+                  ->orWhere('data->service', $service->slug);
+            })
+            ->whereNotIn('slug', $activeSlugs)
+            ->delete();
+
+        // Update service_items with normalized package slugs if any changed
+        $serviceData['packages'] = $updatedPackages;
+        DB::table('service_items')->where('id', $service->id)->update([
+            'data' => json_encode($serviceData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function syncPackageToService(object $package): void
+    {
+        $pkgData = json_decode($package->data, true) ?: [];
+        $serviceSlug = $pkgData['service_slug'] ?? $pkgData['service'] ?? null;
+        if (!$serviceSlug) return;
+
+        $service = DB::table('service_items')->where('slug', $serviceSlug)->first();
+        if (!$service) return;
+
+        $serviceData = json_decode($service->data, true) ?: [];
+        $packages = is_array($serviceData['packages'] ?? null) ? $serviceData['packages'] : [];
+
+        $packageEntry = [
+            'slug' => $package->slug,
+            'name' => $package->title,
+            'price' => $pkgData['price'] ?? '',
+            'original_price' => $pkgData['original_price'] ?? '',
+            'discount' => $pkgData['discount'] ?? '',
+            'renewal' => $pkgData['renewal'] ?? '',
+            'target' => $pkgData['target'] ?? '',
+            'popular' => !empty($pkgData['popular']),
+            'badge' => $pkgData['badge'] ?? '',
+            'features' => $pkgData['features'] ?? [],
+        ];
+
+        $found = false;
+        foreach ($packages as $k => $p) {
+            if (($p['slug'] ?? '') === $package->slug) {
+                $packages[$k] = $packageEntry;
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $packages[] = $packageEntry;
+        }
+
+        $serviceData['packages'] = $packages;
+        DB::table('service_items')->where('id', $service->id)->update([
+            'data' => json_encode($serviceData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function removePackageFromService(object $package): void
+    {
+        $pkgData = json_decode($package->data, true) ?: [];
+        $serviceSlug = $pkgData['service_slug'] ?? $pkgData['service'] ?? null;
+        if (!$serviceSlug) return;
+
+        $service = DB::table('service_items')->where('slug', $serviceSlug)->first();
+        if (!$service) return;
+
+        $serviceData = json_decode($service->data, true) ?: [];
+        $packages = is_array($serviceData['packages'] ?? null) ? $serviceData['packages'] : [];
+
+        $packages = array_values(array_filter($packages, function ($p) use ($package) {
+            return ($p['slug'] ?? '') !== $package->slug;
+        }));
+
+        $serviceData['packages'] = $packages;
+        DB::table('service_items')->where('id', $service->id)->update([
+            'data' => json_encode($serviceData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'updated_at' => now(),
+        ]);
     }
 
     private function table(string $module): string

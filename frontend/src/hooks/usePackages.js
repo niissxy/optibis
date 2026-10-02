@@ -33,12 +33,19 @@ export function normalizePackage(item) {
   const slug = pillarSlug(data);
   const pillar = PILLARS[slug];
 
+  const service = data.service || data.service_slug || "";
+  const serviceSlug = data.service_slug || data.service || "";
+  const isServicePackage = Boolean(service || serviceSlug || data.is_service_package);
+
   return {
     ...data,
     slug: item.slug,
     name: item.title || data.name || "",
     pillar: data.pillar_name || pillar.name,
     pillarSlug: slug,
+    service,
+    serviceSlug,
+    isServicePackage,
     heroImage: item.image_url || data.heroImage || data.flyer_image || "",
     heroDesc: data.hero_desc || data.heroDesc || item.summary || data.tagline || "",
     price: data.price || "",

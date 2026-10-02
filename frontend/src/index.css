@@ -153,6 +153,15 @@ html {
 .dark [class~="bg-slate-200"] {
   background-color: #0d2038 !important;
 }
+.dark [class*="hover:bg-gray-50"]:hover,
+.dark [class*="hover:bg-gray-100"]:hover,
+.dark [class*="hover:bg-slate-50"]:hover,
+.dark [class*="hover:bg-slate-100"]:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark [class*="hover:bg-magenta-50"]:hover {
+  background-color: rgba(245, 29, 106, 0.18) !important;
+}
 .dark [class~="text-navy"],
 .dark [class~="text-navy-200"],
 .dark [class~="text-navy-300"],

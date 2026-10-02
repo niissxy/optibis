@@ -4,6 +4,7 @@ import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import PillarServiceCard from "@/components/optibis/PillarServiceCard";
 import { usePackages } from "@/hooks/usePackages";
+import { useServices } from "@/hooks/useServices";
 import PillarPortfolio from "@/components/optibis/PillarPortfolio";
 import PillarPackagesHero from "@/components/optibis/PillarPackagesHero";
 import SectionHeading from "@/components/optibis/SectionHeading";
@@ -44,10 +45,16 @@ export const SERVICES = [
 
 export default function DigitalGrowthTeam() {
   const packages = usePackages();
-  const packageCards = packages.filter((pkg) => pkg.pillarSlug === "digital-growth-team").map((pkg) => ({
-    slug: pkg.slug, name: pkg.name, target: pkg.target, price: pkg.priceShort || pkg.price,
-    features: pkg.included.map((item) => item.title), popular: pkg.popular,
-  }));
+  const { getServicesByPillar } = useServices();
+  const dynamicServices = getServicesByPillar("digital-growth-team");
+  const displayServices = dynamicServices.length > 0 ? dynamicServices : SERVICES;
+
+  const packageCards = packages
+    .filter((pkg) => pkg.pillarSlug === "digital-growth-team" && !pkg.isServicePackage && !pkg.service && !pkg.service_slug)
+    .map((pkg) => ({
+      slug: pkg.slug, name: pkg.name, target: pkg.target, price: pkg.priceShort || pkg.price,
+      features: pkg.included.map((item) => item.title), popular: pkg.popular,
+    }));
   const [hero, setHero] = React.useState({
     badgeText: "PILAR 3 — DIGITAL GROWTH TEAM",
     titlePrefix: "Tingkatkan Pertumbuhan Bisnis dengan ",
@@ -124,7 +131,7 @@ export default function DigitalGrowthTeam() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading eyebrow="Digital Growth Team" title="Layanan Digital Growth Team" description="Enam layanan utama yang dikelola secara berkelanjutan setiap bulan." className="mb-12" />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {SERVICES.map((s, i) => <PillarServiceCard key={s.name} service={s} pillarSlug="digital-growth-team" index={i} color="navy" />)}
+            {displayServices.map((s, i) => <PillarServiceCard key={s.slug || s.name} service={s} pillarSlug="digital-growth-team" index={i} color="navy" />)}
           </div>
         </div>
       </section>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Search, MessageCircle, LayoutDashboard, Moon, Sun, Globe2, PackageOpen, LayoutGrid, Code2 } from "lucide-react";
+import { Menu, X, ChevronDown, Search, MessageCircle, LayoutDashboard, Moon, Sun, Globe2, PackageOpen, LayoutGrid, Code2, Palette, Globe, Users, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSafeNav } from "@/hooks/useSafeNav";
@@ -9,6 +9,7 @@ import MegaMenuDropdown from "@/components/optibis/MegaMenuDropdown";
 import { useTheme } from "next-themes";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useServicePillars } from "@/hooks/useServicePillars";
+import { useServices } from "@/hooks/useServices";
 
 const LAYANAN_CHILDREN = [
   { group: "", items: [
@@ -25,10 +26,9 @@ const LAYANAN_CHILDREN = [
     {
       label: "Software & Sistem Bisnis",
       href: "/layanan",
-      icon: Code2,
       subItems: [
-        { label: "Web Application", href: "/layanan/software/web-application", icon: LayoutGrid },
-        { label: "Custom System", href: "/layanan/software/custom-system", icon: Code2 },
+        { label: "Web Application", href: "/layanan/software/web-application" },
+        { label: "Custom System", href: "/layanan/software/custom-system" },
       ],
     },
     { label: "Digital Growth Team", href: "/digital-growth-team" },
@@ -148,17 +148,61 @@ export default function SiteHeader() {
   const { resolvedTheme, setTheme } = useTheme();
   const { language, setLanguage, t, tr } = useLanguage();
   const { pillars } = useServicePillars();
+  const { getServicesByPillar } = useServices();
+  const [mobileSubExpanded, setMobileSubExpanded] = useState(null);
   const darkNav = resolvedTheme === "dark";
 
-  const dynamicLayananChildren = LAYANAN_CHILDREN;
+  const dynamicLayananChildren = useMemo(() => {
+    const basePillars = [
+      { slug: "digital-asset", title: "Digital Asset", link: "/digital-asset", icon: Palette },
+      { slug: "website", title: "Website", link: "/website", icon: Globe },
+      { slug: "software", title: "Software & Sistem Bisnis", link: "/layanan", icon: Code2 },
+      { slug: "digital-growth-team", title: "Digital Growth Team", link: "/digital-growth-team", icon: Users },
+    ];
+
+    const allPillars = [...basePillars];
+    (pillars || []).forEach((p) => {
+      const pSlug = (p.slug || "").toLowerCase();
+      const existing = allPillars.find((bp) => bp.slug === pSlug);
+      if (!existing) {
+        allPillars.push({
+          slug: p.slug,
+          title: p.title,
+          link: p.link || `/pilar/${p.slug}`,
+          icon: p.icon || Sparkles,
+        });
+      } else if (p.title) {
+        existing.title = p.title;
+        if (p.link) existing.link = p.link;
+      }
+    });
+
+    const items = allPillars.map((p) => {
+      const svcs = getServicesByPillar(p.slug);
+      return {
+        label: p.title,
+        href: p.link || `/pilar/${p.slug}`,
+        subItems: svcs.map((s) => ({
+          label: s.title || s.name,
+          href: `/layanan/${p.slug}/${s.slug}`,
+        })),
+      };
+    });
+
+    return [{ group: "", items }];
+  }, [pillars, getServicesByPillar]);
 
   const navItems = [
     { label: "Beranda", href: "/" },
-    { label: "Layanan", href: "/layanan", megaChildren: dynamicLayananChildren, megaWidth: "w-72", footerAction: { label: "Akses Semua Layanan", href: "/layanan" } },
+    { label: "Layanan", href: "/layanan", megaChildren: dynamicLayananChildren, megaWidth: "w-80", footerAction: { label: "Akses Semua Layanan", href: "/layanan" } },
     { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80", footerAction: { label: "Lihat Semua Paket", href: "/paket" } },
     { label: "Portofolio", href: "/portofolio", megaChildren: PORTOFOLIO_CHILDREN, megaWidth: "w-64" },
     { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-64" },
     { label: "Produk Digital", href: "/insight", megaChildren: PRODUK_DIGITAL_CHILDREN, megaWidth: "w-56" },
+    { label: "Karir", href: "/karir", megaChildren: [{ group: "", items: [
+      { label: "Full Time", href: "/karir?jenis=fulltime" },
+      { label: "PKL / Magang", href: "/karir?jenis=internship" },
+    ] }], megaWidth: "w-56", footerAction: { label: "Lihat Semua Karir", href: "/karir" } },
     { label: "Tentang", href: "/tentang", megaChildren: TENTANG_CHILDREN, megaWidth: "w-72" },
   ];
 
@@ -191,8 +235,8 @@ export default function SiteHeader() {
           ? "bg-white/90 shadow-sm backdrop-blur-xl"
           : "bg-white/70 backdrop-blur-md"
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-18">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center gap-3 lg:h-18 lg:gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0 group">
             <img
@@ -203,7 +247,7 @@ export default function SiteHeader() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1">
             {navItems.map((item) => {
               if (item.megaChildren) {
                 return (
@@ -232,7 +276,7 @@ export default function SiteHeader() {
                 >
                   <button
                     onClick={() => onNavClick(item.href)}
-                    className={`group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                    className={`group relative flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-200 xl:px-3 xl:text-sm ${
                       darkNav ? "text-white/75 hover:bg-magenta/20 hover:text-white" : "text-navy-400 hover:bg-magenta-50/50 hover:text-magenta"
                     }`}
                   >
@@ -267,7 +311,7 @@ export default function SiteHeader() {
           </nav>
 
           {/* Desktop CTAs */}
-          <div className="hidden lg:flex items-center gap-1.5">
+          <div className="hidden shrink-0 items-center gap-1.5 2xl:flex">
             {isAuthed && (
               <Link
                 to="/app"
@@ -389,7 +433,9 @@ export default function SiteHeader() {
 
           {/* Mobile toggle */}
           <button
-            className={`lg:hidden p-2 ${darkNav ? "text-white" : "text-navy"}`}
+            className={`lg:hidden p-2 rounded-lg transition-colors ${
+              darkNav ? "text-white hover:bg-white/10" : "text-navy hover:bg-gray-100"
+            }`}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -405,19 +451,27 @@ export default function SiteHeader() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-t border-gray-100"
+            className={`lg:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto border-t transition-colors ${
+              darkNav
+                ? "bg-[#081425] border-white/10 text-white"
+                : "bg-white border-gray-100 text-navy"
+            }`}
           >
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
-              <div className="mb-3 flex items-center gap-2 border-b border-gray-100 pb-3">
+              <div className={`mb-3 flex items-center gap-2 border-b pb-3 ${darkNav ? "border-white/10" : "border-gray-100"}`}>
                 <button
                   type="button"
                   onClick={toggleNavTheme}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-navy transition-colors hover:border-magenta hover:text-magenta"
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+                    darkNav
+                      ? "border-white/15 text-white/80 hover:border-magenta hover:text-magenta hover:bg-white/5"
+                      : "border-gray-200 text-navy hover:border-magenta hover:text-magenta hover:bg-gray-50"
+                  }`}
                   aria-label={darkNav ? t("lightMode") : t("darkMode")}
                 >
                   {darkNav ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </button>
-                <div className="flex h-10 items-center rounded-full border border-gray-200 p-1">
+                <div className={`flex h-10 items-center rounded-full border p-1 ${darkNav ? "border-white/15 bg-white/5" : "border-gray-200 bg-gray-50/50"}`}>
                   {[
                     { value: "id", label: "ID" },
                     { value: "en", label: "EN" },
@@ -426,7 +480,13 @@ export default function SiteHeader() {
                       key={option.value}
                       type="button"
                       onClick={() => setLanguage(option.value)}
-                      className={`h-8 rounded-full px-3 text-xs font-bold transition-colors ${language === option.value ? "bg-magenta text-white" : "text-navy"}`}
+                      className={`h-8 rounded-full px-3 text-xs font-bold transition-colors ${
+                        language === option.value
+                          ? "bg-magenta text-white shadow-sm"
+                          : darkNav
+                          ? "text-white/70 hover:text-white"
+                          : "text-navy hover:text-navy-900"
+                      }`}
                     >
                       {option.label}
                     </button>
@@ -435,75 +495,149 @@ export default function SiteHeader() {
                 <Link
                   to="/search"
                   onClick={() => setMobileOpen(false)}
-                  className="ml-auto flex h-10 items-center gap-2 rounded-full border border-gray-200 px-4 text-xs font-semibold text-navy transition-colors hover:border-magenta hover:text-magenta"
+                  className={`ml-auto flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold transition-colors ${
+                    darkNav
+                      ? "border-white/15 text-white/80 hover:border-magenta hover:text-magenta hover:bg-white/5"
+                      : "border-gray-200 text-navy hover:border-magenta hover:text-magenta hover:bg-gray-50"
+                  }`}
                 >
                   <Search className="h-4 w-4" /> {tr("Cari Konten")}
                 </Link>
               </div>
-              {navItems.map((item) => (
-                <div key={item.label}>
-                  <button
-                    onClick={() => {
-                      if (item.megaChildren) {
-                        setMobileExpanded(mobileExpanded === item.label ? null : item.label);
-                      } else {
-                        onNavClick(item.href);
-                      }
-                    }}
-                    className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-navy-400 hover:bg-gray-50 rounded-lg"
-                  >
-                    {tr(item.label)}
-                    {item.megaChildren && (
-                      <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpanded === item.label ? "rotate-180" : ""}`} />
-                    )}
-                  </button>
-                  {item.megaChildren && mobileExpanded === item.label && (
-                    <div className="pl-4 space-y-3 pt-1 pb-2">
-                      {item.megaChildren.map((group, idx) => (
-                        <div key={group.group || idx}>
-                          {group.group && <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 px-2">{tr(group.group)}</p>}
-                          {group.items.map((sub) => (
-                            <div key={sub.label}>
-                              <button
-                                key={sub.label}
-                                onClick={() => onNavClick(sub.href)}
-                                className="flex items-center gap-2.5 w-full text-left px-3 py-1.5 text-sm text-navy-300 hover:text-magenta hover:bg-magenta-50 rounded-md transition-colors"
-                              >
-                                {sub.icon && <sub.icon className="w-4 h-4 shrink-0 text-navy-400" />}
-                                <span>{tr(sub.label)}</span>
-                              </button>
-                              {sub.subItems && (
-                                <div className="ml-4 pl-2.5 my-1 border-l-2 border-magenta/40 space-y-0.5">
-                                  {sub.subItems.map((child) => (
-                                    <button
-                                      key={child.label}
-                                      onClick={() => onNavClick(child.href)}
-                                      className="block w-full text-left px-2.5 py-1 text-xs text-navy-200 hover:text-magenta rounded-md transition-colors"
-                                    >
-                                      {tr(child.label)}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                      {item.footerAction && (
-                        <div className="pt-2 px-2">
-                          <button
-                            onClick={() => onNavClick(item.footerAction.href)}
-                            className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-magenta bg-magenta-50 rounded-lg hover:bg-magenta-100 transition-colors"
-                          >
-                            <span>{tr(item.footerAction.label)}</span>
-                            <span className="text-sm">→</span>
-                          </button>
-                        </div>
+              {navItems.map((item) => {
+                const isExpanded = item.megaChildren && mobileExpanded === item.label;
+                return (
+                  <div key={item.label}>
+                    <button
+                      onClick={() => {
+                        if (item.megaChildren) {
+                          setMobileExpanded(mobileExpanded === item.label ? null : item.label);
+                        } else {
+                          onNavClick(item.href);
+                        }
+                      }}
+                      className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                        darkNav
+                          ? isExpanded
+                            ? "bg-white/10 text-white font-semibold shadow-sm"
+                            : "text-white/80 hover:bg-white/10 hover:text-white active:bg-white/15"
+                          : isExpanded
+                            ? "bg-magenta-50 text-magenta font-semibold shadow-sm"
+                            : "text-navy-400 hover:bg-gray-50 hover:text-magenta active:bg-gray-100"
+                      }`}
+                    >
+                      <span>{tr(item.label)}</span>
+                      {item.megaChildren && (
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${
+                            isExpanded ? "rotate-180" : ""
+                          } ${
+                            darkNav
+                              ? isExpanded ? "text-white" : "text-white/60"
+                              : isExpanded ? "text-magenta" : "text-navy-400"
+                          }`}
+                        />
                       )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                    </button>
+                    {isExpanded && (
+                      <div className="pl-4 space-y-3 pt-1 pb-2">
+                        {item.megaChildren.map((group, idx) => (
+                          <div key={group.group || idx}>
+                            {group.group && (
+                              <p className={`text-xs font-semibold uppercase tracking-wider mb-1 px-2 ${
+                                darkNav ? "text-white/45" : "text-muted-foreground"
+                              }`}>
+                                {tr(group.group)}
+                              </p>
+                            )}
+                            {group.items.map((sub) => {
+                              const hasSub = Array.isArray(sub.subItems) && sub.subItems.length > 0;
+                              const isSubOpen = Boolean(mobileSubExpanded === sub.label);
+                              return (
+                                <div key={sub.label} className="rounded-lg">
+                                  <div className="flex items-center justify-between">
+                                    <button
+                                      onClick={() => {
+                                        if (hasSub) {
+                                          setMobileSubExpanded(isSubOpen ? null : sub.label);
+                                        } else {
+                                          onNavClick(sub.href);
+                                        }
+                                      }}
+                                      className={`flex items-center gap-2.5 flex-1 text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                                        darkNav
+                                          ? "text-white/80 hover:text-white hover:bg-white/10 active:bg-white/15"
+                                          : "text-navy-300 hover:text-magenta hover:bg-magenta-50 active:bg-magenta-100/50"
+                                      }`}
+                                    >
+                                      {sub.icon && item.label !== "Layanan" && (
+                                        <sub.icon className={`w-4 h-4 shrink-0 ${darkNav ? "text-white/60" : "text-navy-400"}`} />
+                                      )}
+                                      <span className="font-medium">{tr(sub.label)}</span>
+                                    </button>
+                                    {hasSub && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setMobileSubExpanded(isSubOpen ? null : sub.label)}
+                                        className={`p-2 transition-colors ${
+                                          darkNav ? "text-white/60 hover:text-white" : "text-navy-300 hover:text-magenta"
+                                        }`}
+                                        aria-label={`Toggle ${sub.label}`}
+                                      >
+                                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isSubOpen ? "rotate-180" : ""}`} />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {hasSub && isSubOpen && (
+                                    <div className="ml-4 pl-2.5 my-1 border-l-2 border-magenta/40 space-y-0.5">
+                                      {sub.subItems.map((child) => (
+                                        <button
+                                          key={child.label}
+                                          onClick={() => onNavClick(child.href)}
+                                          className={`block w-full text-left px-2.5 py-1 text-xs rounded-md transition-colors ${
+                                            darkNav
+                                              ? "text-white/70 hover:text-white hover:bg-white/5 active:bg-white/10"
+                                              : "text-navy-200 hover:text-magenta hover:bg-magenta-50/50 active:bg-magenta-100/40"
+                                          }`}
+                                        >
+                                          {tr(child.label)}
+                                        </button>
+                                      ))}
+                                      {sub.href && (
+                                        <button
+                                          onClick={() => onNavClick(sub.href)}
+                                          className="block w-full text-left px-2.5 py-1 text-[11px] font-semibold text-magenta hover:underline mt-1"
+                                        >
+                                          {tr(`Semua Layanan ${sub.label}`)} →
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                        {item.footerAction && (
+                          <div className="pt-2 px-2">
+                            <button
+                              onClick={() => onNavClick(item.footerAction.href)}
+                              className={`flex items-center justify-between w-full px-3 py-2 text-xs font-bold rounded-lg transition-colors ${
+                                darkNav
+                                  ? "text-magenta bg-magenta/15 hover:bg-magenta/25"
+                                  : "text-magenta bg-magenta-50 hover:bg-magenta-100"
+                              }`}
+                            >
+                              <span>{tr(item.footerAction.label)}</span>
+                              <span className="text-sm">→</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <div className="pt-4 flex flex-col gap-3">
                 <a
                   href="https://wa.me/6287772577020"

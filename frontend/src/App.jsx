@@ -27,6 +27,7 @@ import SolutionLibrary from '@/pages/SolutionLibrary';
 import SolutionLibraryDetail from '@/pages/SolutionLibraryDetail';
 import MarketingKit from '@/pages/MarketingKit';
 import Insight from '@/pages/Insight';
+import Career from '@/pages/Career';
 import EvolisOverview from '@/pages/evolis/EvolisOverview';
 import EvolisBusinessDNA from '@/pages/evolis/EvolisBusinessDNA';
 import EvolisProducts from '@/pages/evolis/EvolisProducts';
@@ -119,6 +120,7 @@ const AuthenticatedApp = () => {
       <Route path="/solution-library/:slug" element={<SolutionLibraryDetail />} />
       <Route path="/marketing-kit" element={<MarketingKit />} />
       <Route path="/insight" element={<Insight />} />
+      <Route path="/karir" element={<Career />} />
       <Route path="/content" element={<ViralogPortal />} />
       <Route path="/content/:slug" element={<ViralogDetail />} />
       <Route path="/trending" element={<ViralogPortal />} />

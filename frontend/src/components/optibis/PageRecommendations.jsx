@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Check, Eye, TrendingUp } from "lucide-react";
-import { getPackagesByPillar } from "@/data/packages";
+import { getPackageBySlug, getPackagesByPillar } from "@/data/packages";
 import { formatViews, getContentBySlug, getTrendingContent } from "@/data/viralog";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
@@ -42,9 +42,20 @@ function getPageContext(pathname) {
   const segments = pathname.split("/").filter(Boolean);
   const root = segments[0];
 
-  if (PILLAR_META[root]) return { pillarSlug: root };
-  if ((root === "paket" || root === "layanan") && PILLAR_META[segments[1]]) {
-    return { pillarSlug: segments[1], currentPackageSlug: root === "paket" ? segments[2] : null };
+  if (PILLAR_META[root]) return { pillarSlug: root, pageType: "pillar" };
+  if (root === "paket" && PILLAR_META[segments[1]]) {
+    return {
+      pillarSlug: segments[1],
+      currentPackageSlug: segments[2] || null,
+      pageType: "package",
+    };
+  }
+  if (root === "layanan" && PILLAR_META[segments[1]]) {
+    return {
+      pillarSlug: segments[1],
+      currentServiceSlug: segments[2] || null,
+      pageType: "service",
+    };
   }
   if (root === "marketing-kit") return { pillarSlug: "digital-asset", currentPackageSlug: "page:marketing-kit" };
   if (root === "tools") return { pillarSlug: "website", currentPackageSlug: "page:tools" };
@@ -64,32 +75,111 @@ function getPageContext(pathname) {
 }
 
 function toPackage(item) {
+  if (!item) return null;
+  if (item.name && item.pillarSlug && Array.isArray(item.included)) {
+    return item;
+  }
   const data = item.data || {};
+  const rawPillar = (data.pillar_slug || data.pillar || item.pillarSlug || "website").toLowerCase();
+  const pillarSlug = rawPillar.includes("asset")
+    ? "digital-asset"
+    : rawPillar.includes("growth")
+    ? "digital-growth-team"
+    : "website";
+
+  const includedList = Array.isArray(data.included) && data.included.length > 0
+    ? data.included
+    : Array.isArray(data.features) && data.features.length > 0
+    ? data.features
+        .filter((f) => typeof f === "string" || f.included !== false)
+        .map((f) => ({
+          title: typeof f === "string" ? f : f.text,
+          desc: "",
+        }))
+    : [];
+
   return {
     slug: item.slug,
-    pillarSlug: data.pillar_slug || data.pillar || "website",
-    name: item.title,
-    target: data.target || item.summary || "",
-    price: data.price || "",
-    priceShort: data.price_short || "",
-    included: Array.isArray(data.included) ? data.included : [],
+    pillarSlug,
+    name: item.title || data.name || item.name || item.slug,
+    target: data.target || item.summary || item.target || "",
+    price: data.price || item.price || "",
+    priceShort: data.price_short || data.price || item.priceShort || item.price || "",
+    included: includedList,
   };
 }
 
-function getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages) {
-  const packagesRecommendingCurrent = (managedPackages || [])
-    .filter((item) => Array.isArray(item?.data?.recommended_packages) && item.data.recommended_packages.some((recommendation) => (typeof recommendation === "string" ? recommendation : recommendation?.slug) === currentPackageSlug))
-    .map(toPackage)
-    .filter((pkg) => pkg && pkg.slug);
+function getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSlug, managedPackages) {
+  const targetKeys = [
+    currentPackageSlug,
+    pillarSlug ? `page:${pillarSlug}` : null,
+    pillarSlug ? `pillar:${pillarSlug}` : null,
+    currentServiceSlug,
+    currentServiceSlug ? `service:${currentServiceSlug}` : null,
+    currentServiceSlug ? `page:service:${currentServiceSlug}` : null,
+  ].filter(Boolean);
 
-  if ((currentPackageSlug === "solution-library" || currentPackageSlug?.startsWith("page:")) && packagesRecommendingCurrent.length) {
-    return packagesRecommendingCurrent;
+  const currentPackageItem = (managedPackages || []).find((item) => item.slug === currentPackageSlug);
+  const isConfigured = Boolean(currentPackageItem?.data?.recommendations_configured);
+
+  // Additional / explicitly targeted recommendations from packages configured in admin panel
+  const packagesRecommendingCurrent = (managedPackages || [])
+    .filter((item) => {
+      if (item.slug === currentPackageSlug) return false;
+      const recs = item?.data?.recommended_packages;
+      return (
+        Array.isArray(recs) &&
+        recs.some((r) => {
+          const rSlug = typeof r === "string" ? r : r?.slug;
+          return targetKeys.includes(rSlug);
+        })
+      );
+    })
+    .map(toPackage)
+    .filter(Boolean);
+
+  // CASE 1: Current package has custom recommendations configured from the admin panel
+  if (isConfigured) {
+    const configuredSlugs = Array.isArray(currentPackageItem?.data?.recommended_packages)
+      ? currentPackageItem.data.recommended_packages
+          .map((r) => (typeof r === "string" ? r : r?.slug))
+          .filter((slug) => slug && !slug.startsWith("page:") && !slug.startsWith("service:") && !slug.startsWith("solution-library"))
+      : [];
+
+    const configuredPackages = configuredSlugs
+      .map((slug) => {
+        const foundManaged = (managedPackages || []).find((p) => p.slug === slug);
+        if (foundManaged) return toPackage(foundManaged);
+        const foundStatic = getPackageBySlug(slug);
+        if (foundStatic) return toPackage({ slug, ...foundStatic });
+        return null;
+      })
+      .filter((pkg) => pkg && pkg.slug !== currentPackageSlug);
+
+    const result = [];
+    const seen = new Set();
+
+    for (const pkg of configuredPackages) {
+      if (pkg && !seen.has(pkg.slug)) {
+        result.push(pkg);
+        seen.add(pkg.slug);
+      }
+    }
+
+    // Append any packages targeting this item below
+    for (const pkg of packagesRecommendingCurrent) {
+      if (pkg && !seen.has(pkg.slug)) {
+        result.push(pkg);
+        seen.add(pkg.slug);
+      }
+    }
+
+    return result;
   }
 
-  const automaticPackages = pillarSlug
-    ? (getPackagesByPillar(pillarSlug) || [])
-      .filter((pkg) => pkg && pkg.slug !== currentPackageSlug)
-      .slice(0, 3)
+  // CASE 2: Automatic recommendations (default) -> cap at 3 packages automatically!
+  const defaultStatic = pillarSlug
+    ? (getPackagesByPillar(pillarSlug) || []).filter((pkg) => pkg && pkg.slug !== currentPackageSlug)
     : Object.keys(PILLAR_META)
         .map((slug) => {
           const packages = getPackagesByPillar(slug) || [];
@@ -97,17 +187,55 @@ function getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages)
         })
         .filter((pkg) => pkg && pkg.slug);
 
-  return [...packagesRecommendingCurrent, ...automaticPackages]
-    .filter((pkg) => pkg && pkg.slug)
-    .filter((pkg, index, list) => list.findIndex((candidate) => candidate?.slug === pkg.slug) === index);
+  // Managed packages belonging to this pillar from DB
+  const managedFromPillar = (managedPackages || [])
+    .filter((item) => {
+      const d = item.data || {};
+      const p = (d.pillar_slug || d.pillar || "").toLowerCase();
+      return (
+        item.slug !== currentPackageSlug &&
+        (!pillarSlug || p === pillarSlug.toLowerCase())
+      );
+    })
+    .map(toPackage)
+    .filter(Boolean);
+
+  // Existing/default recommendations in their original order
+  const existingMap = new Map();
+  for (const pkg of [...defaultStatic, ...managedFromPillar]) {
+    if (pkg && pkg.slug && !existingMap.has(pkg.slug)) {
+      existingMap.set(pkg.slug, pkg);
+    }
+  }
+
+  // Automatic recommendations are capped at 3!
+  const automaticPackages = Array.from(existingMap.values()).slice(0, 3);
+
+  // Keep 3 automatic recommendations first, and append any packages explicitly targeted via admin below
+  const combined = [];
+  const seenSlugs = new Set();
+
+  for (const pkg of automaticPackages) {
+    combined.push(pkg);
+    seenSlugs.add(pkg.slug);
+  }
+
+  for (const pkg of packagesRecommendingCurrent) {
+    if (pkg && pkg.slug && !seenSlugs.has(pkg.slug)) {
+      combined.push(pkg);
+      seenSlugs.add(pkg.slug);
+    }
+  }
+
+  return combined;
 }
 
 export default function PageRecommendations() {
   const { pathname } = useLocation();
   const { language, t, tr } = useLanguage();
   const [managedPackages, setManagedPackages] = useState([]);
-  const { pillarSlug, currentPackageSlug } = getPageContext(pathname);
-  const packages = getRecommendedPackages(pillarSlug, currentPackageSlug, managedPackages);
+  const { pillarSlug, currentPackageSlug, currentServiceSlug } = getPageContext(pathname);
+  const packages = getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSlug, managedPackages);
   const trending = getTrendingContent(3);
   const categoryName = (pillarSlug && PILLAR_META[pillarSlug]?.name) || "pilihan Optibis";
   const showTrending = pathname === "/content";

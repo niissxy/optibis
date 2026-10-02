@@ -11,7 +11,7 @@ export const SITE_CONFIG = {
   favicon: "https://optibis.id/assets/optibis-logo.png",
   defaultOgImage: "https://optibis.id/assets/optibis-logo.png",
   description: "Optibis adalah partner terpercaya untuk branding, pembuatan website profesional, dan pertumbuhan digital bisnis di Indonesia.",
-  email: "hello@optibis.id",
+  email: "optibis.id@gmail.com",
   phone: "+6287772577020",
   whatsapp: "https://wa.me/6287772577020",
   address: {

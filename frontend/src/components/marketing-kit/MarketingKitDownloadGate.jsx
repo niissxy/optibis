@@ -14,6 +14,7 @@ export default function MarketingKitDownloadGate({ item, onClose }) {
   const [form, setForm] = useState({ nama: "", email: "", whatsapp: "", perusahaan: "", jabatan: "", kota: "", industri: "", tujuan: "", consent: false });
   const [qualify, setQualify] = useState({ kebutuhan: "", produk: "", dihubungi: "", jadwal: "", budget: "" });
   const [loading, setLoading] = useState(false);
+  const hasFileUrl = Boolean(item?.file_url && item.file_url !== "#");
 
   useEffect(() => {
     if (item) {
@@ -220,15 +221,10 @@ export default function MarketingKitDownloadGate({ item, onClose }) {
                     <CheckCircle2 className="w-7 h-7 text-green-600" />
                   </motion.div>
                   <div>
-                    <h4 className="text-sm font-bold text-navy mb-1">{tr("Download Berhasil!")}</h4>
-                    <p className="text-xs text-muted-foreground">{tr("File siap diunduh. Tim kami akan menghubungi Anda segera untuk konsultasi gratis.")}</p>
+                    <h4 className="text-sm font-bold text-navy mb-1">{tr(hasFileUrl ? "Download Berhasil!" : "Pendaftaran Berhasil!")}</h4>
+                    <p className="text-xs text-muted-foreground">{tr(hasFileUrl ? "File siap diunduh. Tim kami akan menghubungi Anda segera untuk konsultasi gratis." : "File belum tersedia untuk diunduh. Tim kami akan menghubungi Anda segera.")}</p>
                   </div>
-                  <a
-                    href={item.file_url}
-                    className="inline-flex items-center gap-2 bg-magenta hover:bg-magenta-500 text-white rounded-full px-6 h-10 text-sm font-semibold transition-colors"
-                  >
-                    <Download className="w-4 h-4" /> {tr("Unduh File")}
-                  </a>
+                  {hasFileUrl ? <a href={item.file_url} className="inline-flex items-center gap-2 bg-magenta hover:bg-magenta-500 text-white rounded-full px-6 h-10 text-sm font-semibold transition-colors"><Download className="w-4 h-4" /> {tr("Unduh File")}</a> : <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-6 h-10 text-sm font-semibold text-muted-foreground"><Download className="w-4 h-4" /> {tr("File belum tersedia")}</span>}
                   <div className="pt-3 border-t border-gray-50">
                     <p className="text-[11px] font-medium text-navy mb-2">{tr("Rekomendasi untuk Anda:")}</p>
                     <div className="flex flex-wrap gap-1.5 justify-center">

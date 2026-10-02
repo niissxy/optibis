@@ -84,7 +84,7 @@ type Portfolio = {
 }
 type Admin = { id:number; name:string; email:string; created_at:string }
 type User = { id:number; name:string; email:string }
-type ContentType = 'service-pillars'|'services'|'packages'|'marketing-kits'|'insights'|'tools'|'solution-library'|'solution-library-categories'|'solution-library-explore-categories'|'viralog-content'|'viralog-categories'|'viralog-authors'|'viralog-tags'|'viralog-rss-sources'|'viralog-ad-campaigns'|'evolis-business-dna'|'evolis-products'|'evolis-audiences'|'evolis-objectives'|'evolis-campaigns'|'evolis-assets'|'evolis-publishing'|'evolis-leads'|'evolis-pipeline'|'evolis-analytics'|'evolis-recommendations'|'evolis-automations'|'evolis-governance'|'evolis-briefs'|'evolis-settings'|'site-settings'
+type ContentType = 'service-pillars'|'services'|'packages'|'careers'|'marketing-kits'|'insights'|'tools'|'solution-library'|'solution-library-categories'|'solution-library-explore-categories'|'viralog-content'|'viralog-categories'|'viralog-authors'|'viralog-tags'|'viralog-rss-sources'|'viralog-ad-campaigns'|'evolis-business-dna'|'evolis-products'|'evolis-audiences'|'evolis-objectives'|'evolis-campaigns'|'evolis-assets'|'evolis-publishing'|'evolis-leads'|'evolis-pipeline'|'evolis-analytics'|'evolis-recommendations'|'evolis-automations'|'evolis-governance'|'evolis-briefs'|'evolis-settings'|'site-settings'
 type ContentItem = { id:number; type?:ContentType; slug:string; title:string; summary:string|null; image_url:string|null; data:Record<string, unknown>|null; is_published:boolean; updated_at?:string }
 type Section = 'portfolio'|'admins'|'viralog'|'evolis'|'settings'|ContentType
 
@@ -96,6 +96,7 @@ const SERVICE_PILLARS = [
 ]
 
 const PACKAGE_PILLARS = [
+  { id: 'website', name: 'Website' },
   { id: 'digital-asset', name: 'Digital Asset' },
   { id: 'digital-growth-team', name: 'Digital Growth Team' },
   { id: 'khusus', name: 'Paket Khusus' },
@@ -105,6 +106,7 @@ const CONTENT_SECTIONS:{id:ContentType;label:string;icon:typeof Package}[] = [
   {id:'service-pillars',label:'Pilar Layanan',icon:Columns3},
   {id:'services',label:'Layanan',icon:BriefcaseBusiness},
   {id:'packages',label:'Paket',icon:Package},
+  {id:'careers',label:'Karir',icon:BriefcaseBusiness},
   {id:'marketing-kits',label:'Marketing Kit',icon:ImagePlus},
   {id:'insights',label:'Insight',icon:BookOpen},
   {id:'tools',label:'Tools',icon:Wrench},
@@ -115,6 +117,7 @@ const CONTENT_SECTIONS:{id:ContentType;label:string;icon:typeof Package}[] = [
 ]
 const HIDDEN_CONTENT_SECTIONS:ContentType[] = ['solution-library-categories']
 const ADMIN_SETTINGS_ENABLED = false
+const EVOLIS_MENU_ENABLED = false
 const VIRALOG_SECTIONS:{id:ContentType;label:string}[] = [
   {id:'viralog-content',label:'Konten'}, {id:'viralog-categories',label:'Kategori'}, {id:'viralog-authors',label:'Penulis'}, {id:'viralog-tags',label:'Tag'}, {id:'viralog-rss-sources',label:'RSS Source'}, {id:'viralog-ad-campaigns',label:'Ad Placement'},
 ]
@@ -143,7 +146,7 @@ function App() {
   if(!user) return <Login onLogin={(u,t)=>{localStorage.setItem('optibis_token',t);setUser(u)}}/>
   function logout(){ request('/auth/logout',{method:'POST'}).catch(()=>{}).finally(()=>{localStorage.removeItem('optibis_token');setUser(null)}) }
   const sectionLabel = section === 'portfolio' ? 'Portofolio' : section === 'evolis-analytics' ? 'Analytics' : section === 'admins' ? 'Admin' : section === 'service-pillars' ? 'Pilar Layanan' : section === 'services' ? 'Layanan' : section === 'packages' ? 'Paket' : section === 'viralog' ? 'Viralog' : section === 'evolis' ? 'Evolis' : section === 'settings' ? 'Setting Admin' : CONTENT_SECTIONS.find(item=>item.id===section)?.label
-  return <div className="shell"><aside className={menu?'open':''}><div className="side-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="workspace"><span className="avatar">{user.name[0]}</span><div><strong>{user.name}</strong><small>Administrator</small></div><ChevronDown size={15}/></div><nav><p className="nav-label">WORKSPACE</p><button className={section==='portfolio'?'active':''} onClick={()=>{setSection('portfolio');setMenu(false)}}><LayoutDashboard size={18}/> Portofolio</button><button className={section==='evolis-analytics'?'active':''} onClick={()=>{setSection('evolis-analytics');setMenu(false)}}><BarChart3 size={18}/> Analytics</button><p className="nav-label">KONTEN FRONTEND</p>{CONTENT_SECTIONS.filter(item=>!HIDDEN_CONTENT_SECTIONS.includes(item.id)).map(item=>{const Icon=item.icon;return <button key={item.id} className={section===item.id?'active':''} onClick={()=>{setSection(item.id);setMenu(false)}}><Icon size={18}/> {item.label}</button>})}<button className={section==='viralog'?'active':''} onClick={()=>{setSection('viralog');setMenu(false)}}><Newspaper size={18}/> Viralog</button><button className={section==='evolis'?'active':''} onClick={()=>{setSection('evolis');setMenu(false)}}><Layers3 size={18}/> Evolis</button><p className="nav-label">AKSES</p><button className={section==='admins'?'active':''} onClick={()=>{setSection('admins');setMenu(false)}}><Users size={18}/> Admin <span className="nav-dot">•</span></button>{ADMIN_SETTINGS_ENABLED&&<button className={section==='settings'?'active':''} onClick={()=>{setSection('settings');setMenu(false)}}><Users size={18}/> Setting Admin</button>}</nav><div className="sidebar-bottom"><div className="side-tip"><BarChart3 size={18}/><div><b>Keep creating</b><small>Ide bagus selalu layak dibuat.</small></div></div><button className="logout" onClick={logout}><LogOut size={17}/> Keluar</button></div></aside><div className="main"><header><button className="menu-btn" onClick={()=>setMenu(!menu)}><Menu/></button><div className="crumb"><span>Workspace</span><b>/</b><strong>{sectionLabel}</strong></div><div className="header-actions"><span className="status"><i/> Sistem online</span><button className="profile" onClick={logout}><span className="avatar">{user.name[0]}</span><ChevronDown size={15}/></button></div></header>{section==='portfolio'?<PortfolioView/>:section==='admins'?<AdminView currentUser={user}/>:section==='service-pillars'?<ServicePillarsView/>:section==='services'?<ServicesView/>:section==='packages'?<PackagesView/>:section==='viralog'?<ContentHub title="Viralog" sections={VIRALOG_SECTIONS}/>:section==='evolis'?<ContentHub title="Evolis" sections={EVOLIS_SECTIONS}/>:section==='settings'?ADMIN_SETTINGS_ENABLED?<ProfileSettingsView currentUser={user} onUpdated={setUser}/>:null:<ContentView type={section} label={sectionLabel || 'Konten'}/>}</div></div>
+  return <div className="shell"><aside className={menu?'open':''}><div className="side-brand"><div className="brand-mark">O</div><span>optibis</span></div><div className="workspace"><span className="avatar">{user.name[0]}</span><div><strong>{user.name}</strong><small>Administrator</small></div><ChevronDown size={15}/></div><nav><p className="nav-label">WORKSPACE</p><button className={section==='portfolio'?'active':''} onClick={()=>{setSection('portfolio');setMenu(false)}}><LayoutDashboard size={18}/> Portofolio</button><button className={section==='evolis-analytics'?'active':''} onClick={()=>{setSection('evolis-analytics');setMenu(false)}}><BarChart3 size={18}/> Analytics</button><p className="nav-label">KONTEN FRONTEND</p>{CONTENT_SECTIONS.filter(item=>!HIDDEN_CONTENT_SECTIONS.includes(item.id)).map(item=>{const Icon=item.icon;return <button key={item.id} className={section===item.id?'active':''} onClick={()=>{setSection(item.id);setMenu(false)}}><Icon size={18}/> {item.label}</button>})}<button className={section==='viralog'?'active':''} onClick={()=>{setSection('viralog');setMenu(false)}}><Newspaper size={18}/> Viralog</button>{EVOLIS_MENU_ENABLED&&<button className={section==='evolis'?'active':''} onClick={()=>{setSection('evolis');setMenu(false)}}><Layers3 size={18}/> Evolis</button>}<p className="nav-label">AKSES</p><button className={section==='admins'?'active':''} onClick={()=>{setSection('admins');setMenu(false)}}><Users size={18}/> Admin <span className="nav-dot">•</span></button>{ADMIN_SETTINGS_ENABLED&&<button className={section==='settings'?'active':''} onClick={()=>{setSection('settings');setMenu(false)}}><Users size={18}/> Setting Admin</button>}</nav><div className="sidebar-bottom"><div className="side-tip"><BarChart3 size={18}/><div><b>Keep creating</b><small>Ide bagus selalu layak dibuat.</small></div></div><button className="logout" onClick={logout}><LogOut size={17}/> Keluar</button></div></aside><div className="main"><header><button className="menu-btn" onClick={()=>setMenu(!menu)}><Menu/></button><div className="crumb"><span>Workspace</span><b>/</b><strong>{sectionLabel}</strong></div><div className="header-actions"><span className="status"><i/> Sistem online</span><button className="profile" onClick={logout}><span className="avatar">{user.name[0]}</span><ChevronDown size={15}/></button></div></header>{section==='portfolio'?<PortfolioView/>:section==='admins'?<AdminView currentUser={user}/>:section==='service-pillars'?<ServicePillarsView/>:section==='services'?<ServicesView/>:section==='packages'?<PackagesView/>:section==='viralog'?<ContentHub title="Viralog" sections={VIRALOG_SECTIONS}/>:section==='evolis'?<ContentHub title="Evolis" sections={EVOLIS_SECTIONS}/>:section==='settings'?ADMIN_SETTINGS_ENABLED?<ProfileSettingsView currentUser={user} onUpdated={setUser}/>:null:<ContentView type={section} label={sectionLabel || 'Konten'}/>}</div></div>
 }
 
 function PortfolioView() {
@@ -2118,7 +2121,7 @@ function ServiceModal({
     : []
   const initialPillar = existingData.pillar_slug || existingData.pillar || 'website'
 
-  const [activeTab, setActiveTab] = useState<'info' | 'features' | 'highlights' | 'included' | 'faqs'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'features' | 'highlights' | 'included' | 'faqs' | 'packages'>('info')
 
   const [form, setForm] = useState({
     title: item?.title || '',
@@ -2152,6 +2155,13 @@ function ServiceModal({
   const [faqs, setFaqs] = useState<FaqItem[]>(initialFaqs)
   const [newFaqQ, setNewFaqQ] = useState('')
   const [newFaqA, setNewFaqA] = useState('')
+
+  // Packages state ("Paket Layanan")
+  const initialPackages: any[] = Array.isArray(existingData.packages) ? existingData.packages : []
+  const [packages, setPackages] = useState<any[]>(initialPackages)
+  const [packagesTitle, setPackagesTitle] = useState<string>(existingData.packages_title || '')
+  const [packagesSubtitle, setPackagesSubtitle] = useState<string>(existingData.packages_subtitle || '')
+  const [newPkgFeatureText, setNewPkgFeatureText] = useState<{ [pkgIdx: number]: string }>({})
 
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -2285,6 +2295,82 @@ function ServiceModal({
     })
   }
 
+  // Package handlers
+  function addPackage() {
+    const pkgIndex = packages.length + 1
+    const pkgName = `Paket ${pkgIndex}`
+    const svcSlug = form.slug || 'layanan'
+    const newPkg = {
+      slug: `${svcSlug}-paket-${pkgIndex}`,
+      name: pkgName,
+      price: 'Rp 1.000.000',
+      original_price: '',
+      discount: '',
+      renewal: '',
+      target: 'Target pengguna paket',
+      popular: false,
+      badge: '',
+      features: [
+        { text: 'Fitur unggulan 1', included: true },
+        { text: 'Fitur unggulan 2', included: true }
+      ]
+    }
+    setPackages(prev => [...prev, newPkg])
+  }
+  function updatePackage(index: number, field: string, val: any) {
+    setPackages(prev => {
+      const copy = [...prev]
+      const oldName = copy[index].name
+      copy[index] = { ...copy[index], [field]: val }
+      if (field === 'name' && form.slug) {
+        const autoOldSlug = `${form.slug}-${(oldName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+        if (!copy[index].slug || copy[index].slug === autoOldSlug || copy[index].slug.startsWith(`${form.slug}-paket-`)) {
+          const cleanName = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+          if (cleanName) {
+            copy[index].slug = `${form.slug}-${cleanName}`
+          }
+        }
+      }
+      return copy
+    })
+  }
+  function removePackage(index: number) {
+    setPackages(prev => prev.filter((_, i) => i !== index))
+  }
+  function addPackageFeature(pkgIdx: number) {
+    const text = (newPkgFeatureText[pkgIdx] || '').trim()
+    if (!text) return
+    setPackages(prev => {
+      const copy = [...prev]
+      const curFeats = Array.isArray(copy[pkgIdx].features) ? [...copy[pkgIdx].features] : []
+      curFeats.push({ text, included: true })
+      copy[pkgIdx] = { ...copy[pkgIdx], features: curFeats }
+      return copy
+    })
+    setNewPkgFeatureText(prev => ({ ...prev, [pkgIdx]: '' }))
+  }
+  function updatePackageFeature(pkgIdx: number, featIdx: number, field: 'text' | 'included', val: any) {
+    setPackages(prev => {
+      const copy = [...prev]
+      const curFeats = Array.isArray(copy[pkgIdx].features) ? [...copy[pkgIdx].features] : []
+      const cur = curFeats[featIdx]
+      const curObj = typeof cur === 'string' ? { text: cur, included: true } : { ...cur }
+      curObj[field] = val
+      curFeats[featIdx] = curObj
+      copy[pkgIdx] = { ...copy[pkgIdx], features: curFeats }
+      return copy
+    })
+  }
+  function removePackageFeature(pkgIdx: number, featIdx: number) {
+    setPackages(prev => {
+      const copy = [...prev]
+      const curFeats = Array.isArray(copy[pkgIdx].features) ? [...copy[pkgIdx].features] : []
+      curFeats.splice(featIdx, 1)
+      copy[pkgIdx] = { ...copy[pkgIdx], features: curFeats }
+      return copy
+    })
+  }
+
   async function save(e: FormEvent) {
     e.preventDefault()
     setBusy(true)
@@ -2310,7 +2396,10 @@ function ServiceModal({
       features: cleanFeatures,
       highlights: cleanHighlights,
       included: cleanIncluded,
-      faqs: cleanFaqs
+      faqs: cleanFaqs,
+      packages: packages,
+      packages_title: packagesTitle.trim() || undefined,
+      packages_subtitle: packagesSubtitle.trim() || undefined
     }
 
     const payload = {
@@ -2383,6 +2472,13 @@ function ServiceModal({
             onClick={() => setActiveTab('faqs')}
           >
             <HelpCircle size={14} /> FAQ ({faqs.length})
+          </button>
+          <button
+            type="button"
+            className={`modal-tab-btn ${activeTab === 'packages' ? 'active' : ''}`}
+            onClick={() => setActiveTab('packages')}
+          >
+            <Package size={14} /> Paket Layanan ({packages.length})
           </button>
         </div>
 
@@ -2957,6 +3053,291 @@ function ServiceModal({
               </div>
             </div>
           )}
+
+          {/* TAB 6: PAKET LAYANAN */}
+          {activeTab === 'packages' && (
+            <div className="features-section">
+              <div className="features-section-header">
+                <div>
+                  <h3 className="features-section-title">
+                    <Package size={18} className="icon-pink" />
+                    Paket Penawaran Layanan
+                  </h3>
+                  <p className="features-section-sub">
+                    Daftar paket harga (misal: Ekonomis, Standard, Premium) yang tampil di halaman layanan ini.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="primary"
+                  style={{ height: '34px', padding: '0 14px', fontSize: '13px' }}
+                  onClick={addPackage}
+                >
+                  <Plus size={14} /> Tambah Paket
+                </button>
+              </div>
+
+              <div className="form-row" style={{ marginBottom: '16px' }}>
+                <label>
+                  Judul Bagian Paket (Opsional)
+                  <input
+                    type="text"
+                    value={packagesTitle}
+                    onChange={e => setPackagesTitle(e.target.value)}
+                    placeholder={`Default: Pilihan Paket ${form.title || 'Layanan'}`}
+                  />
+                  <small style={{ color: '#64748b', fontSize: '11px', marginTop: '4px' }}>
+                    Otomatis menggunakan "Pilihan Paket {form.title || 'Layanan'}" jika dikosongkan.
+                  </small>
+                </label>
+
+                <label>
+                  Subjudul Bagian Paket (Opsional)
+                  <input
+                    type="text"
+                    value={packagesSubtitle}
+                    onChange={e => setPackagesSubtitle(e.target.value)}
+                    placeholder={`Default: Pilih paket ${(form.title || 'layanan').toLowerCase()} yang sesuai...`}
+                  />
+                  <small style={{ color: '#64748b', fontSize: '11px', marginTop: '4px' }}>
+                    Otomatis menggunakan deskripsi default jika dikosongkan.
+                  </small>
+                </label>
+              </div>
+
+              <div className="feature-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {packages.map((pkg, pIdx) => {
+                  const feats = Array.isArray(pkg.features) ? pkg.features : []
+                  return (
+                    <div
+                      key={pIdx}
+                      style={{
+                        background: '#ffffff',
+                        border: pkg.popular ? '2px solid #e11d48' : '1px solid #e2e8f0',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="feature-index-badge">{pIdx + 1}</span>
+                          <strong style={{ fontSize: '15px' }}>{pkg.name || `Paket #${pIdx + 1}`}</strong>
+                          {pkg.popular && (
+                            <span style={{ background: '#fce7f3', color: '#be185d', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px' }}>
+                              Populer / Terlaris
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="icon-mini-btn delete"
+                          title="Hapus Paket"
+                          onClick={() => removePackage(pIdx)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+
+                      <div className="form-row" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+                        <label>
+                          Nama Paket
+                          <input
+                            type="text"
+                            value={pkg.name || ''}
+                            onChange={e => updatePackage(pIdx, 'name', e.target.value)}
+                            placeholder="Ekonomis / Standard / Premium"
+                            required
+                          />
+                        </label>
+
+                        <label>
+                          Slug Paket (ID Database)
+                          <input
+                            type="text"
+                            value={pkg.slug || ''}
+                            onChange={e => updatePackage(pIdx, 'slug', e.target.value)}
+                            placeholder="seo-basic / landing-page-ekonomis"
+                            required
+                          />
+                        </label>
+
+                        <label>
+                          Harga Paket
+                          <input
+                            type="text"
+                            value={pkg.price || ''}
+                            onChange={e => updatePackage(pIdx, 'price', e.target.value)}
+                            placeholder="Rp 990RB / Rp 1.4JT"
+                            required
+                          />
+                        </label>
+
+                        <label>
+                          Harga Asal / Coret
+                          <input
+                            type="text"
+                            value={pkg.original_price || ''}
+                            onChange={e => updatePackage(pIdx, 'original_price', e.target.value)}
+                            placeholder="Rp 1.4JT / Rp 2.0JT"
+                          />
+                        </label>
+
+                        <label>
+                          Badge Diskon
+                          <input
+                            type="text"
+                            value={pkg.discount || ''}
+                            onChange={e => updatePackage(pIdx, 'discount', e.target.value)}
+                            placeholder="Diskon 410RB"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="form-row" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginTop: '8px' }}>
+                        <label>
+                          Target Pengguna
+                          <input
+                            type="text"
+                            value={pkg.target || ''}
+                            onChange={e => updatePackage(pIdx, 'target', e.target.value)}
+                            placeholder="UMKM & promosi cepat"
+                          />
+                        </label>
+
+                        <label>
+                          Keterangan / Biaya Perpanjang
+                          <input
+                            type="text"
+                            value={pkg.renewal || pkg.price_note || ''}
+                            onChange={e => updatePackage(pIdx, 'renewal', e.target.value)}
+                            placeholder="Perpanjang Rp. 650.000 / Tahun"
+                          />
+                        </label>
+
+                        <label>
+                          Badge Khusus
+                          <input
+                            type="text"
+                            value={pkg.badge || ''}
+                            onChange={e => updatePackage(pIdx, 'badge', e.target.value)}
+                            placeholder="PAKET TERLARIS"
+                          />
+                        </label>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                          <input
+                            type="checkbox"
+                            id={`pkg-pop-${pIdx}`}
+                            checked={!!pkg.popular}
+                            onChange={e => updatePackage(pIdx, 'popular', e.target.checked)}
+                            style={{ width: 'auto', margin: 0 }}
+                          />
+                          <label htmlFor={`pkg-pop-${pIdx}`} style={{ margin: 0, cursor: 'pointer', fontWeight: 600 }}>
+                            Tandai Populer (Border Merah & Badge)
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Package Features List */}
+                      <div style={{ marginTop: '14px', background: '#f8fafc', borderRadius: '8px', padding: '12px' }}>
+                        <strong style={{ fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+                          Fitur / Checklist Paket ({feats.length})
+                        </strong>
+
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                          <input
+                            type="text"
+                            className="feature-add-input"
+                            placeholder="Tambah fitur paket (misal: Include Domain .com, Tanpa Source Code)…"
+                            value={newPkgFeatureText[pIdx] || ''}
+                            onChange={e => setNewPkgFeatureText(prev => ({ ...prev, [pIdx]: e.target.value }))}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addPackageFeature(pIdx)
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="primary"
+                            style={{ height: '36px', padding: '0 12px' }}
+                            onClick={() => addPackageFeature(pIdx)}
+                          >
+                            <Plus size={14} /> Tambah
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {feats.map((feat: any, fIdx: number) => {
+                            const featText = typeof feat === 'string' ? feat : feat.text
+                            const featIncluded = typeof feat === 'string' ? !feat.toLowerCase().startsWith('tanpa ') : feat.included !== false
+                            return (
+                              <div
+                                key={fIdx}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  background: '#fff',
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0'
+                                }}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => updatePackageFeature(pIdx, fIdx, 'included', !featIncluded)}
+                                  title={featIncluded ? 'Termasuk (Centang)' : 'Tidak Termasuk (Silang)'}
+                                  style={{
+                                    border: 'none',
+                                    background: featIncluded ? '#dcfce7' : '#fee2e2',
+                                    color: featIncluded ? '#15803d' : '#b91c1c',
+                                    borderRadius: '4px',
+                                    width: '24px',
+                                    height: '24px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  {featIncluded ? '✓' : '✕'}
+                                </button>
+                                <input
+                                  type="text"
+                                  value={featText}
+                                  onChange={e => updatePackageFeature(pIdx, fIdx, 'text', e.target.value)}
+                                  style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '13px', outline: 'none' }}
+                                />
+                                <button
+                                  type="button"
+                                  className="icon-mini-btn delete"
+                                  onClick={() => removePackageFeature(pIdx, fIdx)}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {!packages.length && (
+                  <div className="feature-empty-state">
+                    <p>Belum ada paket yang dikonfigurasi untuk layanan ini.</p>
+                    <small>Klik "Tambah Paket" untuk membuat paket penawaran seperti di flyer.</small>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {error && <div className="error-box">{error}</div>}
@@ -3129,6 +3510,11 @@ function PackagesView() {
                 <span className={`pillar-tag pillar-${pillar}`}>
                   {pillarObj.name}
                 </span>
+                {(data.service_name || data.service_slug) && (
+                  <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '2px' }}>
+                    {data.service_name || data.service_slug}
+                  </small>
+                )}
                 <div style={{ marginTop: '4px' }}>
                   <span className="package-price-main">{data.price || '—'}</span>
                   {data.price_period && <span className="package-price-note">{data.price_period}</span>}
@@ -3241,15 +3627,26 @@ function PackageModal({
 
   const [activeTab, setActiveTab] = useState<'info' | 'highlights' | 'included' | 'deliverables' | 'faqs' | 'recommendations'>('info')
 
+  const [servicesList, setServicesList] = useState<ContentItem[]>([])
+  useEffect(() => {
+    request('/modules/services').then(items => {
+      if (Array.isArray(items)) setServicesList(items)
+    }).catch(() => {})
+  }, [])
+
   const [form, setForm] = useState({
     title: item?.title || '',
     slug: item?.slug || '',
+    service_slug: existingData.service_slug || existingData.service || '',
     summary: item?.summary || existingData.tagline || '',
     pillar: initialPillar,
     tagline: existingData.tagline || '',
     badge: existingData.badge || '',
     popular: !!existingData.popular,
     price: existingData.price || 'Rp 2.900.000',
+    original_price: existingData.original_price || '',
+    discount: existingData.discount || '',
+    renewal: existingData.renewal || '',
     price_period: existingData.price_period || 'sekali bayar',
     timeline: existingData.timeline || '5-7 hari kerja',
     target: existingData.target || '',
@@ -3280,19 +3677,28 @@ function PackageModal({
   const automaticRecommendations = packages
     .filter(pkg => pkg.slug !== item?.slug && (pkg.data?.pillar_slug || pkg.data?.pillar) === packagePillar)
     .map(pkg => pkg.slug)
-  const initialRecommendations = existingData.recommendations_configured || savedRecommendations.length
-    ? savedRecommendations
-    : automaticRecommendations
+    .slice(0, 3)
+  const initialRecommendations = Array.from(new Set([
+    ...savedRecommendations,
+    ...(existingData.recommendations_configured ? [] : automaticRecommendations)
+  ]))
   const [recommendations, setRecommendations] = useState<string[]>(initialRecommendations)
   const recommendationPageTargets = [
-    { slug: 'page:marketing-kit', label: 'Marketing Kit' },
-    { slug: 'page:tools', label: 'Tools' },
-    { slug: 'solution-library', label: 'Solution Library' },
-    { slug: 'page:content', label: 'Konten' },
-    { slug: 'page:insight', label: 'Insight' },
-    { slug: 'page:portofolio', label: 'Portofolio' },
-    { slug: 'page:tentang', label: 'Tentang' },
-    { slug: 'page:viralog', label: 'Viralog' },
+    { slug: 'page:website', label: 'Halaman Pilar: Website' },
+    { slug: 'page:digital-asset', label: 'Halaman Pilar: Digital Asset' },
+    { slug: 'page:digital-growth-team', label: 'Halaman Pilar: Digital Growth Team' },
+    { slug: 'page:marketing-kit', label: 'Halaman: Marketing Kit' },
+    { slug: 'page:tools', label: 'Halaman: Tools' },
+    { slug: 'solution-library', label: 'Halaman: Solution Library' },
+    { slug: 'page:content', label: 'Halaman: Konten' },
+    { slug: 'page:insight', label: 'Halaman: Insight' },
+    { slug: 'page:portofolio', label: 'Halaman: Portofolio' },
+    { slug: 'page:tentang', label: 'Halaman: Tentang' },
+    { slug: 'page:viralog', label: 'Halaman: Viralog' },
+    ...servicesList.map(s => ({
+      slug: `service:${s.slug}`,
+      label: `Layanan: ${s.title}`
+    }))
   ]
 
   const [error, setError] = useState('')
@@ -3436,9 +3842,13 @@ function PackageModal({
     const cleanDeliverables = deliverables.map(d => d.trim()).filter(Boolean)
     const cleanFaqs = faqs.filter(f => f.q.trim())
 
+    const matchedService = servicesList.find(s => s.slug === form.service_slug)
     const payloadData: Record<string, any> = {
       ...existingData,
       name: form.title,
+      service: form.service_slug || undefined,
+      service_slug: form.service_slug || undefined,
+      service_name: matchedService?.title || undefined,
       pillar: PACKAGE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
       pillar_slug: form.pillar,
       pillar_name: PACKAGE_PILLARS.find(p => p.id === form.pillar)?.name || form.pillar,
@@ -3446,7 +3856,12 @@ function PackageModal({
       badge: form.badge || (form.popular ? 'Paling Populer' : ''),
       popular: form.popular,
       price: form.price,
+      price_short: form.price,
+      original_price: form.original_price,
+      discount: form.discount,
+      renewal: form.renewal,
       price_period: form.price_period,
+      price_note: form.renewal || form.price_period,
       timeline: form.timeline,
       target: form.target,
       heroImage: form.image_url.trim() || null,
@@ -3557,6 +3972,31 @@ function PackageModal({
                 </label>
 
                 <label>
+                  Layanan Terkait (Opsional)
+                  <select
+                    value={form.service_slug}
+                    onChange={e => {
+                      const selSlug = e.target.value
+                      const selSvc = servicesList.find(s => s.slug === selSlug)
+                      const svcPillar = (selSvc?.data?.pillar_slug || selSvc?.data?.pillar || '') as string
+                      setForm(prev => ({
+                        ...prev,
+                        service_slug: selSlug,
+                        pillar: svcPillar || prev.pillar
+                      }))
+                    }}
+                    className="select-input"
+                  >
+                    <option value="">— Umum / Tidak Terikat Layanan —</option>
+                    {servicesList.map(s => (
+                      <option key={s.id} value={s.slug}>
+                        {s.title} ({String(s.data?.pillar_name || s.data?.pillar || 'Layanan')})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
                   Pilar Layanan
                   <select
                     value={form.pillar}
@@ -3600,7 +4040,7 @@ function PackageModal({
                   <input
                     value={form.price}
                     onChange={e => setForm({ ...form, price: e.target.value })}
-                    placeholder="Contoh: Rp 2.900.000 atau Rp 3.500.000"
+                    placeholder="Contoh: Rp 990RB atau Rp 2.900.000"
                     required
                   />
                 </label>
@@ -3612,6 +4052,35 @@ function PackageModal({
                     onChange={e => setForm({ ...form, price_period: e.target.value })}
                     placeholder="sekali bayar / /bulan"
                     required
+                  />
+                </label>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  Harga Asal / Coret (Opsional)
+                  <input
+                    value={form.original_price}
+                    onChange={e => setForm({ ...form, original_price: e.target.value })}
+                    placeholder="Contoh: Rp 1.4JT"
+                  />
+                </label>
+
+                <label>
+                  Diskon / Promo Badge (Opsional)
+                  <input
+                    value={form.discount}
+                    onChange={e => setForm({ ...form, discount: e.target.value })}
+                    placeholder="Contoh: Diskon 410RB"
+                  />
+                </label>
+
+                <label>
+                  Biaya Perpanjang (Opsional)
+                  <input
+                    value={form.renewal}
+                    onChange={e => setForm({ ...form, renewal: e.target.value })}
+                    placeholder="Contoh: Perpanjang Rp. 650.000 / Tahun"
                   />
                 </label>
               </div>
@@ -4213,13 +4682,17 @@ function PackageModal({
                 })}
                 {packages.filter(pkg => pkg.slug !== item?.slug).map(pkg => {
                   const selected = recommendations.includes(pkg.slug)
+                  const rawP = String(pkg.data?.pillar_slug || pkg.data?.pillar || '')
+                  const pName = PACKAGE_PILLARS.find(p => p.id === rawP || p.name.toLowerCase() === rawP.toLowerCase())?.name || rawP || 'Website'
                   return <label className="feature-item-row check" key={pkg.id}>
                     <input
                       type="checkbox"
                       checked={selected}
                       onChange={() => setRecommendations(prev => selected ? prev.filter(slug => slug !== pkg.slug) : [...prev, pkg.slug])}
                     />
-                    <span className="feature-text-input">{pkg.title}</span>
+                    <span className="feature-text-input">
+                      {pkg.title} <span style={{ opacity: 0.6, fontSize: '11px', marginLeft: 6 }}>({String(pName)})</span>
+                    </span>
                   </label>
                 })}
                 {!packages.filter(pkg => pkg.slug !== item?.slug).length && <div className="feature-empty-state"><p>Belum ada paket lain yang tersedia.</p></div>}
@@ -4348,6 +4821,7 @@ function LeadsManagementView(){
 function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:string;item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){
   if(type==='solution-library')return <SolutionLibraryModal item={item} label={label} onClose={onClose} onSaved={onSaved}/>
   if(type==='evolis-leads')return <LeadModal item={item} onClose={onClose} onSaved={onSaved}/>
+  if(type==='careers')return <CareerModal item={item} onClose={onClose} onSaved={onSaved}/>
   const itemData=item?.data||{}
   const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',image_url:item?.image_url||'',is_published:item?.is_published??true})
   const [marketingKit,setMarketingKit]=useState({
@@ -4367,7 +4841,17 @@ function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:
   const publishedField=<label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>setForm({...form,is_published:event.target.checked})}/> Tampilkan di frontend</label>
   const adPlacementEditor=<div className="ad-placement-fields"><div className="form-row"><label>Posisi iklan<select className="select-input" value={adPlacement.placement} onChange={event=>setAdPlacement({...adPlacement,placement:event.target.value,ad_size:adPlacementSize(event.target.value)})}>{AD_PLACEMENTS.map((placement)=><option key={placement.value} value={placement.value}>{placement.label}</option>)}</select></label><label>Ukuran tampil<input value={adPlacement.ad_size} readOnly/></label><label>Prioritas<input type="number" min="0" value={adPlacement.priority} onChange={event=>setAdPlacement({...adPlacement,priority:event.target.value})}/></label></div><label>Link banner<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})} placeholder="https://..."/></label><label>URL tujuan<input type="url" value={adPlacement.destination_url} onChange={event=>setAdPlacement({...adPlacement,destination_url:event.target.value})} placeholder="https://..."/></label><div className="form-row"><label>Label tombol<input value={adPlacement.button_label} onChange={event=>setAdPlacement({...adPlacement,button_label:event.target.value})}/></label><label className="check"><input type="checkbox" checked={adPlacement.new_tab} onChange={event=>setAdPlacement({...adPlacement,new_tab:event.target.checked})}/> Buka di tab baru</label></div><div className="form-row"><label>Mulai tayang<input type="date" value={adPlacement.start_at} onChange={event=>setAdPlacement({...adPlacement,start_at:event.target.value})}/></label><label>Selesai tayang<input type="date" value={adPlacement.end_at} onChange={event=>setAdPlacement({...adPlacement,end_at:event.target.value})}/></label></div></div>
   const additionalFieldsEditor=type==='viralog-content'?<div className="viralog-form-fields"><div className="form-row">{viralogInput('ID konten','id')}{viralogInput('Subjudul','subtitle')}</div><label>Isi artikel<textarea rows={12} value={viralog.body} onChange={event=>setViralog({...viralog,body:event.target.value})}/></label><div className="form-row">{viralogInput('URL thumbnail','thumbnail','url')}{viralogInput('Tipe konten','content_type')}</div><div className="form-row">{viralogInput('Sumber konten','source_type')}{viralogInput('Slug kategori','category_slug')}</div><div className="form-row">{viralogInput('Tag (pisahkan dengan koma)','tags')}{viralogInput('Tanggal publikasi','publish_date','date')}</div><div className="form-row">{viralogInput('Nama penulis','author_name')}{viralogInput('Slug penulis','author_slug')}</div><div className="form-row">{viralogInput('Status','status')}{viralogInput('Waktu baca (menit)','read_time_minutes','number')}</div><div className="form-row">{viralogInput('Tipe CTA','cta_type')}{viralogInput('Label CTA','cta_label')}</div>{viralogInput('URL CTA','cta_url','url')}<div className="form-row"><label className="check"><input type="checkbox" checked={viralog.featured} onChange={event=>setViralog({...viralog,featured:event.target.checked})}/> Konten unggulan</label><label className="check"><input type="checkbox" checked={viralog.sponsored} onChange={event=>setViralog({...viralog,sponsored:event.target.checked})}/> Konten bersponsor</label></div><div className="viralog-metrics"><b>Metrik konten</b><div className="form-row">{viralogInput('Dilihat','views','number')}{viralogInput('Dibagikan','shares','number')}</div><div className="form-row">{viralogInput('Disimpan','bookmarks','number')}{viralogInput('Skor viral','viral_score','number')}</div><div className="form-row">{viralogInput('Skor SEO','seo_score','number')}{viralogInput('Skor engagement','engagement_score','number')}</div><div className="form-row">{viralogInput('Skor kebaruan','freshness_score','number')}{viralogInput('Skor kredibilitas','credibility_score','number')}</div>{viralogInput('Skor monetisasi','monetization_score','number')}</div></div>:type==='viralog-ad-campaigns'?adPlacementEditor:<div className="additional-fields"><div className="additional-fields-head"><b>Data tambahan</b><button type="button" className="secondary" onClick={()=>setAdditionalFields([...additionalFields,{key:'',value:'',isList:false}])}><Plus size={15}/> Tambah field</button></div>{additionalFields.map((field,index)=><div className="additional-field" key={`${field.key}-${index}`}><input aria-label="Nama field" placeholder="Nama field" value={field.key} onChange={event=>updateAdditionalField(index,{key:event.target.value})}/><input aria-label="Nilai field" placeholder={field.isList?'Pisahkan item dengan koma':'Nilai'} value={field.value} onChange={event=>updateAdditionalField(index,{value:event.target.value})}/><label className="check compact"><input type="checkbox" checked={field.isList} onChange={event=>updateAdditionalField(index,{isList:event.target.checked})}/> Daftar</label><button type="button" className="icon-btn" aria-label="Hapus field" onClick={()=>setAdditionalFields(fields=>fields.filter((_,fieldIndex)=>fieldIndex!==index))}><Trash2 size={15}/></button></div>)}{!additionalFields.length&&<p className="subtle">Belum ada data tambahan.</p>}</div>
-  return <div className="modal-backdrop"><form className={`modal ${type==='marketing-kits'||type==='insights'||type==='viralog-ad-campaigns'?'modal-lg':''}`} onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT KONTEN':'KONTEN BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div>{type==='marketing-kits'?<div className="modal-scroll-area">{basicFields}<div className="form-row">{input('Kategori','kategori')}{input('Subkategori','subkategori')}</div><div className="form-row">{input('Format file','format_file')}{input('Ukuran file','ukuran_file')}</div>{input('URL file','file_url','url')}{input('URL thumbnail','thumbnail','url')}{input('URL preview','preview_url','url')}<div className="form-row">{input('Tipe akses','akses_tipe')}{input('Badge','badge')}</div><div className="form-row">{input('Industri','industri')}{input('Bahasa','bahasa')}</div><div className="form-row">{input('Produk terkait','produk_terkait')}{input('Layanan terkait','layanan_terkait')}</div>{input('Total download','download_count','number')}<label className="check"><input type="checkbox" checked={marketingKit.featured} onChange={event=>setMarketingKit({...marketingKit,featured:event.target.checked})}/> Tampilkan sebagai unggulan</label>{publishedField}</div>:type==='insights'?<div className="modal-scroll-area">{basicFields}<div className="form-row"><label>Kategori<input value={insight.category} onChange={event=>setInsight({...insight,category:event.target.value})}/></label><label>Format<input value={insight.format} onChange={event=>setInsight({...insight,format:event.target.value})}/></label></div><label>Harga<input type="number" min="0" value={insight.price} onChange={event=>setInsight({...insight,price:event.target.value})}/></label>{publishedField}</div>:type==='tools'?<>{basicFields}<label>URL Tools<input type="url" value={tool.url} onChange={event=>setTool({...tool,url:event.target.value})}/></label><div className="form-row"><label>Kategori<input value={tool.category} onChange={event=>setTool({...tool,category:event.target.value})}/></label><label>Tagline<input value={tool.tagline} onChange={event=>setTool({...tool,tagline:event.target.value})}/></label></div>{publishedField}</>:type==='solution-library-categories'?<>{basicFields}{publishedField}</>:<div className="modal-scroll-area">{basicFields}{additionalFieldsEditor}{publishedField}</div>}{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':type==='viralog-ad-campaigns'?'Simpan placement':'Simpan konten'}</button></div></form></div>
+  return <div className="modal-backdrop"><form className={`modal ${type==='marketing-kits'||type==='insights'||type==='viralog-ad-campaigns'?'modal-lg':''}`} onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT KONTEN':'KONTEN BARU'}</p><h2>{item?`Edit ${label}`:`Tambah ${label}`}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div>{type==='marketing-kits'?<div className="modal-scroll-area">{basicFields}<div className="form-row">{input('Kategori','kategori')}{input('Subkategori','subkategori')}</div><div className="form-row">{input('Format file','format_file')}{input('Ukuran file','ukuran_file')}</div>{input('URL file (opsional)','file_url','url')}{input('URL thumbnail','thumbnail','url')}{input('URL preview','preview_url','url')}<div className="form-row">{input('Tipe akses','akses_tipe')}{input('Badge','badge')}</div><div className="form-row">{input('Industri','industri')}{input('Bahasa','bahasa')}</div><div className="form-row">{input('Produk terkait','produk_terkait')}{input('Layanan terkait','layanan_terkait')}</div>{input('Total download','download_count','number')}<label className="check"><input type="checkbox" checked={marketingKit.featured} onChange={event=>setMarketingKit({...marketingKit,featured:event.target.checked})}/> Tampilkan sebagai unggulan</label>{publishedField}</div>:type==='insights'?<div className="modal-scroll-area">{basicFields}<div className="form-row"><label>Kategori<input value={insight.category} onChange={event=>setInsight({...insight,category:event.target.value})}/></label><label>Format<input value={insight.format} onChange={event=>setInsight({...insight,format:event.target.value})}/></label></div><label>Harga<input type="number" min="0" value={insight.price} onChange={event=>setInsight({...insight,price:event.target.value})}/></label>{publishedField}</div>:type==='tools'?<>{basicFields}<label>URL Tools<input type="url" value={tool.url} onChange={event=>setTool({...tool,url:event.target.value})}/></label><div className="form-row"><label>Kategori<input value={tool.category} onChange={event=>setTool({...tool,category:event.target.value})}/></label><label>Tagline<input value={tool.tagline} onChange={event=>setTool({...tool,tagline:event.target.value})}/></label></div>{publishedField}</>:type==='solution-library-categories'?<>{basicFields}{publishedField}</>:<div className="modal-scroll-area">{basicFields}{additionalFieldsEditor}{publishedField}</div>}{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':type==='viralog-ad-campaigns'?'Simpan placement':'Simpan konten'}</button></div></form></div>
+}
+
+function CareerModal({item,onClose,onSaved}:{item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){
+  const source=(item?.data||{}) as Record<string,any>
+  const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',employment_type:String(source.employment_type||'fulltime'),form_url:String(source.form_url||''),whatsapp_url:String(source.whatsapp_url||''),application_note:String(source.application_note||''),is_published:item?.is_published??true})
+  const [error,setError]=useState(''),[busy,setBusy]=useState(false)
+  function update<K extends keyof typeof form>(key:K,value:(typeof form)[K]){setForm({...form,[key]:value})}
+  function updateTitle(value:string){const autoSlug=form.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');const slug=value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');setForm({...form,title:value,slug:!item&&(form.slug===''||form.slug===autoSlug)?slug:form.slug})}
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{await request(item?`/modules/careers/${item.id}`:'/modules/careers',{method:item?'PUT':'POST',body:JSON.stringify({title:form.title,slug:form.slug,summary:form.summary,image_url:null,is_published:form.is_published,data:{...source,employment_type:form.employment_type,form_url:form.form_url,whatsapp_url:form.whatsapp_url,application_note:form.application_note}})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  return <div className="modal-backdrop"><form className="modal modal-lg" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT LOWONGAN':'LOWONGAN BARU'}</p><h2>{item?'Edit Posisi Karir':'Tambah Posisi Karir'}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><div className="modal-scroll-area"><div className="form-row"><label>Nama posisi<input value={form.title} onChange={event=>updateTitle(event.target.value)} required placeholder="Contoh: IT Support"/></label><label>Jenis kerja<select className="select-input" value={form.employment_type} onChange={event=>update('employment_type',event.target.value)}><option value="fulltime">Full Time</option><option value="internship">PKL / Magang</option></select></label></div><label>Slug<input value={form.slug} onChange={event=>update('slug',event.target.value)} required placeholder="it-support"/></label><label>Deskripsi singkat<textarea rows={4} value={form.summary} onChange={event=>update('summary',event.target.value)} placeholder="Ringkasan posisi dan kualifikasi."/></label><label>Link formulir pendaftaran<input type="url" value={form.form_url} onChange={event=>update('form_url',event.target.value)} placeholder="https://forms.gle/..."/></label><label>Link WhatsApp pendaftaran<input value={form.whatsapp_url} onChange={event=>update('whatsapp_url',event.target.value)} placeholder="https://wa.me/628... atau nomor WhatsApp"/></label><label>Catatan pendaftaran<textarea rows={3} value={form.application_note} onChange={event=>update('application_note',event.target.value)} placeholder="Contoh: Sertakan CV dan portofolio terbaru."/></label><label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>update('is_published',event.target.checked)}/> Tampilkan di frontend</label></div>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan posisi'}</button></div></form></div>
 }
 
 function SolutionLibraryModal({item,label,onClose,onSaved}:{item:ContentItem|null;label:string;onClose:()=>void;onSaved:()=>void}){

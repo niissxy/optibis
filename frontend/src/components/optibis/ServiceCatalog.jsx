@@ -1,85 +1,81 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Palette, Globe, Users, ArrowRight, FileText, Megaphone, Camera, Mail, Layout, Settings, TrendingUp, Search, BarChart3, ClipboardList, Monitor, ShoppingCart } from "lucide-react";
 import { useSafeNav } from "@/hooks/useSafeNav";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useServices } from "@/hooks/useServices";
 import SectionHeading from "@/components/optibis/SectionHeading";
 
-const PILLAR_ROUTES = {
-  "Digital Asset": "/digital-asset",
-  "Website": "/website",
-  "Digital Growth Team": "/digital-growth-team",
-};
-
-const SERVICES = {
-  "Digital Asset": [
-    { icon: Palette, name: "Brand Identity", desc: "Logo, brand guideline, dan seluruh identitas visual bisnis Anda." },
-    { icon: FileText, name: "Stationery Bisnis", desc: "Kartu nama, kop surat, invoice, dan dokumen bisnis profesional." },
-    { icon: Megaphone, name: "Marketing & Sales Assets", desc: "Company profile, pitch deck, brosur, katalog, dan materi penjualan." },
-    { icon: Camera, name: "Social Media Assets", desc: "Template feed, story, highlight, dan seluruh visual media sosial." },
-    { icon: FileText, name: "Content & Media", desc: "Copywriting, artikel, video promosi, foto produk, dan konten digital." },
-    { icon: Mail, name: "Digital Channel Setup", desc: "Email bisnis, Google Business, WhatsApp Business, dan akun digital." },
-  ],
-  "Website": [
-    { icon: Monitor, name: "Landing Page", desc: "Satu halaman landing page yang fokus konversi — cepat, responsif, dan dioptimasi untuk promosi, event, atau lead generation." },
-    { icon: FileText, name: "Multi Page", desc: "Website company profile multi-halaman dengan CMS sederhana — bisnis Anda tampil profesional dan mudah diperbarui, lengkap dengan gallery, portfolio, dan form kontak." },
-    { icon: ShoppingCart, name: "Toko Online", desc: "Website custom dengan dashboard admin, CRM ringan, lead management, dan booking system — bukan sekadar website, tapi sistem yang bekerja untuk bisnis Anda." },
-  ],
-  "Digital Growth Team": [
-    { icon: ClipboardList, name: "Strategi & Planning", desc: "Digital audit, riset kompetitor, content strategy, dan monthly roadmap." },
-    { icon: Camera, name: "Content Management", desc: "Kalender konten, desain, copywriting, reels, artikel, dan publishing." },
-    { icon: Users, name: "Social Media Management", desc: "Posting, scheduling, monitoring, dan reporting media sosial." },
-    { icon: Globe, name: "Website Management", desc: "Update konten, maintenance, blog, dan monitoring performa website." },
-    { icon: Search, name: "SEO & Visibility", desc: "SEO on-page, local SEO, Google Business, dan monitoring keyword." },
-    { icon: BarChart3, name: "Digital Advertising", desc: "Meta Ads, Google Ads, TikTok Ads, creative, dan campaign reporting." },
-  ],
-};
+const PILLAR_CATEGORIES = [
+  { id: "digital-asset", label: "Digital Asset" },
+  { id: "website", label: "Website" },
+  { id: "digital-growth-team", label: "Growth Team" },
+];
 
 export default function ServiceCatalog() {
   const nav = useSafeNav();
   const { tr } = useLanguage();
+  const { getServicesByPillar } = useServices();
 
   return (
     <section className="py-14 lg:py-20 bg-white" id="layanan">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading eyebrow="Katalog Layanan" title="Semua Kebutuhan Digital Bisnis dalam Satu Tempat" description="Pilih layanan yang sesuai dengan kebutuhan bisnis Anda — dari branding, website, hingga pengelolaan digital bulanan." className="mb-12" />
+        <SectionHeading
+          eyebrow="Katalog Layanan"
+          title="Semua Kebutuhan Digital Bisnis dalam Satu Tempat"
+          description="Pilih layanan yang sesuai dengan kebutuhan bisnis Anda — dari branding, website, hingga pengelolaan digital bulanan."
+          className="mb-12"
+        />
 
-        <Tabs defaultValue="Digital Asset" className="w-full">
+        <Tabs defaultValue="digital-asset" className="w-full">
           <TabsList className="w-full max-w-lg mx-auto grid grid-cols-3 bg-gray-100 p-1 rounded-full mb-10">
-            <TabsTrigger value="Digital Asset" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
-              Digital Asset
-            </TabsTrigger>
-            <TabsTrigger value="Website" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
-              Website
-            </TabsTrigger>
-            <TabsTrigger value="Digital Growth Team" className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white">
-              Growth Team
-            </TabsTrigger>
+            {PILLAR_CATEGORIES.map((cat) => (
+              <TabsTrigger
+                key={cat.id}
+                value={cat.id}
+                className="rounded-full text-xs sm:text-sm font-semibold data-[state=active]:bg-magenta data-[state=active]:text-white"
+              >
+                {tr(cat.label)}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {Object.entries(SERVICES).map(([category, items]) => (
-            <TabsContent key={category} value={category}>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((s, i) => (
-                  <motion.div
-                    key={s.name}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    onClick={() => nav(PILLAR_ROUTES[category])}
-                    className="group bg-white rounded-xl border border-gray-300 p-5 hover:border-magenta/40 hover:shadow-lg hover:shadow-magenta/5 transition-all cursor-pointer"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center mb-3 group-hover:bg-magenta-50 transition-colors">
-                      <s.icon className="w-5 h-5 text-navy-300 group-hover:text-magenta transition-colors" />
-                    </div>
-                    <h3 className="text-sm font-bold text-navy mb-1">{tr(s.name)}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{tr(s.desc)}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-          ))}
+          {PILLAR_CATEGORIES.map((cat) => {
+            const items = getServicesByPillar(cat.id);
+            return (
+              <TabsContent key={cat.id} value={cat.id}>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {items.map((s, i) => {
+                    const Icon = s.icon;
+                    return (
+                      <motion.div
+                        key={s.slug || s.name}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        onClick={() => nav(`/layanan/${cat.id}/${s.slug}`)}
+                        className="group bg-white rounded-xl border border-gray-300 p-5 hover:border-magenta/40 hover:shadow-lg hover:shadow-magenta/5 transition-all cursor-pointer flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center mb-3 group-hover:bg-magenta-50 transition-colors">
+                            {Icon && <Icon className="w-5 h-5 text-navy-300 group-hover:text-magenta transition-colors" />}
+                          </div>
+                          <h3 className="text-sm font-bold text-navy mb-1 group-hover:text-magenta transition-colors">
+                            {tr(s.name)}
+                          </h3>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{tr(s.desc)}</p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-magenta">
+                          <span>{tr("Lihat Detail Layanan")}</span>
+                          <span>→</span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+            );
+          })}
         </Tabs>
       </div>
     </section>

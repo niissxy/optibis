@@ -16,23 +16,12 @@ export default function MegaMenuDropdown({
 }) {
   const isOpen = activeDropdown === label;
   const [openSubMenus, setOpenSubMenus] = useState(() => {
-    const initial = {
+    return {
+      "Digital Asset": false,
       Website: true,
-      "Software & Sistem Bisnis": true,
-      "Digital Asset": true,
-      "Digital Growth Team": true,
-      "Paket Khusus": true,
+      "Software & Sistem Bisnis": false,
+      "Digital Growth Team": false,
     };
-    groups?.forEach((group) => {
-      group.items?.forEach((item) => {
-        if (Array.isArray(item.subItems) && item.subItems.length > 0) {
-          if (initial[item.label] === undefined) {
-            initial[item.label] = true;
-          }
-        }
-      });
-    });
-    return initial;
   });
 
   const toggleSubMenu = (itemLabel) => {
@@ -50,7 +39,7 @@ export default function MegaMenuDropdown({
     >
       <button
         onClick={() => onNavClick(href)}
-        className={`group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+        className={`group relative flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-200 xl:px-3 xl:text-sm ${
           dark ? "text-white/75 hover:bg-magenta/20 hover:text-white" : "text-navy-400 hover:bg-magenta-50/50 hover:text-magenta"
         }`}
       >
@@ -66,7 +55,7 @@ export default function MegaMenuDropdown({
             transition={{ duration: 0.15 }}
             className={`absolute top-full left-0 pt-2 ${width} z-50`}
           >
-            <div className={`${dark ? "bg-navy border-navy-300" : "bg-white border-gray-100"} rounded-xl shadow-xl border p-4 space-y-3`}>
+            <div className={`${dark ? "bg-navy border-navy-300" : "bg-white border-gray-100"} rounded-xl shadow-xl border p-4 space-y-3 max-h-[calc(100vh-5rem)] overflow-y-auto`}>
               {groups.map((group, idx) => (
                 <div key={group.group || idx}>
                   {group.group && <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{translate(group.group)}</p>}
@@ -81,12 +70,14 @@ export default function MegaMenuDropdown({
                           <div key={sub.label} className="rounded-lg">
                             <div className="flex items-center justify-between group/parent rounded-md hover:bg-magenta-50 dark:hover:bg-magenta/20 transition-colors">
                               <button
-                                onClick={() => onNavClick(sub.href)}
+                                onClick={() => {
+                                  toggleSubMenu(sub.label);
+                                }}
                                 className={`flex-1 flex items-center gap-2 text-left px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                                   dark ? "text-white/85 group-hover/parent:text-white" : "text-navy-400 group-hover/parent:text-magenta"
                                 }`}
                               >
-                                {SubIcon && <SubIcon className="w-4 h-4 shrink-0 text-navy-400 dark:text-white/70" />}
+                                {SubIcon && label !== "Layanan" && <SubIcon className="w-4 h-4 shrink-0 text-navy-400 dark:text-white/70" />}
                                 <span>{translate(sub.label)}</span>
                               </button>
                               <button
@@ -116,11 +107,20 @@ export default function MegaMenuDropdown({
                                         dark ? "text-white/70 hover:bg-magenta/20 hover:text-white" : "text-navy-300 hover:text-magenta hover:bg-magenta-50/70"
                                       }`}
                                     >
-                                      {ChildIcon && <ChildIcon className="w-3.5 h-3.5 shrink-0 text-navy-400 dark:text-white/70" />}
+                                      {ChildIcon && label !== "Layanan" && <ChildIcon className="w-3.5 h-3.5 shrink-0 text-navy-400 dark:text-white/70" />}
                                       <span>{translate(child.label)}</span>
                                     </button>
                                   );
                                 })}
+                                {sub.href && (
+                                  <button
+                                    onClick={() => onNavClick(sub.href)}
+                                    className="flex items-center gap-1 w-full text-left px-2.5 py-1 text-[11px] font-semibold text-magenta hover:underline mt-1"
+                                  >
+                                    <span>{translate(`Semua Layanan ${sub.label}`)}</span>
+                                    <ArrowRight className="w-3 h-3 ml-0.5" />
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -136,7 +136,7 @@ export default function MegaMenuDropdown({
                             dark ? "text-white/75 hover:bg-magenta/20 hover:text-white" : "text-navy-400 hover:text-magenta hover:bg-magenta-50"
                           }`}
                         >
-                          {SubIcon && <SubIcon className="w-4 h-4 shrink-0 text-navy-400 dark:text-white/70" />}
+                          {SubIcon && label !== "Layanan" && <SubIcon className="w-4 h-4 shrink-0 text-navy-400 dark:text-white/70" />}
                           <span>{translate(sub.label)}</span>
                         </button>
                       );

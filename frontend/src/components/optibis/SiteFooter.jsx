@@ -70,7 +70,7 @@ export default function SiteFooter() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 shrink-0" />
-                  <a href="mailto:hello@optibis.id" className="hover:text-magenta">hello@optibis.id</a>
+                  <a href="mailto:optibis.id@gmail.com" className="hover:text-magenta">optibis.id@gmail.com</a>
                 </div>
                 <div className="flex items-start gap-2">
                   <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />

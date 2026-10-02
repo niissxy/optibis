@@ -105,7 +105,10 @@ cd frontend
 # Pasang dependensi
 npm install
 
-# Buat file environment lokal (jika diperlukan)
+# Buat file environment (jika diperlukan)
+# Mode Production:
+# VITE_API_URL=https://api.optibis.id/api
+# Mode Lokal (Development):
 # VITE_API_URL=http://localhost:8000/api/v1
 
 # Generate sitemap SEO terbaru
