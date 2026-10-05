@@ -498,7 +498,7 @@ export default function ServiceDetail() {
               transition={{ delay: 0.12 }}
               className={
                 isFlyer
-                  ? "flex items-center justify-center rounded-2xl border border-gray-200 bg-slate-50/70 p-3 sm:p-4 shadow-xl shadow-navy/10 overflow-hidden"
+                  ? "justify-self-center w-fit max-w-full overflow-hidden rounded-2xl shadow-xl shadow-navy/10"
                   : "overflow-hidden rounded-xl border border-gray-100 shadow-xl shadow-navy/10"
               }
             >
@@ -507,7 +507,7 @@ export default function ServiceDetail() {
                 alt={service.name}
                 className={
                   isFlyer
-                    ? "h-auto max-h-[580px] w-auto max-w-full rounded-xl object-contain drop-shadow-lg transition-transform duration-500 hover:scale-[1.02]"
+                    ? "block h-auto max-h-[580px] w-auto max-w-full object-contain transition-transform duration-500 hover:scale-[1.02]"
                     : "aspect-[4/3] w-full object-cover"
                 }
               />
