@@ -133,10 +133,24 @@ async function request(path:string, options:RequestInit = {}) {
   const token = localStorage.getItem('optibis_token'); const headers = new Headers(options.headers)
   if (!(options.body instanceof FormData)) headers.set('Content-Type','application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
-  const response = await fetch(`${API}${path}`, {...options, headers}); const body = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(body.message || Object.values(body.errors || {}).flat().join(' ') || 'Terjadi kesalahan.')
-  return body
+  headers.set('Accept', 'application/json')
+  try {
+    const response = await fetch(`${API}${path}`, {...options, headers})
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      if (response.status === 413) throw new Error('Ukuran file/gambar terlalu besar (melebihi batas maksimal server).')
+      if (response.status === 405) throw new Error('Metode HTTP tidak diizinkan oleh server.')
+      throw new Error(body.message || Object.values(body.errors || {}).flat().join(' ') || `Terjadi kesalahan (HTTP ${response.status}).`)
+    }
+    return body
+  } catch (err) {
+    if (err instanceof TypeError && err.message.toLowerCase().includes('fetch')) {
+      throw new Error('Gagal terhubung ke API (Network / CORS Error). Pastikan origin diizinkan dan server API online.')
+    }
+    throw err
+  }
 }
+
 
 function Login({onLogin}:{onLogin:(user:User, token:string)=>void}) {
   const [email,setEmail] = useState('admin@optibis.test'), [password,setPassword] = useState('password123'), [error,setError] = useState(''), [busy,setBusy] = useState(false)
@@ -658,6 +672,7 @@ function PortfolioModal({
     try {
       await request(item ? `/portfolios/${item.id}` : '/portfolios', {
         method: 'POST',
+        headers: item ? { 'X-HTTP-Method-Override': 'PUT' } : {},
         body: data,
       })
       onSaved()

@@ -71,7 +71,7 @@ class PortfolioController extends Controller
             ->first();
 
         if (!$portfolio) {
-            abort(404, 'Portofolio tidak ditemukan.');
+            return response()->json(['message' => 'Portofolio tidak ditemukan.'], 404);
         }
 
         return response()->json($portfolio);
@@ -84,7 +84,7 @@ class PortfolioController extends Controller
             ->first();
 
         if (!$portfolio) {
-            abort(404, 'Portofolio tidak ditemukan.');
+            return response()->json(['message' => 'Portofolio tidak ditemukan.'], 404);
         }
 
         $this->normalizeInputs($request);
@@ -127,10 +127,18 @@ class PortfolioController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            if ($portfolio->image_path) {
-                Storage::disk('public')->delete($portfolio->image_path);
+            try {
+                if ($portfolio->image_path && Storage::disk('public')->exists($portfolio->image_path)) {
+                    Storage::disk('public')->delete($portfolio->image_path);
+                }
+                $data['image_path'] = $request->file('image')->store('portfolios', 'public');
+            } catch (\Throwable $e) {
+                \Log::error('Portfolio image upload failed: ' . $e->getMessage());
+                return response()->json([
+                    'message' => 'Gagal mengunggah gambar. Pastikan folder storage Laravel memiliki izin tulis (write permission) di server.',
+                    'error' => $e->getMessage()
+                ], 500);
             }
-            $data['image_path'] = $request->file('image')->store('portfolios', 'public');
         }
 
         unset($data['image']);
@@ -164,13 +172,18 @@ class PortfolioController extends Controller
         foreach (['pilar', 'products', 'tags', 'galeri'] as $field) {
             $val = $request->input($field);
             if (is_string($val)) {
-                $decoded = json_decode($val, true);
-                if (is_array($decoded)) {
-                    $request->merge([$field => $decoded]);
+                $trimmed = trim($val);
+                if ($trimmed === '' || $trimmed === 'null') {
+                    $request->merge([$field => []]);
                 } else {
-                    $request->merge([
-                        $field => array_values(array_filter(array_map('trim', explode(',', $val))))
-                    ]);
+                    $decoded = json_decode($trimmed, true);
+                    if (is_array($decoded)) {
+                        $request->merge([$field => $decoded]);
+                    } else {
+                        $request->merge([
+                            $field => array_values(array_filter(array_map('trim', explode(',', $trimmed))))
+                        ]);
+                    }
                 }
             }
         }
@@ -179,9 +192,12 @@ class PortfolioController extends Controller
         foreach (['stats', 'process', 'documents'] as $field) {
             $val = $request->input($field);
             if (is_string($val)) {
-                $decoded = json_decode($val, true);
-                if (is_array($decoded)) {
-                    $request->merge([$field => $decoded]);
+                $trimmed = trim($val);
+                if ($trimmed === '' || $trimmed === 'null') {
+                    $request->merge([$field => []]);
+                } else {
+                    $decoded = json_decode($trimmed, true);
+                    $request->merge([$field => is_array($decoded) ? $decoded : []]);
                 }
             }
         }

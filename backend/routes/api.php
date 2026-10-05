@@ -31,14 +31,15 @@ $registerRoutes = function () {
         Route::get('dashboard-analytics', [DashboardAnalyticsController::class, 'index']);
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::post('portfolios', [PortfolioController::class, 'store']);
-        Route::put('portfolios/{portfolio}', [PortfolioController::class, 'update']);
+        Route::match(['put', 'patch', 'post'], 'portfolios/{portfolio}', [PortfolioController::class, 'update']);
         Route::delete('portfolios/{portfolio}', [PortfolioController::class, 'destroy']);
         Route::apiResource('admins', AdminController::class);
         Route::post('modules/{module}', [ModuleContentController::class, 'store']);
-        Route::put('modules/{module}/{id}', [ModuleContentController::class, 'update']);
+        Route::match(['put', 'patch', 'post'], 'modules/{module}/{id}', [ModuleContentController::class, 'update']);
         Route::delete('modules/{module}/{id}', [ModuleContentController::class, 'destroy']);
     });
 };
+
 
 Route::prefix('v1')->group($registerRoutes);
 $registerRoutes();
