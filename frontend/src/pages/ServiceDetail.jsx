@@ -433,11 +433,7 @@ export default function ServiceDetail() {
     ...(effectiveFaqs && effectiveFaqs.length ? [getFAQSchema(effectiveFaqs)] : []),
   ];
 
-  const isFlyer = Boolean(
-    pillarSlug === "website" ||
-    service.image?.includes("paket-website") ||
-    ["landing-page", "multi-page", "toko-online"].includes(serviceSlug)
-  );
+  const isFlyer = Boolean(service.image);
 
   return (
     <PillarLayout>

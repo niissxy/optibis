@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
+import * as XLSX from 'xlsx'
 import {
   BarChart3,
   BookOpen,
@@ -11,6 +12,7 @@ import {
   Columns3,
   ExternalLink,
   FileCheck,
+  FileUp,
   FileText,
   FolderPlus,
   HelpCircle,
@@ -38,6 +40,7 @@ import {
 import './App.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+const TOOLS_EXCEL_IMPORT_ENABLED = false
 const AD_PLACEMENTS = [
   { value: 'top_leaderboard', label: 'Halaman konten — atas', size: '728 × 90' },
   { value: 'section_separator', label: 'Halaman konten — antar bagian', size: '728 × 90' },
@@ -2134,6 +2137,7 @@ function ServiceModal({
     price_note: existingData.price_note || existingData.price_period || '',
     target: existingData.target || '',
     timeline: existingData.timeline || '',
+    display_order: String(existingData.display_order ?? ''),
     is_published: item?.is_published ?? true
   })
 
@@ -2394,6 +2398,7 @@ function ServiceModal({
       price_note: form.price_note.trim(),
       target: form.target.trim(),
       timeline: form.timeline.trim(),
+      display_order: form.display_order === '' ? null : Number(form.display_order),
       features: cleanFeatures,
       highlights: cleanHighlights,
       included: cleanIncluded,
@@ -2536,6 +2541,17 @@ function ServiceModal({
                   />
                 </label>
               </div>
+
+              <label>
+                Urutan Tampil
+                <input
+                  type="number"
+                  min="1"
+                  value={form.display_order}
+                  onChange={e => setForm({ ...form, display_order: e.target.value })}
+                  placeholder="Contoh: 1"
+                />
+              </label>
 
               {form.image_url && (
                 <div className="flyer-preview-card">
@@ -3654,6 +3670,7 @@ function PackageModal({
     image_url: item?.image_url || existingData.heroImage || existingData.flyer_image || '',
     cta_text: existingData.cta_text || 'Pesan Paket Ini',
     consultation_text: existingData.consultation_text || 'Konsultasi Dulu',
+    display_order: String(existingData.display_order ?? ''),
     is_published: item?.is_published ?? true
   })
 
@@ -3874,7 +3891,8 @@ function PackageModal({
       recommended_packages: recommendations,
       recommendations_configured: true,
       cta_text: form.cta_text,
-      consultation_text: form.consultation_text
+      consultation_text: form.consultation_text,
+      display_order: form.display_order === '' ? null : Number(form.display_order)
     }
 
     const payload = {
@@ -4013,6 +4031,17 @@ function PackageModal({
                   </select>
                 </label>
               </div>
+
+              <label>
+                Urutan Tampil
+                <input
+                  type="number"
+                  min="1"
+                  value={form.display_order}
+                  onChange={e => setForm({ ...form, display_order: e.target.value })}
+                  placeholder="Contoh: 1"
+                />
+              </label>
 
               <div className="form-row">
                 <label>
@@ -4764,23 +4793,107 @@ export function LegacyDashboardAnalyticsView(){
 }
 
 function ContentView({type,label}:{type:ContentType;label:string}){
-  if (type === 'service-pillars') {
-    return <ServicePillarsView />
-  }
-  if (type === 'services') {
-    return <ServicesView />
-  }
-  if (type === 'packages') {
-    return <PackagesView />
-  }
-  if (type === 'evolis-analytics') {
-    return <DashboardAnalyticsView />
-  }
-  if (type === 'evolis-leads') {
-    return <LeadsManagementView />
+  if (type === 'service-pillars') return <ServicePillarsView />
+  if (type === 'services') return <ServicesView />
+  if (type === 'packages') return <PackagesView />
+  if (type === 'evolis-analytics') return <DashboardAnalyticsView />
+  if (type === 'evolis-leads') return <LeadsManagementView />
+
+  const [items,setItems]=useState<ContentItem[]>([])
+  const [query,setQuery]=useState('')
+  const [editing,setEditing]=useState<ContentItem|null|false>(false)
+  const [refresh,setRefresh]=useState(0)
+  const [error,setError]=useState('')
+  const [importMessage,setImportMessage]=useState('')
+  const [importing,setImporting]=useState(false)
+  const [managingCategories,setManagingCategories]=useState(false)
+  const [managingExploreCategories,setManagingExploreCategories]=useState(false)
+  const importInputRef=useRef<HTMLInputElement>(null)
+
+  useEffect(()=>{request(`/modules/${type}`).then(setItems).catch(e=>setError(e.message))},[type,refresh])
+
+  const filtered=items.filter(item=>`${item.title} ${item.slug} ${item.summary||''}`.toLowerCase().includes(query.toLowerCase()))
+
+  async function remove(id:number){
+    if(!confirm(`Hapus ${label.toLowerCase()} ini?`))return
+    try{await request(`/modules/${type}/${id}`,{method:'DELETE'});setRefresh(value=>value+1)}catch(err){setError((err as Error).message)}
   }
 
-  const [items,setItems]=useState<ContentItem[]>([]),[query,setQuery]=useState(''),[editing,setEditing]=useState<ContentItem|null|false>(false),[refresh,setRefresh]=useState(0),[error,setError]=useState(''),[managingCategories,setManagingCategories]=useState(false),[managingExploreCategories,setManagingExploreCategories]=useState(false);useEffect(()=>{request(`/modules/${type}`).then(setItems).catch(e=>setError(e.message))},[type,refresh]);const filtered=items.filter(item=>`${item.title} ${item.slug} ${item.summary||''}`.toLowerCase().includes(query.toLowerCase()));async function remove(id:number){if(!confirm(`Hapus ${label.toLowerCase()} ini?`))return;try{await request(`/modules/${type}/${id}`,{method:'DELETE'});setRefresh(value=>value+1)}catch(err){setError((err as Error).message)}}return <section className="content"><div className="page-title"><div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>{label}</h1><p className="subtle">Kelola konten {label.toLowerCase()} yang ditampilkan di frontend.</p></div><div className="page-title-actions">{type==='solution-library'&&<><button className="secondary" onClick={()=>setManagingCategories(true)}><Columns3 size={17}/> Atur kategori filter</button><button className="secondary" onClick={()=>setManagingExploreCategories(true)}><Columns3 size={17}/> Atur Jelajahi Topik</button></>}<button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah {label}</button></div></div><div className="toolbar"><div className="search"><Search size={17}/><input placeholder={`Cari ${label.toLowerCase()}…`} value={query} onChange={event=>setQuery(event.target.value)}/></div><span className="result-count">{filtered.length} konten</span></div>{error&&<div className="error-box">{error}</div>}<div className="admin-table"><div className="table-head"><span>Konten</span><span>Slug</span><span>Status</span><span></span></div>{filtered.map(item=><div className="table-row" key={item.id}><div className="person">{item.image_url?<img className="avatar" src={item.image_url} alt=""/>:<span className="avatar">{item.title[0]}</span>}<div><b>{item.title}</b>{item.summary&&<small>{item.summary}</small>}</div></div><span>{item.slug}</span><span>{item.is_published?'Published':'Draft'}</span><div className="row-actions"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div>)}{!filtered.length&&<div className="empty">Belum ada konten {label.toLowerCase()}.</div>}</div>{editing!==false&&<ContentModal type={type} label={label} item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(value=>value+1)}}/>}{managingCategories&&<SolutionLibraryCategoryManager onClose={()=>setManagingCategories(false)} onChanged={()=>setRefresh(value=>value+1)}/>} {managingExploreCategories&&<SolutionLibraryExploreCategoryManager onClose={()=>setManagingExploreCategories(false)}/>}</section>}
+  async function importTools(event:ChangeEvent<HTMLInputElement>){
+    const file=event.target.files?.[0]
+    event.target.value=''
+    if(!file)return
+
+    setError('')
+    setImportMessage('')
+    setImporting(true)
+    try{
+      const workbook=XLSX.read(await file.arrayBuffer(),{type:'array'})
+      const sheet=workbook.Sheets[workbook.SheetNames[0]]
+      const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(sheet,{defval:''})
+      const processedSlugs=new Set<string>()
+      const existingBySlug=new Map(items.map(item=>[item.slug,item]))
+      let created=0, updated=0, skipped=0
+
+      for(const row of rows){
+        const values=Object.fromEntries(Object.entries(row).map(([key,value])=>[key.toLowerCase().replace(/[^a-z0-9]+/g,''),String(value??'').trim()])) as Record<string,string>
+        const value=(...keys:string[])=>keys.map(key=>values[key]).find(Boolean)||''
+        const title=value('title','judul','name','nama')
+        if(!title){skipped++;continue}
+
+        const slug=(value('slug')||title).toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')
+        if(!slug||processedSlugs.has(slug)){skipped++;continue}
+        processedSlugs.add(slug)
+
+        const order=value('displayorder','urutan','order')
+        const published=value('ispublished','published','status').toLowerCase()
+        const isPublished=!['0','false','draft','no','tidak'].includes(published)
+        const body={
+          title,
+          slug,
+          summary:value('summary','ringkasan','description','deskripsi')||null,
+          image_url:value('imageurl','image','gambar','thumbnail','thumbnailurl')||null,
+          is_published:isPublished,
+          data:{
+            url:value('url','toolurl','link'),
+            category:value('category','kategori'),
+            tagline:value('tagline','tagline'),
+            display_order:order===''?null:Number(order)
+          }
+        }
+        const existing=existingBySlug.get(slug)
+        await request(existing?`/modules/tools/${existing.id}`:'/modules/tools',{
+          method:existing?'PUT':'POST',
+          body:JSON.stringify(body)
+        })
+        if(existing)updated++;else created++
+      }
+
+      setImportMessage(`Impor selesai: ${created} ditambahkan, ${updated} diperbarui${skipped?`, ${skipped} dilewati`:''}.`)
+      setRefresh(value=>value+1)
+    }catch(err){setError((err as Error).message||'File Excel tidak dapat diimpor.')}
+    finally{setImporting(false)}
+  }
+
+  return <section className="content">
+    <div className="page-title">
+      <div><p className="eyebrow pink">CONTENT LIBRARY</p><h1>{label}</h1><p className="subtle">Kelola konten {label.toLowerCase()} yang ditampilkan di frontend.</p></div>
+      <div className="page-title-actions">
+        {type==='solution-library'&&<><button className="secondary" onClick={()=>setManagingCategories(true)}><Columns3 size={17}/> Atur kategori filter</button><button className="secondary" onClick={()=>setManagingExploreCategories(true)}><Columns3 size={17}/> Atur Jelajahi Topik</button></>}
+        {type==='tools'&&TOOLS_EXCEL_IMPORT_ENABLED&&<><input ref={importInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importTools} hidden/><button className="secondary" type="button" onClick={()=>importInputRef.current?.click()} disabled={importing}><FileUp size={17}/> {importing?'Mengimpor…':'Import Excel'}</button></>}
+        <button className="primary" onClick={()=>setEditing(null)}><Plus size={18}/> Tambah {label}</button>
+      </div>
+    </div>
+    <div className="toolbar"><div className="search"><Search size={17}/><input placeholder={`Cari ${label.toLowerCase()}…`} value={query} onChange={event=>setQuery(event.target.value)}/></div><span className="result-count">{filtered.length} konten</span></div>
+    {type==='tools'&&TOOLS_EXCEL_IMPORT_ENABLED&&<p className="subtle">Kolom Excel: Judul, Slug, Ringkasan, URL, Kategori, Tagline, URL Gambar, Urutan, Status.</p>}
+    {error&&<div className="error-box">{error}</div>}
+    {importMessage&&<div className="success-box">{importMessage}</div>}
+    <div className="admin-table"><div className="table-head"><span>Konten</span><span>Slug</span><span>Status</span><span></span></div>{filtered.map(item=><div className="table-row" key={item.id}><div className="person">{item.image_url?<img className="avatar" src={item.image_url} alt=""/>:<span className="avatar">{item.title[0]}</span>}<div><b>{item.title}</b>{item.summary&&<small>{item.summary}</small>}</div></div><span>{item.slug}</span><span>{item.is_published?'Published':'Draft'}</span><div className="row-actions"><button onClick={()=>setEditing(item)}><Pencil size={16}/></button><button onClick={()=>remove(item.id)}><Trash2 size={16}/></button></div></div>)}{!filtered.length&&<div className="empty">Belum ada konten {label.toLowerCase()}.</div>}</div>
+    {editing!==false&&<ContentModal type={type} label={label} item={editing} onClose={()=>setEditing(false)} onSaved={()=>{setEditing(false);setRefresh(value=>value+1)}}/>}
+    {managingCategories&&<SolutionLibraryCategoryManager onClose={()=>setManagingCategories(false)} onChanged={()=>setRefresh(value=>value+1)}/>}
+    {managingExploreCategories&&<SolutionLibraryExploreCategoryManager onClose={()=>setManagingExploreCategories(false)}/>}
+  </section>
+}
 
 function SolutionLibraryExploreCategoryManager({onClose}:{onClose:()=>void}){
   const [items,setItems]=useState<ContentItem[]>([]),[title,setTitle]=useState(''),[icon,setIcon]=useState('📁'),[editing,setEditing]=useState<ContentItem|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false)
@@ -4824,7 +4937,7 @@ function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:
   if(type==='evolis-leads')return <LeadModal item={item} onClose={onClose} onSaved={onSaved}/>
   if(type==='careers')return <CareerModal item={item} onClose={onClose} onSaved={onSaved}/>
   const itemData=item?.data||{}
-  const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',image_url:item?.image_url||'',is_published:item?.is_published??true})
+  const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',image_url:item?.image_url||'',display_order:String(itemData.display_order??''),is_published:item?.is_published??true})
   const [marketingKit,setMarketingKit]=useState({
     kategori:String(itemData.kategori||''),subkategori:String(itemData.subkategori||''),format_file:String(itemData.format_file||''),ukuran_file:String(itemData.ukuran_file||''),file_url:String(itemData.file_url||''),thumbnail:String(itemData.thumbnail||''),preview_url:String(itemData.preview_url||''),akses_tipe:String(itemData.akses_tipe||''),badge:String(itemData.badge||''),industri:String(itemData.industri||''),produk_terkait:String(itemData.produk_terkait||''),layanan_terkait:String(itemData.layanan_terkait||''),bahasa:String(itemData.bahasa||''),download_count:String(itemData.download_count??''),featured:Boolean(itemData.featured)
   })
@@ -4835,10 +4948,10 @@ function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:
   const [additionalFields,setAdditionalFields]=useState(()=>Object.entries(itemData).map(([key,value])=>({key,value:Array.isArray(value)?value.join(', '):String(value??''),isList:Array.isArray(value)})))
   const [error,setError]=useState(''),[busy,setBusy]=useState(false)
   const updateAdditionalField=(index:number,patch:Partial<{key:string;value:string;isList:boolean}>)=>setAdditionalFields(fields=>fields.map((field,fieldIndex)=>fieldIndex===index?{...field,...patch}:field))
-  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{let data:Record<string,unknown>={};if(type==='marketing-kits'){data={...itemData,...marketingKit,slug:form.slug,download_count:marketingKit.download_count===''?0:Number(marketingKit.download_count)}}else if(type==='insights'){data={...itemData,...insight,id:form.slug,title:form.title,desc:form.summary,image:form.image_url,price:insight.price===''?0:Number(insight.price)}}else if(type==='tools'){data={...itemData,...tool,name:form.title,description:form.summary}}else if(type==='viralog-content'){const numberKeys=['read_time_minutes','views','shares','bookmarks','viral_score','seo_score','engagement_score','freshness_score','credibility_score','monetization_score'] as const;data={...itemData,...viralog,id:viralog.id||form.slug,thumbnail:viralog.thumbnail||form.image_url,tags:viralog.tags.split(',').map(tag=>tag.trim()).filter(Boolean),...Object.fromEntries(numberKeys.map(key=>[key,viralog[key]===''?0:Number(viralog[key])]))}}else if(type==='viralog-ad-campaigns'){data={...itemData,...adPlacement,priority:adPlacement.priority===''?0:Number(adPlacement.priority)}}else{data=Object.fromEntries(additionalFields.filter(field=>field.key.trim()).map(field=>[field.key.trim(),field.isList?field.value.split(',').map(value=>value.trim()).filter(Boolean):field.value]));}await request(item?`/modules/${type}/${item.id}`:`/modules/${type}`,{method:item?'PUT':'POST',body:JSON.stringify({...form,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{let data:Record<string,unknown>={};if(type==='marketing-kits'){data={...itemData,...marketingKit,slug:form.slug,download_count:marketingKit.download_count===''?0:Number(marketingKit.download_count)}}else if(type==='insights'){data={...itemData,...insight,id:form.slug,title:form.title,desc:form.summary,image:form.image_url,price:insight.price===''?0:Number(insight.price)}}else if(type==='tools'){data={...itemData,...tool,name:form.title,description:form.summary}}else if(type==='viralog-content'){const numberKeys=['read_time_minutes','views','shares','bookmarks','viral_score','seo_score','engagement_score','freshness_score','credibility_score','monetization_score'] as const;data={...itemData,...viralog,id:viralog.id||form.slug,thumbnail:viralog.thumbnail||form.image_url,tags:viralog.tags.split(',').map(tag=>tag.trim()).filter(Boolean),...Object.fromEntries(numberKeys.map(key=>[key,viralog[key]===''?0:Number(viralog[key])]))}}else if(type==='viralog-ad-campaigns'){data={...itemData,...adPlacement,priority:adPlacement.priority===''?0:Number(adPlacement.priority)}}else{data=Object.fromEntries(additionalFields.filter(field=>field.key.trim()).map(field=>[field.key.trim(),field.isList?field.value.split(',').map(value=>value.trim()).filter(Boolean):field.value]));}data={...data,display_order:form.display_order===''?null:Number(form.display_order)};await request(item?`/modules/${type}/${item.id}`:`/modules/${type}`,{method:item?'PUT':'POST',body:JSON.stringify({...form,data})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
   const input=(label:string,key:Exclude<keyof typeof marketingKit,'featured'>,type='text')=><label>{label}<input type={type} value={marketingKit[key]} onChange={event=>setMarketingKit({...marketingKit,[key]:event.target.value})}/></label>
   const viralogInput=(label:string,key:Exclude<keyof typeof viralog,'featured'|'sponsored'>,type='text')=><label>{label}<input type={type} value={viralog[key]} onChange={event=>setViralog({...viralog,[key]:event.target.value})}/></label>
-  const basicFields=<><label>Judul<input value={form.title} onChange={event=>setForm({...form,title:event.target.value})} required/></label><label>Slug<input value={form.slug} onChange={event=>setForm({...form,slug:event.target.value})} required/></label><label>Ringkasan<textarea rows={3} value={form.summary} onChange={event=>setForm({...form,summary:event.target.value})}/></label>{type!=='viralog-ad-campaigns'&&<label>URL gambar<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})}/></label>}</>
+  const basicFields=<><label>Judul<input value={form.title} onChange={event=>setForm({...form,title:event.target.value})} required/></label><label>Slug<input value={form.slug} onChange={event=>setForm({...form,slug:event.target.value})} required/></label><label>Urutan tampil<input type="number" min="1" value={form.display_order} onChange={event=>setForm({...form,display_order:event.target.value})} placeholder="Contoh: 1"/></label><label>Ringkasan<textarea rows={3} value={form.summary} onChange={event=>setForm({...form,summary:event.target.value})}/></label>{type!=='viralog-ad-campaigns'&&<label>URL gambar<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})}/></label>}</>
   const publishedField=<label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>setForm({...form,is_published:event.target.checked})}/> Tampilkan di frontend</label>
   const adPlacementEditor=<div className="ad-placement-fields"><div className="form-row"><label>Posisi iklan<select className="select-input" value={adPlacement.placement} onChange={event=>setAdPlacement({...adPlacement,placement:event.target.value,ad_size:adPlacementSize(event.target.value)})}>{AD_PLACEMENTS.map((placement)=><option key={placement.value} value={placement.value}>{placement.label}</option>)}</select></label><label>Ukuran tampil<input value={adPlacement.ad_size} readOnly/></label><label>Prioritas<input type="number" min="0" value={adPlacement.priority} onChange={event=>setAdPlacement({...adPlacement,priority:event.target.value})}/></label></div><label>Link banner<input type="url" value={form.image_url} onChange={event=>setForm({...form,image_url:event.target.value})} placeholder="https://..."/></label><label>URL tujuan<input type="url" value={adPlacement.destination_url} onChange={event=>setAdPlacement({...adPlacement,destination_url:event.target.value})} placeholder="https://..."/></label><div className="form-row"><label>Label tombol<input value={adPlacement.button_label} onChange={event=>setAdPlacement({...adPlacement,button_label:event.target.value})}/></label><label className="check"><input type="checkbox" checked={adPlacement.new_tab} onChange={event=>setAdPlacement({...adPlacement,new_tab:event.target.checked})}/> Buka di tab baru</label></div><div className="form-row"><label>Mulai tayang<input type="date" value={adPlacement.start_at} onChange={event=>setAdPlacement({...adPlacement,start_at:event.target.value})}/></label><label>Selesai tayang<input type="date" value={adPlacement.end_at} onChange={event=>setAdPlacement({...adPlacement,end_at:event.target.value})}/></label></div></div>
   const additionalFieldsEditor=type==='viralog-content'?<div className="viralog-form-fields"><div className="form-row">{viralogInput('ID konten','id')}{viralogInput('Subjudul','subtitle')}</div><label>Isi artikel<textarea rows={12} value={viralog.body} onChange={event=>setViralog({...viralog,body:event.target.value})}/></label><div className="form-row">{viralogInput('URL thumbnail','thumbnail','url')}{viralogInput('Tipe konten','content_type')}</div><div className="form-row">{viralogInput('Sumber konten','source_type')}{viralogInput('Slug kategori','category_slug')}</div><div className="form-row">{viralogInput('Tag (pisahkan dengan koma)','tags')}{viralogInput('Tanggal publikasi','publish_date','date')}</div><div className="form-row">{viralogInput('Nama penulis','author_name')}{viralogInput('Slug penulis','author_slug')}</div><div className="form-row">{viralogInput('Status','status')}{viralogInput('Waktu baca (menit)','read_time_minutes','number')}</div><div className="form-row">{viralogInput('Tipe CTA','cta_type')}{viralogInput('Label CTA','cta_label')}</div>{viralogInput('URL CTA','cta_url','url')}<div className="form-row"><label className="check"><input type="checkbox" checked={viralog.featured} onChange={event=>setViralog({...viralog,featured:event.target.checked})}/> Konten unggulan</label><label className="check"><input type="checkbox" checked={viralog.sponsored} onChange={event=>setViralog({...viralog,sponsored:event.target.checked})}/> Konten bersponsor</label></div><div className="viralog-metrics"><b>Metrik konten</b><div className="form-row">{viralogInput('Dilihat','views','number')}{viralogInput('Dibagikan','shares','number')}</div><div className="form-row">{viralogInput('Disimpan','bookmarks','number')}{viralogInput('Skor viral','viral_score','number')}</div><div className="form-row">{viralogInput('Skor SEO','seo_score','number')}{viralogInput('Skor engagement','engagement_score','number')}</div><div className="form-row">{viralogInput('Skor kebaruan','freshness_score','number')}{viralogInput('Skor kredibilitas','credibility_score','number')}</div>{viralogInput('Skor monetisasi','monetization_score','number')}</div></div>:type==='viralog-ad-campaigns'?adPlacementEditor:<div className="additional-fields"><div className="additional-fields-head"><b>Data tambahan</b><button type="button" className="secondary" onClick={()=>setAdditionalFields([...additionalFields,{key:'',value:'',isList:false}])}><Plus size={15}/> Tambah field</button></div>{additionalFields.map((field,index)=><div className="additional-field" key={`${field.key}-${index}`}><input aria-label="Nama field" placeholder="Nama field" value={field.key} onChange={event=>updateAdditionalField(index,{key:event.target.value})}/><input aria-label="Nilai field" placeholder={field.isList?'Pisahkan item dengan koma':'Nilai'} value={field.value} onChange={event=>updateAdditionalField(index,{value:event.target.value})}/><label className="check compact"><input type="checkbox" checked={field.isList} onChange={event=>updateAdditionalField(index,{isList:event.target.checked})}/> Daftar</label><button type="button" className="icon-btn" aria-label="Hapus field" onClick={()=>setAdditionalFields(fields=>fields.filter((_,fieldIndex)=>fieldIndex!==index))}><Trash2 size={15}/></button></div>)}{!additionalFields.length&&<p className="subtle">Belum ada data tambahan.</p>}</div>
@@ -4847,12 +4960,12 @@ function ContentModal({type,label,item,onClose,onSaved}:{type:ContentType;label:
 
 function CareerModal({item,onClose,onSaved}:{item:ContentItem|null;onClose:()=>void;onSaved:()=>void}){
   const source=(item?.data||{}) as Record<string,any>
-  const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',employment_type:String(source.employment_type||'fulltime'),form_url:String(source.form_url||''),whatsapp_url:String(source.whatsapp_url||''),application_note:String(source.application_note||''),is_published:item?.is_published??true})
+  const [form,setForm]=useState({title:item?.title||'',slug:item?.slug||'',summary:item?.summary||'',employment_type:String(source.employment_type||'fulltime'),form_url:String(source.form_url||''),whatsapp_url:String(source.whatsapp_url||''),application_note:String(source.application_note||''),display_order:String(source.display_order??''),is_published:item?.is_published??true})
   const [error,setError]=useState(''),[busy,setBusy]=useState(false)
   function update<K extends keyof typeof form>(key:K,value:(typeof form)[K]){setForm({...form,[key]:value})}
   function updateTitle(value:string){const autoSlug=form.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');const slug=value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');setForm({...form,title:value,slug:!item&&(form.slug===''||form.slug===autoSlug)?slug:form.slug})}
-  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{await request(item?`/modules/careers/${item.id}`:'/modules/careers',{method:item?'PUT':'POST',body:JSON.stringify({title:form.title,slug:form.slug,summary:form.summary,image_url:null,is_published:form.is_published,data:{...source,employment_type:form.employment_type,form_url:form.form_url,whatsapp_url:form.whatsapp_url,application_note:form.application_note}})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
-  return <div className="modal-backdrop"><form className="modal modal-lg" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT LOWONGAN':'LOWONGAN BARU'}</p><h2>{item?'Edit Posisi Karir':'Tambah Posisi Karir'}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><div className="modal-scroll-area"><div className="form-row"><label>Nama posisi<input value={form.title} onChange={event=>updateTitle(event.target.value)} required placeholder="Contoh: IT Support"/></label><label>Jenis kerja<select className="select-input" value={form.employment_type} onChange={event=>update('employment_type',event.target.value)}><option value="fulltime">Full Time</option><option value="internship">PKL / Magang</option></select></label></div><label>Slug<input value={form.slug} onChange={event=>update('slug',event.target.value)} required placeholder="it-support"/></label><label>Deskripsi singkat<textarea rows={4} value={form.summary} onChange={event=>update('summary',event.target.value)} placeholder="Ringkasan posisi dan kualifikasi."/></label><label>Link formulir pendaftaran<input type="url" value={form.form_url} onChange={event=>update('form_url',event.target.value)} placeholder="https://forms.gle/..."/></label><label>Link WhatsApp pendaftaran<input value={form.whatsapp_url} onChange={event=>update('whatsapp_url',event.target.value)} placeholder="https://wa.me/628... atau nomor WhatsApp"/></label><label>Catatan pendaftaran<textarea rows={3} value={form.application_note} onChange={event=>update('application_note',event.target.value)} placeholder="Contoh: Sertakan CV dan portofolio terbaru."/></label><label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>update('is_published',event.target.checked)}/> Tampilkan di frontend</label></div>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan posisi'}</button></div></form></div>
+  async function save(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{await request(item?`/modules/careers/${item.id}`:'/modules/careers',{method:item?'PUT':'POST',body:JSON.stringify({title:form.title,slug:form.slug,summary:form.summary,image_url:null,is_published:form.is_published,data:{...source,employment_type:form.employment_type,form_url:form.form_url,whatsapp_url:form.whatsapp_url,application_note:form.application_note,display_order:form.display_order===''?null:Number(form.display_order)}})});onSaved()}catch(err){setError((err as Error).message)}finally{setBusy(false)}}
+  return <div className="modal-backdrop"><form className="modal modal-lg" onSubmit={save}><div className="modal-head"><div><p className="eyebrow pink">{item?'EDIT LOWONGAN':'LOWONGAN BARU'}</p><h2>{item?'Edit Posisi Karir':'Tambah Posisi Karir'}</h2></div><button type="button" className="icon-btn" onClick={onClose}><X/></button></div><div className="modal-scroll-area"><div className="form-row"><label>Nama posisi<input value={form.title} onChange={event=>updateTitle(event.target.value)} required placeholder="Contoh: IT Support"/></label><label>Jenis kerja<select className="select-input" value={form.employment_type} onChange={event=>update('employment_type',event.target.value)}><option value="fulltime">Full Time</option><option value="internship">PKL / Magang</option></select></label></div><label>Slug<input value={form.slug} onChange={event=>update('slug',event.target.value)} required placeholder="it-support"/></label><label>Deskripsi singkat<textarea rows={4} value={form.summary} onChange={event=>update('summary',event.target.value)} placeholder="Ringkasan posisi dan kualifikasi."/></label><label>Link formulir pendaftaran<input type="url" value={form.form_url} onChange={event=>update('form_url',event.target.value)} placeholder="https://forms.gle/..."/></label><label>Link WhatsApp pendaftaran<input value={form.whatsapp_url} onChange={event=>update('whatsapp_url',event.target.value)} placeholder="https://wa.me/628... atau nomor WhatsApp"/></label><label>Catatan pendaftaran<textarea rows={3} value={form.application_note} onChange={event=>update('application_note',event.target.value)} placeholder="Contoh: Sertakan CV dan portofolio terbaru."/></label><label>Urutan tampil<input type="number" min="1" value={form.display_order} onChange={event=>update('display_order',event.target.value)} placeholder="Contoh: 1"/></label><label className="check"><input type="checkbox" checked={form.is_published} onChange={event=>update('is_published',event.target.checked)}/> Tampilkan di frontend</label></div>{error&&<div className="error-box">{error}</div>}<div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Batal</button><button className="primary" disabled={busy}>{busy?'Menyimpan…':'Simpan posisi'}</button></div></form></div>
 }
 
 function SolutionLibraryModal({item,label,onClose,onSaved}:{item:ContentItem|null;label:string;onClose:()=>void;onSaved:()=>void}){

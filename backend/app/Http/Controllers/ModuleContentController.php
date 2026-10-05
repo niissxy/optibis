@@ -87,7 +87,18 @@ class ModuleContentController extends Controller
         $items = $query
             ->orderBy('id', 'desc')
             ->get()
-            ->map(fn ($item) => $this->normalize($item));
+            ->map(fn ($item) => $this->normalize($item))
+            ->sort(function ($left, $right) {
+                $leftOrder = $left->data['display_order'] ?? $left->data['order'] ?? PHP_INT_MAX;
+                $rightOrder = $right->data['display_order'] ?? $right->data['order'] ?? PHP_INT_MAX;
+
+                if ((int) $leftOrder === (int) $rightOrder) {
+                    return $right->id <=> $left->id;
+                }
+
+                return (int) $leftOrder <=> (int) $rightOrder;
+            })
+            ->values();
 
         return response()->json($items);
     }
