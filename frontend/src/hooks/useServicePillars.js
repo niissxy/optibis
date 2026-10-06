@@ -87,10 +87,10 @@ export function useServicePillars() {
     fetch(`${API}/modules/service-pillars`)
       .then((res) => (res.ok ? res.json() : []))
       .then((items) => {
-        if (Array.isArray(items) && items.length > 0) {
+        if (Array.isArray(items)) {
           const sorted = [...items].sort((a, b) => (a.data?.order ?? 99) - (b.data?.order ?? 99));
           const mapped = sorted
-            .filter((item) => item.is_published !== false)
+            .filter((item) => item.is_published === true)
             .map((item, idx) => {
               const data = item.data || {};
               const defaultStatic = DEFAULT_PILLARS.find(
@@ -114,14 +114,12 @@ export function useServicePillars() {
                 bgClass: color === "amethyst" ? "bg-amethyst-50" : color === "navy" ? "bg-blue-50" : "bg-magenta-50",
                 textClass: color === "amethyst" ? "text-amethyst" : color === "navy" ? "text-blue-600" : "text-magenta",
                 btnClass: color === "amethyst" ? "bg-amethyst hover:bg-amethyst-600" : color === "navy" ? "bg-navy hover:bg-navy-400" : "!bg-[#f51d6a] hover:!bg-[#e0185e]",
-                is_published: item.is_published !== false,
+                is_published: true,
                 data,
               };
             });
 
-          if (mapped.length > 0) {
-            setPillars(mapped);
-          }
+          setPillars(mapped);
         }
       })
       .catch(() => {})

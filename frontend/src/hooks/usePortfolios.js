@@ -3,6 +3,21 @@ import { PORTFOLIO_DATA, getAllPortfolios } from "@/data/portfolio";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
+function normalizeGallery(value) {
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      value = Array.isArray(parsed) ? parsed : value;
+    } catch {
+      value = value.split(/\r?\n|,(?=\s*(?:https?:\/\/|\/))/);
+    }
+  }
+
+  return Array.isArray(value)
+    ? value.map((url) => String(url || "").trim()).filter(Boolean)
+    : [];
+}
+
 export function normalizePortfolio(apiItem = {}, fallback = {}) {
   const name = apiItem.name || fallback.name || "Portfolio";
   const slug = apiItem.slug || fallback.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -20,9 +35,10 @@ export function normalizePortfolio(apiItem = {}, fallback = {}) {
   const hasil = apiItem.hasil || fallback.hasil || "Proyek selesai dikerjakan dengan hasil maksimal sesuai kebutuhan klien.";
   const featured = typeof apiItem.featured === "boolean" ? apiItem.featured : (fallback.featured ?? false);
 
-  const galeri = Array.isArray(apiItem.galeri) && apiItem.galeri.length > 0
-    ? apiItem.galeri
-    : (Array.isArray(fallback.galeri) && fallback.galeri.length > 0 ? fallback.galeri : [thumbnail]);
+  const apiGallery = normalizeGallery(apiItem.galeri);
+  const fallbackGallery = normalizeGallery(fallback.galeri);
+  const hasGallery = apiGallery.length > 0 || fallbackGallery.length > 0;
+  const galeri = apiGallery.length > 0 ? apiGallery : (fallbackGallery.length > 0 ? fallbackGallery : [thumbnail]);
 
   const process = Array.isArray(apiItem.process) && apiItem.process.length > 0
     ? apiItem.process
@@ -83,6 +99,7 @@ export function normalizePortfolio(apiItem = {}, fallback = {}) {
     thumbnail,
     image: thumbnail,
     galeri,
+    hasGallery,
     hasil,
     featured,
     process,

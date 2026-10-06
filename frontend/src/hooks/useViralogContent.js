@@ -35,7 +35,7 @@ function normalizeContent(item) {
     title: item.title,
     summary: item.summary || data.summary || "",
     body: isRss ? cleanRssArticleBody(data.body) : data.body,
-    thumbnail: data.thumbnail || data.image || item.image_url || VIRALOG_FALLBACK_THUMBNAIL,
+    thumbnail: item.image_url || data.thumbnail || data.image || VIRALOG_FALLBACK_THUMBNAIL,
     tags: Array.isArray(data.tags) ? data.tags : [],
     status: data.status || (item.is_published ? "published" : "draft"),
     is_published: item.is_published,
@@ -55,9 +55,7 @@ export function useViralogContent() {
           .filter((item) => item.is_published && (item.data?.status || "published") === "published")
           .map(normalizeContent)
           .filter(isVisibleRssContent);
-        const savedSlugs = new Set(published.map((item) => item.slug));
-
-        setContent([...published, ...VIRALOG_CONTENT.filter((item) => !savedSlugs.has(item.slug))]);
+        setContent(published);
       })
       .catch(() => {});
   }, []);

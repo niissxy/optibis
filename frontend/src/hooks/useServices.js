@@ -366,7 +366,7 @@ export function useServices() {
       .then((items) => {
         if (!Array.isArray(items)) return;
 
-        const published = items.filter((item) => item.is_published !== false);
+        const published = items.filter((item) => item.is_published === true);
 
         // Merge DB services with default static services
         const dbMap = new Map();
@@ -394,15 +394,8 @@ export function useServices() {
             packages: Array.isArray(d.packages) ? d.packages : [],
             packages_title: d.packages_title,
             packages_subtitle: d.packages_subtitle,
-            is_published: item.is_published !== false,
+            is_published: true,
           });
-        });
-
-        // Add any default services that were not yet in the DB map
-        DEFAULT_SERVICES.forEach((s) => {
-          if (!dbMap.has(s.slug)) {
-            dbMap.set(s.slug, s);
-          }
         });
 
         setServices(Array.from(dbMap.values()));

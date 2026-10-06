@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import MarketingKitPreview from "@/components/marketing-kit/MarketingKitPreview";
 import MarketingKitDownloadGate from "@/components/marketing-kit/MarketingKitDownloadGate";
-import { MARKETING_KIT_ITEMS } from "@/data/marketingKit";
+import { useMarketingKits } from "@/hooks/useMarketingKits";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
 
@@ -20,7 +20,8 @@ export default function MarketingKitSection() {
   const { tr } = useLanguage();
   const [previewItem, setPreviewItem] = useState(null);
   const [downloadItem, setDownloadItem] = useState(null);
-  const featured = MARKETING_KIT_ITEMS.filter((it) => it.featured).slice(0, 4);
+  const marketingKits = useMarketingKits();
+  const featured = marketingKits.filter((it) => it.featured).slice(0, 4);
 
   return (
     <section className="py-16 lg:py-20 bg-slate-50/50">

@@ -27,7 +27,7 @@ export function normalizeTool(item, fallback = {}) {
     description,
     image,
     fallbackImage,
-    is_published: item.is_published !== false,
+    is_published: item.is_published === true,
   };
 }
 
@@ -40,7 +40,7 @@ export function useTools() {
       .then((res) => (res.ok ? res.json() : []))
       .then((apiItems) => {
         if (Array.isArray(apiItems)) {
-          const published = apiItems.filter((i) => i.is_published !== false);
+          const published = apiItems.filter((i) => i.is_published === true);
           setTools(published.map((item) => normalizeTool(item)));
         }
       })

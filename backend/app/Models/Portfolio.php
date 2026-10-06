@@ -45,6 +45,6 @@ class Portfolio extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? url('storage/'.$this->image_path) : $this->thumbnail_url;
+        return $this->thumbnail_url ?: ($this->image_path ? url('storage/'.$this->image_path) : null);
     }
 }

@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApiToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
@@ -46,7 +50,7 @@ class ModuleContentController extends Controller
         'site-settings' => 'site_settings',
     ];
 
-    public function index(string $module)
+    public function index(Request $request, string $module)
     {
         // Karir is optional on deployments made before its migration is applied.
         // Return an empty collection so public pages remain available.
@@ -69,8 +73,14 @@ class ModuleContentController extends Controller
         if ($module === 'portfolio-categories') {
             $this->syncPortfolioCategories();
         }
+        if ($module === 'viralog-content' && !$this->canViewUnpublished($request)) {
+            $this->scheduleRssImport();
+        }
 
         $query = DB::table($this->table($module));
+        if (!$this->canViewUnpublished($request)) {
+            $query->where('is_published', true);
+        }
         if ($module === 'solution-library-categories') {
             $query->where('slug', 'like', 'solution-library-category-%');
         }
@@ -122,10 +132,38 @@ class ModuleContentController extends Controller
         return response()->json($this->normalize($item), 201);
     }
 
-    public function show(string $module, $id)
+    public function show(Request $request, string $module, $id)
     {
         $item = $this->item($module, $id);
+        abort_if(!$this->canViewUnpublished($request) && !(bool) $item->is_published, 404);
+
         return response()->json($this->normalize($item));
+    }
+
+    private function canViewUnpublished(Request $request): bool
+    {
+        $token = $request->bearerToken();
+
+        return $token !== null
+            && ApiToken::where('token_hash', hash('sha256', $token))->exists();
+    }
+
+    private function scheduleRssImport(): void
+    {
+        if (!Cache::add('viralog-rss-import-pending', true, now()->addMinutes(55))) {
+            return;
+        }
+
+        app()->terminating(function (): void {
+            try {
+                if (Artisan::call('viralog:import-rss', ['--limit' => 10]) !== 0) {
+                    Cache::forget('viralog-rss-import-pending');
+                }
+            } catch (\Throwable $exception) {
+                Cache::forget('viralog-rss-import-pending');
+                Log::warning('Viralog RSS import failed.', ['exception' => $exception->getMessage()]);
+            }
+        });
     }
 
     public function update(Request $request, string $module, $id)
@@ -146,10 +184,10 @@ class ModuleContentController extends Controller
         }
         if ($module === 'services') {
             $item = DB::table($this->table($module))->find($id);
-            $this->syncServicePackages($item);
+            $this->syncServicePackages($item, $current->slug);
         } elseif ($module === 'packages') {
             $item = DB::table($this->table($module))->find($id);
-            $this->syncPackageToService($item);
+            $this->syncPackageToService($item, $current);
         }
         $item = DB::table($this->table($module))->find($id);
 
@@ -386,7 +424,7 @@ class ModuleContentController extends Controller
             ]);
     }
 
-    private function syncServicePackages(object $service): void
+    private function syncServicePackages(object $service, ?string $previousServiceSlug = null): void
     {
         $serviceData = json_decode($service->data, true) ?: [];
         $packages = $serviceData['packages'] ?? null;
@@ -395,6 +433,7 @@ class ModuleContentController extends Controller
             return;
         }
 
+        $serviceSlugs = array_values(array_unique(array_filter([$service->slug, $previousServiceSlug])));
         $activeSlugs = [];
         $updatedPackages = [];
 
@@ -410,15 +449,7 @@ class ModuleContentController extends Controller
 
             $pkgSlug = (string) $baseSlug;
             $counter = 1;
-            while (
-                DB::table('package_items')
-                    ->where('slug', $pkgSlug)
-                    ->where(function ($q) use ($service) {
-                        $q->where('data->service_slug', '!=', $service->slug)
-                          ->where('data->service', '!=', $service->slug);
-                    })
-                    ->exists()
-            ) {
+            while (in_array($pkgSlug, $activeSlugs, true) || $this->packageSlugBelongsToAnotherService($pkgSlug, $serviceSlugs)) {
                 $counter++;
                 $pkgSlug = "{$baseSlug}-{$counter}";
             }
@@ -473,9 +504,11 @@ class ModuleContentController extends Controller
 
         // Delete packages previously associated with this service that were removed
         DB::table('package_items')
-            ->where(function ($q) use ($service) {
-                $q->where('data->service_slug', $service->slug)
-                  ->orWhere('data->service', $service->slug);
+            ->where(function ($q) use ($serviceSlugs) {
+                foreach ($serviceSlugs as $serviceSlug) {
+                    $q->orWhere('data->service_slug', $serviceSlug)
+                      ->orWhere('data->service', $serviceSlug);
+                }
             })
             ->whereNotIn('slug', $activeSlugs)
             ->delete();
@@ -488,11 +521,32 @@ class ModuleContentController extends Controller
         ]);
     }
 
-    private function syncPackageToService(object $package): void
+    private function packageSlugBelongsToAnotherService(string $packageSlug, array $serviceSlugs): bool
+    {
+        $package = DB::table('package_items')->where('slug', $packageSlug)->first();
+        if (!$package) {
+            return false;
+        }
+
+        $data = json_decode($package->data, true) ?: [];
+        $packageServiceSlug = $data['service_slug'] ?? $data['service'] ?? null;
+
+        return !in_array($packageServiceSlug, $serviceSlugs, true);
+    }
+
+    private function syncPackageToService(object $package, ?object $previousPackage = null): void
     {
         $pkgData = json_decode($package->data, true) ?: [];
         $serviceSlug = $pkgData['service_slug'] ?? $pkgData['service'] ?? null;
         if (!$serviceSlug) return;
+
+        $previousData = $previousPackage ? (json_decode($previousPackage->data, true) ?: []) : [];
+        $previousServiceSlug = $previousData['service_slug'] ?? $previousData['service'] ?? null;
+        $previousPackageSlug = $previousPackage?->slug;
+
+        if ($previousServiceSlug && $previousServiceSlug !== $serviceSlug) {
+            $this->removePackageFromService($previousPackage, $previousPackageSlug);
+        }
 
         $service = DB::table('service_items')->where('slug', $serviceSlug)->first();
         if (!$service) return;
@@ -515,7 +569,7 @@ class ModuleContentController extends Controller
 
         $found = false;
         foreach ($packages as $k => $p) {
-            if (($p['slug'] ?? '') === $package->slug) {
+            if (($p['slug'] ?? '') === $package->slug || ($previousPackageSlug && ($p['slug'] ?? '') === $previousPackageSlug)) {
                 $packages[$k] = $packageEntry;
                 $found = true;
                 break;
@@ -525,14 +579,14 @@ class ModuleContentController extends Controller
             $packages[] = $packageEntry;
         }
 
-        $serviceData['packages'] = $packages;
+        $serviceData['packages'] = $this->uniquePackages($packages);
         DB::table('service_items')->where('id', $service->id)->update([
             'data' => json_encode($serviceData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'updated_at' => now(),
         ]);
     }
 
-    private function removePackageFromService(object $package): void
+    private function removePackageFromService(object $package, ?string $packageSlug = null): void
     {
         $pkgData = json_decode($package->data, true) ?: [];
         $serviceSlug = $pkgData['service_slug'] ?? $pkgData['service'] ?? null;
@@ -544,8 +598,8 @@ class ModuleContentController extends Controller
         $serviceData = json_decode($service->data, true) ?: [];
         $packages = is_array($serviceData['packages'] ?? null) ? $serviceData['packages'] : [];
 
-        $packages = array_values(array_filter($packages, function ($p) use ($package) {
-            return ($p['slug'] ?? '') !== $package->slug;
+        $packages = array_values(array_filter($packages, function ($p) use ($package, $packageSlug) {
+            return ($p['slug'] ?? '') !== ($packageSlug ?? $package->slug);
         }));
 
         $serviceData['packages'] = $packages;
@@ -553,6 +607,26 @@ class ModuleContentController extends Controller
             'data' => json_encode($serviceData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'updated_at' => now(),
         ]);
+    }
+
+    private function uniquePackages(array $packages): array
+    {
+        $slugs = [];
+        $uniquePackages = [];
+
+        foreach ($packages as $package) {
+            $slug = $package['slug'] ?? null;
+            if ($slug && isset($slugs[$slug])) {
+                continue;
+            }
+
+            if ($slug) {
+                $slugs[$slug] = true;
+            }
+            $uniquePackages[] = $package;
+        }
+
+        return $uniquePackages;
     }
 
     private function table(string $module): string

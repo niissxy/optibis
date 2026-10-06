@@ -53,9 +53,13 @@ class PortfolioController extends Controller
         $data['products'] = $data['products'] ?? [];
         $data['website_url'] = $data['website_url'] ?? '#';
         $data['featured'] = $request->boolean('featured', false);
+        $data['thumbnail_url'] = filled($data['thumbnail_url'] ?? null)
+            ? trim($data['thumbnail_url'])
+            : null;
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('portfolios', 'public');
+            $data['thumbnail_url'] = null;
         }
 
         unset($data['image']);
@@ -126,12 +130,19 @@ class PortfolioController extends Controller
             $data['featured'] = $request->boolean('featured');
         }
 
+        if (array_key_exists('thumbnail_url', $data)) {
+            $data['thumbnail_url'] = filled($data['thumbnail_url'])
+                ? trim($data['thumbnail_url'])
+                : null;
+        }
+
         if ($request->hasFile('image')) {
             try {
                 if ($portfolio->image_path && Storage::disk('public')->exists($portfolio->image_path)) {
                     Storage::disk('public')->delete($portfolio->image_path);
                 }
                 $data['image_path'] = $request->file('image')->store('portfolios', 'public');
+                $data['thumbnail_url'] = null;
             } catch (\Throwable $e) {
                 \Log::error('Portfolio image upload failed: ' . $e->getMessage());
                 return response()->json([
@@ -139,6 +150,11 @@ class PortfolioController extends Controller
                     'error' => $e->getMessage()
                 ], 500);
             }
+        } elseif (filled($data['thumbnail_url'] ?? null) && $portfolio->image_path) {
+            if (Storage::disk('public')->exists($portfolio->image_path)) {
+                Storage::disk('public')->delete($portfolio->image_path);
+            }
+            $data['image_path'] = null;
         }
 
         unset($data['image']);

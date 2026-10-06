@@ -16,9 +16,9 @@ export function useCareers() {
     fetch(`${API}/modules/careers`)
       .then((response) => (response.ok ? response.json() : []))
       .then((items) => {
-        if (!Array.isArray(items) || items.length === 0) return;
+        if (!Array.isArray(items)) return;
         setCareers(items
-          .filter((item) => item.is_published !== false)
+          .filter((item) => item.is_published === true)
           .map((item) => ({
             id: item.id,
             slug: item.slug,

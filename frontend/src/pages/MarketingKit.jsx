@@ -7,7 +7,8 @@ import PillarLayout from "@/components/optibis/PillarLayout";
 import MarketingKitCard from "@/components/marketing-kit/MarketingKitCard";
 import MarketingKitPreview from "@/components/marketing-kit/MarketingKitPreview";
 import MarketingKitDownloadGate from "@/components/marketing-kit/MarketingKitDownloadGate";
-import { MARKETING_KIT_ITEMS, MARKETING_KIT_CATEGORIES } from "@/data/marketingKit";
+import { MARKETING_KIT_CATEGORIES } from "@/data/marketingKit";
+import { useMarketingKits } from "@/hooks/useMarketingKits";
 import { useSafeNav } from "@/hooks/useSafeNav";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getBreadcrumbSchema } from "@/lib/seoData";
@@ -44,9 +45,10 @@ export default function MarketingKit() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const nav = useSafeNav();
   const { tr } = useLanguage();
+  const marketingKits = useMarketingKits();
 
   const filtered = useMemo(() => {
-    let result = MARKETING_KIT_ITEMS.filter((item) => {
+    let result = marketingKits.filter((item) => {
       const matchQuery =
         !query ||
         item.nama_asset.toLowerCase().includes(query.toLowerCase()) ||
@@ -66,7 +68,7 @@ export default function MarketingKit() {
       result = [...result].sort((a, b) => (b.badge === "New" ? 1 : 0) - (a.badge === "New" ? 1 : 0));
     }
     return result;
-  }, [query, activeCategory, activeAkses, activeBadge, sortBy]);
+  }, [marketingKits, query, activeCategory, activeAkses, activeBadge, sortBy]);
 
   const resetFilters = () => {
     setQuery("");

@@ -314,7 +314,7 @@ export default function PortfolioDetail() {
       </section>
 
       {/* Gallery */}
-      {galleryList.length > 1 && (
+      {project.hasGallery && galleryList.length > 0 && (
         <section className="py-12 lg:py-16 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-navy mb-8 text-center">{tr("Galeri Proyek")}</h2>
