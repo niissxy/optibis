@@ -409,7 +409,7 @@ export default function PortfolioGallery() {
                         {tr(project.desc || project.ringkasan)}
                       </p>
 
-                      <div className="mt-auto flex items-center justify-between border-t border-gray-50 dark:border-gray-700 pt-4">
+                      <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-50 dark:border-gray-700 pt-4">
                         <Link
                           to={`/portofolio/${project.slug}`}
                           className="text-sm font-bold text-navy dark:text-gray-200 hover:text-magenta dark:hover:text-magenta group-hover:text-magenta transition-colors inline-flex items-center"
@@ -424,10 +424,11 @@ export default function PortfolioGallery() {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={`Kunjungi ${project.title || project.name}`}
-                            className="w-8 h-8 rounded-full bg-magenta-50 dark:bg-magenta/20 flex items-center justify-center text-magenta hover:bg-magenta hover:text-white transition-all shadow-sm"
+                            className="inline-flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-magenta-50 px-3 text-xs font-bold text-magenta shadow-sm transition-all hover:bg-magenta hover:text-white dark:bg-magenta/20"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <ExternalLink className="w-4 h-4" />
+                            {tr("Kunjungi Website")}
                           </a>
                         ) : (
                           <Link
