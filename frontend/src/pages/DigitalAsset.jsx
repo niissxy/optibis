@@ -45,9 +45,9 @@ export const SERVICES = [
 
 export default function DigitalAsset() {
   const packages = usePackages();
-  const { getServicesByPillar } = useServices();
+  const { getServicesByPillar, hasRemoteData } = useServices();
   const dynamicServices = getServicesByPillar("digital-asset");
-  const displayServices = dynamicServices.length > 0 ? dynamicServices : SERVICES;
+  const displayServices = hasRemoteData ? dynamicServices : SERVICES;
 
   const packageCards = packages
     .filter((pkg) => pkg.pillarSlug === "digital-asset" && !pkg.isServicePackage && !pkg.service && !pkg.service_slug)

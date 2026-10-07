@@ -127,6 +127,8 @@ export default function ServiceDetail() {
 
   const [remoteService, setRemoteService] = React.useState(null);
   const [remotePackages, setRemotePackages] = React.useState([]);
+  const [hasRemoteServiceData, setHasRemoteServiceData] = React.useState(false);
+  const [hasRemotePackageData, setHasRemotePackageData] = React.useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -135,6 +137,7 @@ export default function ServiceDetail() {
       .then((items) => {
         if (!isMounted) return;
         if (Array.isArray(items)) {
+          setHasRemoteServiceData(true);
           const sSlug = (serviceSlug || "").toLowerCase();
           const targetPillar = normalizedPillar;
 
@@ -167,13 +170,15 @@ export default function ServiceDetail() {
       .then((res) => (res.ok ? res.json() : []))
       .then((items) => {
         if (Array.isArray(items)) {
-          setRemotePackages(items.filter((item) => item.is_published));
+          setHasRemotePackageData(true);
+          setRemotePackages(items.filter((item) => item.is_published === true && String(item.data?.status || "published").toLowerCase() !== "draft"));
         }
       })
       .catch(() => {});
   }, []);
 
   const service = React.useMemo(() => {
+    if (hasRemoteServiceData && !remoteService) return null;
     if (!staticService && !remoteService && !pkgData) return null;
     const base = staticService || {
       name: pkgData?.name || remoteService?.title || '',
@@ -193,7 +198,7 @@ export default function ServiceDetail() {
       };
     }
     return base;
-  }, [staticService, remoteService, pkgData]);
+  }, [staticService, remoteService, pkgData, hasRemoteServiceData]);
 
   const servicePackages = React.useMemo(() => {
     // 1. Direct packages from service data (configured via Admin Panel in service_items)
@@ -234,6 +239,10 @@ export default function ServiceDetail() {
       });
     if (matched.length > 0) {
       return matched;
+    }
+
+    if (hasRemotePackageData) {
+      return [];
     }
 
     // 3. Fallback static packages matching flyer data
@@ -319,7 +328,7 @@ export default function ServiceDetail() {
     }
 
     return [];
-  }, [remoteService, remotePackages, serviceSlug]);
+  }, [remoteService, remotePackages, serviceSlug, hasRemotePackageData]);
 
   const packageAddons = React.useMemo(() => {
     if (Array.isArray(remoteService?.data?.package_addons) && remoteService.data.package_addons.length > 0) {
@@ -340,7 +349,7 @@ export default function ServiceDetail() {
       ];
     }
     return [];
-  }, [remoteService, serviceSlug]);
+  }, [remoteService, serviceSlug, hasRemotePackageData]);
 
   if (loading && !staticService && !pkgData) {
     return (

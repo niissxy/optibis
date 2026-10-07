@@ -3,8 +3,13 @@ import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUpRight, Box, Filter, Newspaper, Package, Search, X } from "lucide-react";
 import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
-import { searchGlobal } from "@/data/globalSearch";
+import { getGlobalSearchItems, searchGlobal } from "@/data/globalSearch";
 import { useLanguage } from "@/lib/LanguageContext";
+import { usePackages } from "@/hooks/usePackages";
+import { useServices } from "@/hooks/useServices";
+import { useTools } from "@/hooks/useTools";
+import { useMarketingKits } from "@/hooks/useMarketingKits";
+import { useViralogContent } from "@/hooks/useViralogContent";
 
 const TYPE_STYLES = {
   product: { icon: Box, badge: "bg-amethyst-50 text-amethyst", labelKey: "products" },
@@ -61,12 +66,18 @@ export default function ViralogSearch() {
   const [query, setQuery] = useState(initialQuery);
   const [activeType, setActiveType] = useState(initialType);
   const { t } = useLanguage();
+  const packages = usePackages();
+  const { services } = useServices();
+  const { tools } = useTools();
+  const marketingKits = useMarketingKits();
+  const content = useViralogContent();
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
   useEffect(() => setActiveType(initialType), [initialType]);
 
   const normalizedQuery = query.trim();
-  const results = useMemo(() => searchGlobal(query, activeType), [query, activeType]);
+  const searchItems = useMemo(() => getGlobalSearchItems({ packages, services, tools, marketingKits, content }), [packages, services, tools, marketingKits, content]);
+  const results = useMemo(() => searchGlobal(query, activeType, searchItems), [query, activeType, searchItems]);
 
   const updateSearch = (nextQuery, nextType = activeType) => {
     setQuery(nextQuery);

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, MessageCircle, Clock, Wallet, Star, Layers, ChevronRight, Lightbulb, Code, ListChecks, GitBranch, Boxes, Link2 } from "lucide-react";
@@ -23,12 +23,27 @@ export default function SolutionLibraryDetail() {
   const { slug } = useParams();
   const nav = useSafeNav();
   const { tr } = useLanguage();
+  const [items, setItems] = useState(SOLUTION_ITEMS);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [slug]);
 
-  const item = useMemo(() => SOLUTION_ITEMS.find((it) => it.slug === slug), [slug]);
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((managedItems) => {
+        if (!Array.isArray(managedItems)) return;
+        setItems(managedItems.filter((entry) => entry.is_published).map((entry) => {
+          const fallback = SOLUTION_ITEMS.find((item) => item.slug === entry.slug);
+          const data = entry.data || {};
+          return { ...fallback, ...data, slug: entry.slug, nama_awam: entry.title, nama_teknis: data.nama_teknis || data.technical || "", fungsi: entry.summary || data.fungsi || "", kategori: data.kategori || data.category || "", topik: data.topik || data.topics || [], image: entry.image_url || data.image };
+        }));
+      })
+      .catch(() => {});
+  }, []);
+
+  const item = useMemo(() => items.find((it) => it.slug === slug), [items, slug]);
 
   if (!item) {
     return (
@@ -65,7 +80,7 @@ export default function SolutionLibraryDetail() {
     },
   ];
 
-  const related = SOLUTION_ITEMS
+  const related = items
     .filter((it) => it.slug !== item.slug && (it.kategori === item.kategori || (item.fitur_terkait || []).includes(it.nama_teknis)))
     .slice(0, 3);
 

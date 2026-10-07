@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSafeNav } from "@/hooks/useSafeNav";
-import { getPackagesByPillar } from "@/data/packages";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
+import { usePackages } from "@/hooks/usePackages";
 
 const PILLAR_SLUGS = {
   "Digital Asset": "digital-asset",
@@ -15,15 +15,25 @@ const PILLAR_SLUGS = {
   "Paket Khusus": "khusus",
 };
 
-const PACKAGES = {
-  "Digital Asset": getPackagesByPillar("digital-asset").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
-  "Digital Growth Team": getPackagesByPillar("digital-growth-team").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
-  "Paket Khusus": getPackagesByPillar("khusus").map((p) => ({ name: p.name, target: p.target, price: p.priceShort || p.price, features: p.included.map((i) => i.title), popular: p.popular, slug: p.slug })),
-};
-
 export default function PackagesSection() {
   const nav = useSafeNav();
   const { tr } = useLanguage();
+  const packages = usePackages();
+  const packageGroups = useMemo(() => Object.fromEntries(
+    Object.entries(PILLAR_SLUGS).map(([category, pillarSlug]) => [
+      category,
+      packages
+        .filter((pkg) => pkg.pillarSlug === pillarSlug && !pkg.isServicePackage)
+        .map((pkg) => ({
+          name: pkg.name,
+          target: pkg.target,
+          price: pkg.priceShort || pkg.price,
+          features: pkg.included.map((item) => item.title),
+          popular: pkg.popular,
+          slug: pkg.slug,
+        })),
+    ])
+  ), [packages]);
 
   return (
     <section className="py-14 lg:py-20 bg-white" id="paket">
@@ -43,7 +53,7 @@ export default function PackagesSection() {
             </TabsTrigger>
           </TabsList>
 
-          {Object.entries(PACKAGES).map(([category, pkgs]) => (
+          {Object.entries(packageGroups).map(([category, pkgs]) => (
             <TabsContent key={category} value={category}>
               <div className="grid md:grid-cols-3 gap-6">
                 {pkgs.map((pkg, i) => (

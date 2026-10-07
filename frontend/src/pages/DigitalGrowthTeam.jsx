@@ -45,9 +45,9 @@ export const SERVICES = [
 
 export default function DigitalGrowthTeam() {
   const packages = usePackages();
-  const { getServicesByPillar } = useServices();
+  const { getServicesByPillar, hasRemoteData } = useServices();
   const dynamicServices = getServicesByPillar("digital-growth-team");
-  const displayServices = dynamicServices.length > 0 ? dynamicServices : SERVICES;
+  const displayServices = hasRemoteData ? dynamicServices : SERVICES;
 
   const packageCards = packages
     .filter((pkg) => pkg.pillarSlug === "digital-growth-team" && !pkg.isServicePackage && !pkg.service && !pkg.service_slug)

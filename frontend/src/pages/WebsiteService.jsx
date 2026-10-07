@@ -62,9 +62,9 @@ export const SERVICES = [
 ];
 
 export default function WebsiteService() {
-  const { getServicesByPillar } = useServices();
+  const { getServicesByPillar, hasRemoteData } = useServices();
   const dynamicServices = getServicesByPillar("website");
-  const displayServices = dynamicServices.length > 0 ? dynamicServices : SERVICES;
+  const displayServices = hasRemoteData ? dynamicServices : SERVICES;
 
   const [hero, setHero] = React.useState({
     badgeText: "PILAR 2 — WEBSITE",

@@ -34,16 +34,16 @@ export default function SolutionLibrary() {
     fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library`)
       .then((response) => (response.ok ? response.json() : []))
       .then((items) => {
-        if (!Array.isArray(items) || !items.length) return;
+        if (!Array.isArray(items)) return;
         const managed = items.filter((item) => item.is_published);
         const normalize = (item) => {
           const data = item.data || {};
           return { ...data, slug: item.slug, nama_awam: item.title, nama_teknis: data.nama_teknis || data.technical || "", fungsi: item.summary || data.fungsi || "", kategori: data.kategori || data.category || "", topik: data.topik || data.topics || [], image: item.image_url || data.image };
         };
-        const managedBySlug = new Map(managed.map((item) => [item.slug, normalize(item)]));
-        const updated = SOLUTION_ITEMS.map((item) => managedBySlug.has(item.slug) ? { ...item, ...managedBySlug.get(item.slug) } : item);
-        const additional = managed.filter((item) => !SOLUTION_ITEMS.some((fallback) => fallback.slug === item.slug)).map(normalize);
-        setSolutionItems([...updated, ...additional]);
+        setSolutionItems(managed.map((item) => {
+          const fallback = SOLUTION_ITEMS.find((entry) => entry.slug === item.slug);
+          return { ...fallback, ...normalize(item) };
+        }));
       })
       .catch(() => {});
   }, []);
@@ -52,7 +52,7 @@ export default function SolutionLibrary() {
     fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library-explore-categories`)
       .then((response) => (response.ok ? response.json() : []))
       .then((items) => {
-        if (!Array.isArray(items) || !items.length) return;
+        if (!Array.isArray(items)) return;
         const defaultOrder = new Map(DEFAULT_QUICK_CATS.map((topic, index) => [topic.label, index]));
         setQuickCats(items.filter((item) => item.is_published).map((item) => ({ label: item.title, icon: item.data?.icon || "📁" })).sort((a, b) => (defaultOrder.get(a.label) ?? Number.MAX_SAFE_INTEGER) - (defaultOrder.get(b.label) ?? Number.MAX_SAFE_INTEGER)));
       })
@@ -63,7 +63,7 @@ export default function SolutionLibrary() {
     fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/solution-library-categories`)
       .then((response) => (response.ok ? response.json() : []))
       .then((items) => {
-        if (!Array.isArray(items) || !items.length) return;
+        if (!Array.isArray(items)) return;
         setLibraryCategories([
           { id: "all", label: "Semua", icon: "LayoutGrid" },
           ...items.filter((item) => item.is_published).map((item) => ({ id: item.title, label: item.title, icon: "Folder" })),

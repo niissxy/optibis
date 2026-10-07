@@ -100,7 +100,7 @@ export default function PortfolioGallery() {
     fetch(`${API}/modules/portfolio-categories`)
       .then((res) => (res.ok ? res.json() : []))
       .then((items) => {
-        if (!Array.isArray(items) || items.length === 0) return;
+        if (!Array.isArray(items)) return;
         const published = items.filter((item) => item.is_published);
         const remoteProjects = [];
         const remoteDigitalAssets = [];
@@ -121,18 +121,14 @@ export default function PortfolioGallery() {
           }
         });
 
-        if (remoteProjects.length > 0) {
-          setProjectCats([
-            { id: "all-projects", label: "Semua Proyek", icon: LayoutGrid, type: "project" },
-            ...remoteProjects,
-          ]);
-        }
-        if (remoteDigitalAssets.length > 0) {
-          setDigitalAssetCats([
-            { id: "all-digital-assets", label: "Semua Digital Asset", icon: Sparkles, type: "digital-asset" },
-            ...remoteDigitalAssets,
-          ]);
-        }
+        setProjectCats([
+          { id: "all-projects", label: "Semua Proyek", icon: LayoutGrid, type: "project" },
+          ...remoteProjects,
+        ]);
+        setDigitalAssetCats([
+          { id: "all-digital-assets", label: "Semua Digital Asset", icon: Sparkles, type: "digital-asset" },
+          ...remoteDigitalAssets,
+        ]);
       })
       .catch(() => {});
   }, []);

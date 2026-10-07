@@ -11,21 +11,27 @@ function normalize(value = "") {
     .toLowerCase();
 }
 
-export function getGlobalSearchItems() {
-  const packages = Object.entries(PACKAGE_DATA)
-    .filter(([, pkg]) => pkg.pillarSlug !== "website")
-    .map(([slug, pkg]) => ({
-      id: `package-${slug}`,
+export function getGlobalSearchItems({
+  packages = Object.entries(PACKAGE_DATA).map(([slug, pkg]) => ({ slug, ...pkg })),
+  services = WEBSITE_SERVICES,
+  tools = TOOLS,
+  marketingKits = MARKETING_KIT_ITEMS,
+  content = VIRALOG_CONTENT,
+} = {}) {
+  const packageItems = packages
+    .filter((pkg) => pkg.pillarSlug !== "website")
+    .map((pkg) => ({
+      id: `package-${pkg.slug}`,
       type: "package",
       title: pkg.name,
       description: pkg.target,
       meta: `${pkg.pillar} - ${pkg.priceShort || pkg.price}`,
       image: pkg.included[0]?.image,
-      href: `/paket/${pkg.pillarSlug}/${slug}`,
+      href: `/paket/${pkg.pillarSlug}/${pkg.slug}`,
       keywords: [pkg.pillar, pkg.target, ...pkg.included.map((item) => item.title)],
     }));
 
-  const websiteServices = (WEBSITE_SERVICES || []).map((s) => ({
+  const websiteServices = (services || []).map((s) => ({
     id: `service-website-${s.slug}`,
     type: "service",
     title: s.name,
@@ -36,19 +42,19 @@ export function getGlobalSearchItems() {
     keywords: ["Website", "Jasa Pembuatan Website", ...(s.features || [])],
   }));
 
-  const tools = TOOLS.map((tool, index) => ({
+  const toolItems = (tools || []).map((tool, index) => ({
     id: `tool-${index}-${tool.name}`,
     type: "product",
     title: tool.name,
     description: tool.description,
     meta: tool.tagline,
-    image: getToolImage(tool),
+      image: tool.image || getToolImage(tool),
     href: tool.url,
     external: true,
     keywords: [tool.category, tool.tagline],
   }));
 
-  const marketingProducts = MARKETING_KIT_ITEMS.map((item) => ({
+  const marketingProducts = (marketingKits || []).map((item) => ({
     id: `marketing-${item.slug}`,
     type: "product",
     title: item.nama_asset,
@@ -59,7 +65,7 @@ export function getGlobalSearchItems() {
     keywords: [item.kategori, item.subkategori, item.produk_terkait, item.layanan_terkait],
   }));
 
-  const news = VIRALOG_CONTENT
+  const news = (content || [])
     .filter((item) => item.status === "published")
     .map((item) => ({
       id: `news-${item.id}`,
@@ -72,14 +78,14 @@ export function getGlobalSearchItems() {
       keywords: [item.subtitle, item.category_slug, ...(item.tags || [])],
     }));
 
-  return [...packages, ...websiteServices, ...tools, ...marketingProducts, ...news];
+  return [...packageItems, ...websiteServices, ...toolItems, ...marketingProducts, ...news];
 }
 
-export function searchGlobal(query, type = "all") {
+export function searchGlobal(query, type = "all", items = getGlobalSearchItems()) {
   const normalizedQuery = normalize(query.trim());
   if (!normalizedQuery) return [];
 
-  return getGlobalSearchItems()
+  return items
     .filter((item) => type === "all" || item.type === type)
     .filter((item) => {
       const searchable = [item.title, item.description, item.meta, ...(item.keywords || [])]

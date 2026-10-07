@@ -359,12 +359,15 @@ export function normalizePillarSlug(rawPillar = "") {
 export function useServices() {
   const [services, setServices] = useState(DEFAULT_SERVICES);
   const [loading, setLoading] = useState(true);
+  const [hasRemoteData, setHasRemoteData] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/modules/services`)
       .then((res) => (res.ok ? res.json() : []))
       .then((items) => {
         if (!Array.isArray(items)) return;
+
+        setHasRemoteData(true);
 
         const published = items.filter((item) => item.is_published === true);
 
@@ -416,6 +419,7 @@ export function useServices() {
   return {
     services,
     loading,
+    hasRemoteData,
     getServicesByPillar,
   };
 }

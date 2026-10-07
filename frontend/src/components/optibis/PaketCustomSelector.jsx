@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, MessageCircle, X, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePackages } from "@/hooks/usePackages";
 
 const WA_CONTACTS = [
   { initials: "A1", name: "CS Admin 1", phone: "6287772577020", color: "bg-magenta" },
@@ -12,33 +13,21 @@ const WA_CONTACTS = [
 const PILLAR_GROUPS = [
   {
     pillar: "Digital Asset",
+    pillarSlug: "digital-asset",
     activeColor: "bg-magenta text-white border-magenta",
     dotColor: "bg-magenta",
-    packages: [
-      { slug: "siap-usaha", name: "Paket Siap Usaha", price: "Rp 2.900.000" },
-      { slug: "citra-usaha", name: "Paket Citra Usaha", price: "Rp 5.900.000" },
-      { slug: "bisnis-profesional", name: "Paket Bisnis Profesional", price: "Rp 8.900.000" },
-    ],
   },
   {
     pillar: "Website",
+    pillarSlug: "website",
     activeColor: "bg-amethyst text-white border-amethyst",
     dotColor: "bg-amethyst",
-    packages: [
-      { slug: "landing-page", name: "Paket Landing Page", price: "Rp 3.500.000" },
-      { slug: "multi-page", name: "Paket Multi Page", price: "Rp 7.500.000" },
-      { slug: "toko-online", name: "Paket Toko Online", price: "Rp 15.000.000" },
-    ],
   },
   {
     pillar: "Digital Growth Team",
+    pillarSlug: "digital-growth-team",
     activeColor: "bg-navy text-white border-navy",
     dotColor: "bg-navy",
-    packages: [
-      { slug: "growth-starter", name: "Admin Digital Starter", price: "Rp 3.500.000/bln" },
-      { slug: "growth", name: "Admin Digital Growth", price: "Rp 7.500.000/bln" },
-      { slug: "growth-professional", name: "Admin Digital Professional", price: "Rp 15.000.000/bln" },
-    ],
   },
 ];
 
@@ -53,6 +42,13 @@ export default function PaketCustomSelector() {
   const [selected, setSelected] = useState([]);
   const [showWA, setShowWA] = useState(false);
   const [openPillars, setOpenPillars] = useState({ "Digital Asset": true, "Website": true, "Digital Growth Team": true });
+  const packages = usePackages();
+  const packageGroups = PILLAR_GROUPS.map((group) => ({
+    ...group,
+    packages: packages
+      .filter((pkg) => pkg.pillarSlug === group.pillarSlug && !pkg.isServicePackage)
+      .map((pkg) => ({ slug: pkg.slug, name: pkg.name, price: pkg.priceShort || pkg.price })),
+  })).filter((group) => group.packages.length > 0);
 
   function togglePillar(pillar) {
     setOpenPillars((prev) => ({ ...prev, [pillar]: !prev[pillar] }));
@@ -91,7 +87,7 @@ export default function PaketCustomSelector() {
 
         {/* Pillar Groups */}
         <div className="space-y-4 mb-8">
-          {PILLAR_GROUPS.map((group) => (
+          {packageGroups.map((group) => (
             <div
               key={group.pillar}
               className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"

@@ -10,6 +10,9 @@ import { useTheme } from "next-themes";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useServicePillars } from "@/hooks/useServicePillars";
 import { useServices } from "@/hooks/useServices";
+import { normalizePackage } from "@/hooks/usePackages";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 const LAYANAN_CHILDREN = [
   { group: "", items: [
@@ -147,13 +150,14 @@ export default function SiteHeader() {
   const { isAuthenticated: isAuthed } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const { language, setLanguage, t, tr } = useLanguage();
-  const { pillars } = useServicePillars();
+  const { pillars, hasRemoteData: hasRemotePillars } = useServicePillars();
   const { getServicesByPillar } = useServices();
+  const [packages, setPackages] = useState([]);
   const [mobileSubExpanded, setMobileSubExpanded] = useState(null);
   const darkNav = resolvedTheme === "dark";
 
   const dynamicLayananChildren = useMemo(() => {
-    const basePillars = [
+    const basePillars = hasRemotePillars ? [] : [
       { slug: "digital-asset", title: "Digital Asset", link: "/digital-asset", icon: Palette },
       { slug: "website", title: "Website", link: "/website", icon: Globe },
       { slug: "software", title: "Software & Sistem Bisnis", link: "/layanan", icon: Code2 },
@@ -190,12 +194,55 @@ export default function SiteHeader() {
     });
 
     return [{ group: "", items }];
-  }, [pillars, getServicesByPillar]);
+  }, [pillars, hasRemotePillars, getServicesByPillar]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetch(`${API}/modules/packages`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        if (!isMounted) return;
+        setPackages(Array.isArray(items)
+          ? items
+              .filter((item) => item.is_published === true && String(item.data?.status || "published").toLowerCase() !== "draft")
+              .map(normalizePackage)
+          : []);
+      })
+      .catch(() => {
+        if (isMounted) setPackages([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const dynamicPackageChildren = useMemo(() => {
+    const groups = [
+      { slug: "digital-asset", label: "Digital Asset" },
+      { slug: "digital-growth-team", label: "Digital Growth Team" },
+      { slug: "khusus", label: "Paket Khusus" },
+    ];
+
+    return [{
+      group: "",
+      items: groups
+        .map((group) => ({
+          label: group.label,
+          href: "/paket",
+          subItems: packages
+            .filter((item) => item.pillarSlug === group.slug && !item.isServicePackage)
+            .map((item) => ({ label: item.name, href: `/paket/${group.slug}/${item.slug}` })),
+        }))
+        .filter((group) => group.subItems.length > 0),
+    }];
+  }, [packages]);
 
   const navItems = [
     { label: "Beranda", href: "/" },
     { label: "Layanan", href: "/layanan", megaChildren: dynamicLayananChildren, megaWidth: "w-80", footerAction: { label: "Akses Semua Layanan", href: "/layanan" } },
-    { label: "Paket", href: "/paket", megaChildren: PAKET_CHILDREN, megaWidth: "w-80", footerAction: { label: "Lihat Semua Paket", href: "/paket" } },
+    { label: "Paket", href: "/paket", megaChildren: dynamicPackageChildren, megaWidth: "w-80", footerAction: { label: "Lihat Semua Paket", href: "/paket" } },
     { label: "Portofolio", href: "/portofolio", megaChildren: PORTOFOLIO_CHILDREN, megaWidth: "w-64" },
     { label: "Konten", href: "/content", megaChildren: KONTEN_CHILDREN, megaWidth: "w-64" },
     { label: "Produk Digital", href: "/insight", megaChildren: PRODUK_DIGITAL_CHILDREN, megaWidth: "w-56" },

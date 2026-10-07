@@ -72,7 +72,9 @@ export function usePackages() {
       .then((response) => (response.ok ? response.json() : []))
       .then((items) => {
         if (!Array.isArray(items)) return;
-        setPackages(items.filter((item) => item.is_published).map(normalizePackage));
+        setPackages(items
+          .filter((item) => item.is_published === true && String(item.data?.status || "published").toLowerCase() !== "draft")
+          .map(normalizePackage));
       })
       .catch(() => {});
   }, []);

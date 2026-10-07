@@ -82,12 +82,14 @@ export function resolveIcon(iconName, slug) {
 export function useServicePillars() {
   const [pillars, setPillars] = useState(DEFAULT_PILLARS);
   const [loading, setLoading] = useState(true);
+  const [hasRemoteData, setHasRemoteData] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/modules/service-pillars`)
       .then((res) => (res.ok ? res.json() : []))
       .then((items) => {
         if (Array.isArray(items)) {
+          setHasRemoteData(true);
           const sorted = [...items].sort((a, b) => (a.data?.order ?? 99) - (b.data?.order ?? 99));
           const mapped = sorted
             .filter((item) => item.is_published === true)
@@ -126,5 +128,5 @@ export function useServicePillars() {
       .finally(() => setLoading(false));
   }, []);
 
-  return { pillars, loading };
+  return { pillars, loading, hasRemoteData };
 }

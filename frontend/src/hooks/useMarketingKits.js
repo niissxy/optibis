@@ -36,14 +36,11 @@ export function useMarketingKits() {
       .then((items) => {
         if (!Array.isArray(items)) return;
 
-        const fallbackBySlug = new Map(MARKETING_KIT_ITEMS.map((item) => [item.slug, item]));
         const remoteItems = items
           .filter((item) => item.is_published)
-          .map((item) => normalizeMarketingKit(item, fallbackBySlug.get(item.slug)));
-        const remoteSlugs = new Set(remoteItems.map((item) => item.slug));
-        const remainingFallbacks = MARKETING_KIT_ITEMS.filter((item) => !remoteSlugs.has(item.slug));
+          .map((item) => normalizeMarketingKit(item, MARKETING_KIT_ITEMS.find((fallback) => fallback.slug === item.slug)));
 
-        setMarketingKits([...remoteItems, ...remainingFallbacks]);
+        setMarketingKits(remoteItems);
       })
       .catch(() => {});
   }, []);

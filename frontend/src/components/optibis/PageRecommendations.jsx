@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Check, Eye, TrendingUp } from "lucide-react";
 import { getPackageBySlug, getPackagesByPillar } from "@/data/packages";
 import { formatViews, getContentBySlug, getTrendingContent } from "@/data/viralog";
+import { useViralogContent } from "@/hooks/useViralogContent";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
 
@@ -110,6 +111,8 @@ function toPackage(item) {
 }
 
 function getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSlug, managedPackages) {
+  const hasManagedPackages = Array.isArray(managedPackages);
+  const availablePackages = managedPackages || [];
   const targetKeys = [
     currentPackageSlug,
     pillarSlug ? `page:${pillarSlug}` : null,
@@ -119,11 +122,11 @@ function getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSl
     currentServiceSlug ? `page:service:${currentServiceSlug}` : null,
   ].filter(Boolean);
 
-  const currentPackageItem = (managedPackages || []).find((item) => item.slug === currentPackageSlug);
+  const currentPackageItem = availablePackages.find((item) => item.slug === currentPackageSlug);
   const isConfigured = Boolean(currentPackageItem?.data?.recommendations_configured);
 
   // Additional / explicitly targeted recommendations from packages configured in admin panel
-  const packagesRecommendingCurrent = (managedPackages || [])
+  const packagesRecommendingCurrent = availablePackages
     .filter((item) => {
       if (item.slug === currentPackageSlug) return false;
       const recs = item?.data?.recommended_packages;
@@ -148,9 +151,9 @@ function getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSl
 
     const configuredPackages = configuredSlugs
       .map((slug) => {
-        const foundManaged = (managedPackages || []).find((p) => p.slug === slug);
+        const foundManaged = availablePackages.find((p) => p.slug === slug);
         if (foundManaged) return toPackage(foundManaged);
-        const foundStatic = getPackageBySlug(slug);
+        const foundStatic = !hasManagedPackages && getPackageBySlug(slug);
         if (foundStatic) return toPackage({ slug, ...foundStatic });
         return null;
       })
@@ -178,17 +181,19 @@ function getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSl
   }
 
   // CASE 2: Automatic recommendations (default) -> cap at 3 packages automatically!
-  const defaultStatic = pillarSlug
+  const defaultStatic = !hasManagedPackages && pillarSlug
     ? (getPackagesByPillar(pillarSlug) || []).filter((pkg) => pkg && pkg.slug !== currentPackageSlug)
-    : Object.keys(PILLAR_META)
+    : !hasManagedPackages
+    ? Object.keys(PILLAR_META)
         .map((slug) => {
           const packages = getPackagesByPillar(slug) || [];
           return packages.find((pkg) => pkg?.popular) || packages[0];
         })
-        .filter((pkg) => pkg && pkg.slug);
+        .filter((pkg) => pkg && pkg.slug)
+    : [];
 
   // Managed packages belonging to this pillar from DB
-  const managedFromPillar = (managedPackages || [])
+  const managedFromPillar = availablePackages
     .filter((item) => {
       const d = item.data || {};
       const p = (d.pillar_slug || d.pillar || "").toLowerCase();
@@ -233,17 +238,18 @@ function getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSl
 export default function PageRecommendations() {
   const { pathname } = useLocation();
   const { language, t, tr } = useLanguage();
-  const [managedPackages, setManagedPackages] = useState([]);
+  const [managedPackages, setManagedPackages] = useState(null);
   const { pillarSlug, currentPackageSlug, currentServiceSlug } = getPageContext(pathname);
+  const content = useViralogContent();
   const packages = getRecommendedPackages(pillarSlug, currentPackageSlug, currentServiceSlug, managedPackages);
-  const trending = getTrendingContent(3);
+  const trending = getTrendingContent(3, content);
   const categoryName = (pillarSlug && PILLAR_META[pillarSlug]?.name) || "pilihan Optibis";
   const showTrending = pathname === "/content";
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/modules/packages`)
       .then((response) => (response.ok ? response.json() : []))
-      .then((items) => setManagedPackages(Array.isArray(items) ? items.filter((item) => item.is_published) : []))
+      .then((items) => setManagedPackages(Array.isArray(items) ? items.filter((item) => item.is_published === true && String(item.data?.status || "published").toLowerCase() !== "draft") : []))
       .catch(() => {});
   }, []);
 
