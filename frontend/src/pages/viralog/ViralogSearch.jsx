@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowUpRight, Box, Filter, Newspaper, Package, Search, X } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, Box, Filter, Newspaper, Package, Search, X } from "lucide-react";
 import SEO from "@/components/SEO";
 import PillarLayout from "@/components/optibis/PillarLayout";
 import { getGlobalSearchItems, searchGlobal } from "@/data/globalSearch";
@@ -14,6 +14,7 @@ import { useViralogContent } from "@/hooks/useViralogContent";
 const TYPE_STYLES = {
   product: { icon: Box, badge: "bg-amethyst-50 text-amethyst", labelKey: "products" },
   package: { icon: Package, badge: "bg-magenta-50 text-magenta", labelKey: "packages" },
+  service: { icon: BriefcaseBusiness, badge: "bg-cyan-50 text-cyan-700", labelKey: "services" },
   news: { icon: Newspaper, badge: "bg-blue-50 text-blue-600", labelKey: "news" },
 };
 
@@ -21,6 +22,7 @@ const FILTERS = [
   { value: "all", labelKey: "all" },
   { value: "product", labelKey: "products" },
   { value: "package", labelKey: "packages" },
+  { value: "service", labelKey: "services" },
   { value: "news", labelKey: "news" },
 ];
 
