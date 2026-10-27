@@ -7,10 +7,9 @@ import PillarLayout from "@/components/optibis/PillarLayout";
 import ViralogContentCard from "@/components/viralog/ViralogContentCard";
 import ViralogAdSlot from "@/components/viralog/ViralogAdSlot";
 import ViralogNewsletter from "@/components/viralog/ViralogNewsletter";
-import { useViralogContent } from "@/hooks/useViralogContent";
+import { useViralogCategories, useViralogContent } from "@/hooks/useViralogContent";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
-  VIRALOG_CATEGORIES,
   VIRALOG_TAGS,
   getLatestContent,
   getTrendingContent,
@@ -31,6 +30,7 @@ export default function ViralogPortal() {
   const [searchQuery, setSearchQuery] = useState("");
   const [articlePage, setArticlePage] = useState(1);
   const content = useViralogContent();
+  const categories = useViralogCategories();
   const featured = getFeaturedContent(1, content)[0];
   const trending = getTrendingContent(5, content);
   const latest = getLatestContent(content.length, content);
@@ -73,7 +73,7 @@ export default function ViralogPortal() {
             <Link to="/content" className="shrink-0 px-3 py-1.5 rounded-full bg-navy text-white text-xs font-semibold whitespace-nowrap">
               {tr("Semua")}
             </Link>
-            {VIRALOG_CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.slug}
                 to={`/kategori/${cat.slug}`}
@@ -295,7 +295,7 @@ export default function ViralogPortal() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h2 className="text-lg font-bold text-navy mb-4">{tr("Jelajah Kategori")}</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {VIRALOG_CATEGORIES.map((cat, i) => {
+          {categories.map((cat, i) => {
             const count = getLatestContent(8, content).filter((c) => c.category_slug === cat.slug).length;
             return (
               <motion.div key={cat.slug} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>

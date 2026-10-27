@@ -6,6 +6,7 @@ use App\Models\ApiToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -19,6 +20,11 @@ class AuthController extends Controller
 
         $submittedEmail = strtolower(trim((string) $data['email']));
         $submittedPassword = (string) $data['password'];
+        $throttleKey = 'admin-login:'.$submittedEmail.'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            return response()->json(['message' => 'Terlalu banyak percobaan masuk. Coba lagi beberapa saat lagi.'], 429);
+        }
 
         // Pencarian email: case-insensitive & tanpa spasi depan/belakang
         $user = User::whereRaw('LOWER(TRIM(email)) = ?', [$submittedEmail])
@@ -26,61 +32,30 @@ class AuthController extends Controller
             ->first();
 
         if (!$user) {
-            return response()->json([
-                'message' => 'Email admin tidak terdaftar dalam database.',
-            ], 422);
+            RateLimiter::hit($throttleKey, 60);
+            return response()->json(['message' => 'Email atau password tidak valid.'], 422);
+        }
+
+        if (!$user->is_admin) {
+            RateLimiter::hit($throttleKey, 60);
+            return response()->json(['message' => 'Email atau password tidak valid.'], 422);
         }
 
         $passwordMatches = false;
 
-        // Coba verifikasi standar Bcrypt Laravel
+        // Hanya menerima hash password Laravel yang aman.
         try {
             $passwordMatches = Hash::check($submittedPassword, $user->password);
         } catch (\Throwable $e) {
             $passwordMatches = false;
         }
 
-        // Cek toleransi spasi ekstra pada input password
         if (!$passwordMatches) {
-            $trimmedPassword = trim($submittedPassword);
-            if ($trimmedPassword !== $submittedPassword) {
-                try {
-                    $passwordMatches = Hash::check($trimmedPassword, $user->password);
-                } catch (\Throwable $e) {
-                    $passwordMatches = false;
-                }
-            }
+            RateLimiter::hit($throttleKey, 60);
+            return response()->json(['message' => 'Email atau password tidak valid.'], 422);
         }
 
-        // Dukungan jika password di database dimasukkan langsung secara plain text, MD5, SHA1, atau SHA256 (misal via phpMyAdmin)
-        if (!$passwordMatches) {
-            $legacyHashes = [
-                $submittedPassword,
-                trim($submittedPassword),
-                md5($submittedPassword),
-                md5(trim($submittedPassword)),
-                sha1($submittedPassword),
-                sha1(trim($submittedPassword)),
-                hash('sha256', $submittedPassword),
-                hash('sha256', trim($submittedPassword)),
-            ];
-
-            foreach ($legacyHashes as $legacyHash) {
-                if (hash_equals((string) $user->password, (string) $legacyHash)) {
-                    // Otomatis upgrade ke bcrypt standar Laravel agar aman
-                    $user->password = $submittedPassword;
-                    $user->save();
-                    $passwordMatches = true;
-                    break;
-                }
-            }
-        }
-
-        if (!$passwordMatches) {
-            return response()->json([
-                'message' => 'Password yang Anda masukkan salah.',
-            ], 422);
-        }
+        RateLimiter::clear($throttleKey);
 
         $plain = Str::random(64);
         ApiToken::create([

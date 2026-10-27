@@ -3,6 +3,48 @@ import { PORTFOLIO_DATA, getAllPortfolios } from "@/data/portfolio";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
+export function resolvePortfolioImageUrl(value) {
+  const url = String(value || "").trim();
+  if (!url) return "";
+
+  const portfolioMediaUrl = (path, search = "") => {
+    const normalizedPath = path.replace(/^\/+/, "").replace(/^storage\//i, "");
+    const encodedPath = normalizedPath
+      .split("/")
+      .filter(Boolean)
+      .map((segment) => {
+        try {
+          return encodeURIComponent(decodeURIComponent(segment));
+        } catch {
+          return encodeURIComponent(segment);
+        }
+      })
+      .join("/");
+
+    const apiUrl = new URL(API, window.location.origin);
+    return `${apiUrl.origin}/storage/app/public/${encodedPath}${search}`;
+  };
+
+  // Accept URLs saved by Laravel as well as legacy values without a leading
+  // slash (for example, "storage/portfolios/image.jpg").
+  const relativeStoragePath = url.match(/^\/?(?:storage\/)?(portfolios\/[^?#]+)(\?[^#]*)?$/i);
+  if (relativeStoragePath) {
+    return portfolioMediaUrl(relativeStoragePath[1], relativeStoragePath[2] || "");
+  }
+
+  try {
+    const parsed = new URL(url);
+    const storagePath = parsed.pathname.match(/\/(?:storage|public\/storage)\/(portfolios\/.+)$/i);
+    if (storagePath) {
+      return portfolioMediaUrl(storagePath[1], parsed.search);
+    }
+  } catch {
+    // Keep non-URL asset paths unchanged.
+  }
+
+  return url;
+}
+
 function normalizeGallery(value) {
   if (typeof value === "string") {
     try {
@@ -14,7 +56,7 @@ function normalizeGallery(value) {
   }
 
   return Array.isArray(value)
-    ? value.map((url) => String(url || "").trim()).filter(Boolean)
+    ? value.map(resolvePortfolioImageUrl).filter(Boolean)
     : [];
 }
 
@@ -28,14 +70,14 @@ export function normalizePortfolio(apiItem = {}, fallback = {}) {
   const ringkasan = apiItem.ringkasan || fallback.ringkasan || desc;
   const deskripsi = apiItem.description || fallback.deskripsi || desc;
   const website_url = apiItem.website_url || fallback.website_url || "#";
-  const thumbnail = apiItem.image_url || apiItem.thumbnail_url || fallback.thumbnail || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80";
+  const apiGallery = normalizeGallery(apiItem.galeri);
+  const thumbnail = resolvePortfolioImageUrl(apiItem.image_url) || resolvePortfolioImageUrl(apiItem.thumbnail_url) || apiGallery[0] || fallback.thumbnail || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80";
   const client = apiItem.client || fallback.client || name;
   const location = apiItem.location || fallback.location || "Indonesia";
   const year = apiItem.year || fallback.year || new Date().getFullYear().toString();
   const hasil = apiItem.hasil || fallback.hasil || "Proyek selesai dikerjakan dengan hasil maksimal sesuai kebutuhan klien.";
   const featured = typeof apiItem.featured === "boolean" ? apiItem.featured : (fallback.featured ?? false);
 
-  const apiGallery = normalizeGallery(apiItem.galeri);
   const fallbackGallery = normalizeGallery(fallback.galeri);
   const hasGallery = apiGallery.length > 0 || fallbackGallery.length > 0;
   const galeri = apiGallery.length > 0 ? apiGallery : (fallbackGallery.length > 0 ? fallbackGallery : [thumbnail]);

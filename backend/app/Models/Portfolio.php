@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Portfolio extends Model
 {
@@ -45,6 +46,6 @@ class Portfolio extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->thumbnail_url ?: ($this->image_path ? url('storage/'.$this->image_path) : null);
+        return $this->thumbnail_url ?: ($this->image_path ? Storage::url($this->image_path) : null);
     }
 }

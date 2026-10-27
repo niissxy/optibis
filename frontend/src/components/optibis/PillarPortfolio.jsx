@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { getAllPortfolios } from "@/data/portfolio";
+import { resolvePortfolioImageUrl } from "@/hooks/usePortfolios";
 import { useLanguage } from "@/lib/LanguageContext";
 import SectionHeading from "@/components/optibis/SectionHeading";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -95,7 +96,7 @@ export default function PillarPortfolio({ pillar, color = "magenta", carousel = 
       pilar: item.pilar?.length ? item.pilar : fallback?.pilar || [],
       products: item.products?.length ? item.products : fallback?.products || [],
       ringkasan: item.description || fallback?.ringkasan || "",
-      thumbnail: item.image_url || fallback?.thumbnail || "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80",
+      thumbnail: resolvePortfolioImageUrl(item.image_url) || fallback?.thumbnail || "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80",
     };
   });
   const savedNames = new Set(remoteProjects.map((project) => project.name));

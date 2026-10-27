@@ -73,6 +73,9 @@ class ModuleContentController extends Controller
         if ($module === 'portfolio-categories') {
             $this->syncPortfolioCategories();
         }
+        if ($module === 'viralog-categories') {
+            $this->syncViralogCategories();
+        }
         if ($module === 'viralog-content' && !$this->canViewUnpublished($request)) {
             $this->scheduleRssImport();
         }
@@ -145,7 +148,9 @@ class ModuleContentController extends Controller
         $token = $request->bearerToken();
 
         return $token !== null
-            && ApiToken::where('token_hash', hash('sha256', $token))->exists();
+            && ApiToken::where('token_hash', hash('sha256', $token))
+                ->whereHas('user', fn ($query) => $query->where('is_admin', true))
+                ->exists();
     }
 
     private function scheduleRssImport(): void
@@ -181,6 +186,9 @@ class ModuleContentController extends Controller
         }
         if ($module === 'portfolio-categories' && $current->title !== $updateData['title']) {
             $this->renamePortfolioCategory($current->title, $updateData['title']);
+        }
+        if ($module === 'service-pillars' && ($current->title !== $updateData['title'] || $current->slug !== $updateData['slug'])) {
+            $this->renameServicePillar($current->title, $current->slug, $updateData['title'], $updateData['slug']);
         }
         if ($module === 'services') {
             $item = DB::table($this->table($module))->find($id);
@@ -285,6 +293,28 @@ class ModuleContentController extends Controller
             $data['kategori'] = $nextCategory;
             $data['category'] = $nextCategory;
             DB::table('solution_library_items')->where('id', $item->id)->update([
+                'data' => json_encode($data),
+                'updated_at' => now(),
+            ]);
+        });
+    }
+
+    private function renameServicePillar(string $previousTitle, string $previousSlug, string $nextTitle, string $nextSlug): void
+    {
+        DB::table('service_items')->orderBy('id')->each(function ($item) use ($previousTitle, $previousSlug, $nextTitle, $nextSlug) {
+            $data = json_decode($item->data, true) ?: [];
+            $currentSlug = strtolower(trim((string) ($data['pillar_slug'] ?? '')));
+            $currentTitle = strtolower(trim((string) ($data['pillar_name'] ?? $data['pillar'] ?? '')));
+
+            if ($currentSlug !== strtolower($previousSlug) && $currentTitle !== strtolower($previousTitle)) {
+                return;
+            }
+
+            $data['pillar'] = $nextTitle;
+            $data['pillar_name'] = $nextTitle;
+            $data['pillar_slug'] = $nextSlug;
+
+            DB::table('service_items')->where('id', $item->id)->update([
                 'data' => json_encode($data),
                 'updated_at' => now(),
             ]);
@@ -411,6 +441,37 @@ class ModuleContentController extends Controller
                 'updated_at' => now(),
             ]
         );
+    }
+
+    private function syncViralogCategories(): void
+    {
+        $categories = [
+            'branding' => ['name' => 'Branding', 'color' => 'magenta', 'icon' => 'Palette'],
+            'website' => ['name' => 'Website', 'color' => 'navy', 'icon' => 'Globe'],
+            'digital-marketing' => ['name' => 'Digital Marketing', 'color' => 'amethyst', 'icon' => 'TrendingUp'],
+            'social-media' => ['name' => 'Social Media', 'color' => 'magenta', 'icon' => 'Users'],
+            'seo' => ['name' => 'SEO', 'color' => 'navy', 'icon' => 'Search'],
+            'content-strategy' => ['name' => 'Content Strategy', 'color' => 'amethyst', 'icon' => 'FileText'],
+            'bisnis-digital' => ['name' => 'Bisnis Digital', 'color' => 'magenta', 'icon' => 'Briefcase'],
+            'startup' => ['name' => 'Startup', 'color' => 'navy', 'icon' => 'Rocket'],
+        ];
+
+        foreach ($categories as $slug => $category) {
+            if (DB::table('viralog_categories')->where('slug', $slug)->exists()) {
+                continue;
+            }
+
+            DB::table('viralog_categories')->insert([
+                'slug' => $slug,
+                'title' => $category['name'],
+                'summary' => null,
+                'image_url' => null,
+                'data' => json_encode(['color' => $category['color'], 'icon' => $category['icon']]),
+                'is_published' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     private function renamePortfolioCategory(string $previousCategory, string $nextCategory): void

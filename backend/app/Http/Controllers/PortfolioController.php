@@ -39,6 +39,8 @@ class PortfolioController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:100',
             'galeri' => 'nullable|array',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|max:5120',
             'stats' => 'nullable|array',
             'process' => 'nullable|array',
             'documents' => 'nullable|array',
@@ -62,7 +64,17 @@ class PortfolioController extends Controller
             $data['thumbnail_url'] = null;
         }
 
-        unset($data['image']);
+        if ($request->hasFile('gallery_images')) {
+            $data['galeri'] = array_merge(
+                $data['galeri'] ?? [],
+                array_map(
+                    fn ($image) => Storage::url($image->store('portfolios', 'public')),
+                    $request->file('gallery_images')
+                )
+            );
+        }
+
+        unset($data['image'], $data['gallery_images']);
         $portfolio = Portfolio::create($data);
 
         return response()->json($portfolio, 201);
@@ -114,6 +126,8 @@ class PortfolioController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:100',
             'galeri' => 'nullable|array',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|max:5120',
             'stats' => 'nullable|array',
             'process' => 'nullable|array',
             'documents' => 'nullable|array',
@@ -128,6 +142,10 @@ class PortfolioController extends Controller
 
         if ($request->has('featured')) {
             $data['featured'] = $request->boolean('featured');
+        }
+
+        if (array_key_exists('website_url', $data)) {
+            $data['website_url'] = filled($data['website_url']) ? trim($data['website_url']) : '#';
         }
 
         if (array_key_exists('thumbnail_url', $data)) {
@@ -157,7 +175,17 @@ class PortfolioController extends Controller
             $data['image_path'] = null;
         }
 
-        unset($data['image']);
+        if ($request->hasFile('gallery_images')) {
+            $data['galeri'] = array_merge(
+                $data['galeri'] ?? $portfolio->galeri ?? [],
+                array_map(
+                    fn ($image) => Storage::url($image->store('portfolios', 'public')),
+                    $request->file('gallery_images')
+                )
+            );
+        }
+
+        unset($data['image'], $data['gallery_images']);
         $portfolio->update($data);
 
         return response()->json($portfolio->fresh());

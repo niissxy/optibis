@@ -7,12 +7,32 @@ use App\Http\Controllers\DashboardAnalyticsController;
 use App\Http\Controllers\VisitorAnalyticsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 $registerRoutes = function () {
     Route::post('auth/login', [AuthController::class, 'login']);
 
     // Public read routes (no token required for public frontend)
+    Route::get('portfolio-media/{path}', function (string $path) {
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+        abort_unless(str_starts_with($path, 'portfolios/'), 404);
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->response($path);
+        }
+
+        foreach ([public_path('storage'), public_path(), storage_path()] as $root) {
+            $root = realpath($root);
+            $file = $root ? realpath($root.DIRECTORY_SEPARATOR.$path) : false;
+
+            if ($file && str_starts_with($file, $root.DIRECTORY_SEPARATOR) && is_file($file)) {
+                return response()->file($file);
+            }
+        }
+
+        abort(404);
+    })->where('path', '.*');
     Route::get('portfolios', [PortfolioController::class, 'index']);
     Route::get('portfolios/{portfolio}', [PortfolioController::class, 'show']);
     Route::get('modules/{module}', [ModuleContentController::class, 'index']);

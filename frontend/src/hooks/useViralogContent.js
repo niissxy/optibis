@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { VIRALOG_CONTENT } from "@/data/viralog";
+import { VIRALOG_CATEGORIES, VIRALOG_CONTENT } from "@/data/viralog";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 const FOREIGN_RSS_WORDS = /\b(the|for|with|from|into|after|before|funding|backed|subscribers|lands|files|global|venture|round|across|we['’]?re)\b/giu;
@@ -61,4 +61,30 @@ export function useViralogContent() {
   }, []);
 
   return content;
+}
+
+export function useViralogCategories() {
+  const [categories, setCategories] = useState(VIRALOG_CATEGORIES);
+
+  useEffect(() => {
+    fetch(`${API}/modules/viralog-categories`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        if (!Array.isArray(items) || !items.length) return;
+
+        setCategories(
+          items
+            .filter((item) => item.is_published)
+            .map((item) => ({
+              slug: item.slug,
+              name: item.title,
+              color: item.data?.color || "navy",
+              icon: item.data?.icon || "Newspaper",
+            }))
+        );
+      })
+      .catch(() => {});
+  }, []);
+
+  return categories;
 }

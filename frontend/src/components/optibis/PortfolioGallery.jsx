@@ -12,7 +12,9 @@ import {
   Monitor,
   PenTool,
   ExternalLink,
+  ChevronLeft,
   ChevronRight,
+  X,
   Palette,
   Sparkles,
   Printer,
@@ -92,6 +94,8 @@ export default function PortfolioGallery() {
   const { tr } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("all-projects");
   const [mobileTab, setMobileTab] = useState("project"); // 'project' | 'digital-asset'
+  const [previewProject, setPreviewProject] = useState(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
 
   const [projectCats, setProjectCats] = useState(DEFAULT_PROJECT_CATS);
   const [digitalAssetCats, setDigitalAssetCats] = useState(DEFAULT_DIGITAL_ASSET_CATS);
@@ -144,6 +148,20 @@ export default function PortfolioGallery() {
   const projectCategoryLabels = useMemo(() => {
     return projectCats.filter((c) => c.id !== "all-projects").map((c) => c.label);
   }, [projectCats]);
+
+  const previewImages = useMemo(() => {
+    if (!previewProject) return [];
+    return [...new Set([...(previewProject.galeri || []), previewProject.image].filter(Boolean))];
+  }, [previewProject]);
+
+  const openPreview = (project) => {
+    setPreviewProject(project);
+    setPreviewIndex(0);
+  };
+
+  const closePreview = () => setPreviewProject(null);
+  const previousPreview = () => setPreviewIndex((index) => (index - 1 + previewImages.length) % previewImages.length);
+  const nextPreview = () => setPreviewIndex((index) => (index + 1) % previewImages.length);
 
   // Compute counts for project categories
   const projectCatsWithCounts = useMemo(() => {
@@ -372,9 +390,15 @@ export default function PortfolioGallery() {
                 return (
                   <div
                     key={project.slug || project.id}
-                    className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col shadow-sm"
+                    className={`group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col shadow-sm ${isDigital ? "cursor-pointer" : ""}`}
+                    onClick={isDigital ? () => openPreview(project) : undefined}
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-900 p-3">
+                    <div
+                      className={`relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-900 p-3 ${!isDigital && project.website_url && project.website_url !== "#" ? "cursor-pointer" : ""}`}
+                      onClick={() => {
+                        if (!isDigital && project.website_url && project.website_url !== "#") window.open(project.website_url, "_blank", "noopener,noreferrer");
+                      }}
+                    >
                       <div className="absolute top-5 left-5 z-10 flex gap-1.5 flex-wrap">
                         <span
                           className={`px-3 py-1.5 backdrop-blur-sm text-xs font-bold rounded-full shadow-sm ${
@@ -398,9 +422,19 @@ export default function PortfolioGallery() {
                     </div>
                     <div className="p-6 flex flex-col flex-1">
                       <h3 className="text-lg font-extrabold text-navy dark:text-white mb-1 group-hover:text-magenta transition-colors">
-                        <Link to={`/portofolio/${project.slug}`}>
-                          {project.title || project.name}
-                        </Link>
+                        {isDigital ? (
+                          <button type="button" className="text-left" onClick={() => openPreview(project)}>
+                            {project.title || project.name}
+                          </button>
+                        ) : project.website_url && project.website_url !== "#" ? (
+                          <a href={project.website_url} target="_blank" rel="noopener noreferrer">
+                            {project.title || project.name}
+                          </a>
+                        ) : (
+                          <Link to={`/portofolio/${project.slug}`}>
+                            {project.title || project.name}
+                          </Link>
+                        )}
                       </h3>
                       <div className="text-xs font-semibold text-gray-400 dark:text-gray-400 mb-3">
                         {tr(project.categoryLabel || project.industry || project.category || "Website Company Profile")}
@@ -410,27 +444,27 @@ export default function PortfolioGallery() {
                       </p>
 
                       <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-50 dark:border-gray-700 pt-4">
-                        <Link
-                          to={`/portofolio/${project.slug}`}
-                          className="text-sm font-bold text-navy dark:text-gray-200 hover:text-magenta dark:hover:text-magenta group-hover:text-magenta transition-colors inline-flex items-center"
-                        >
-                          {tr("Lihat Detail")}{" "}
-                          <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                        </Link>
-
-                        {project.website_url && project.website_url !== "#" ? (
-                          <a
-                            href={project.website_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={`Kunjungi ${project.title || project.name}`}
-                            className="inline-flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-magenta-50 px-3 text-xs font-bold text-magenta shadow-sm transition-all hover:bg-magenta hover:text-white dark:bg-magenta/20"
-                            onClick={(e) => e.stopPropagation()}
+                        {isDigital ? (
+                          <button
+                            type="button"
+                            onClick={() => openPreview(project)}
+                            className="text-sm font-bold text-navy dark:text-gray-200 hover:text-magenta dark:hover:text-magenta group-hover:text-magenta transition-colors inline-flex items-center"
                           >
-                            <ExternalLink className="w-4 h-4" />
-                            {tr("Kunjungi Website")}
-                          </a>
-                        ) : (
+                            {tr("Lihat Hasil")} {" "}
+                            <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                          </button>
+                        ) : null}
+
+                        {isDigital ? (
+                          <button
+                            type="button"
+                            title={`Lihat hasil ${project.title || project.name}`}
+                            onClick={() => openPreview(project)}
+                            className="w-8 h-8 rounded-full bg-magenta-50 dark:bg-magenta/20 flex items-center justify-center text-magenta hover:bg-magenta hover:text-white transition-all shadow-sm"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                          </button>
+                        ) : project.website_url && project.website_url !== "#" ? null : (
                           <Link
                             to={`/portofolio/${project.slug}`}
                             title={`Lihat detail ${project.title || project.name}`}
@@ -468,6 +502,60 @@ export default function PortfolioGallery() {
           </p>
         </div>
       </div>
+
+      {previewProject && previewImages.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-navy/90 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Hasil ${previewProject.title || previewProject.name}`}
+          onClick={closePreview}
+        >
+          <button
+            type="button"
+            aria-label="Tutup preview"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            onClick={closePreview}
+          >
+            <X className="h-5 w-5" />
+          </button>
+          {previewImages.length > 1 && (
+            <button
+              type="button"
+              aria-label="Gambar sebelumnya"
+              className="absolute left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              onClick={(event) => {
+                event.stopPropagation();
+                previousPreview();
+              }}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
+          <img
+            src={previewImages[previewIndex]}
+            alt={`${previewProject.title || previewProject.name} hasil ${previewIndex + 1}`}
+            className="max-h-[85vh] max-w-full rounded-lg object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+          {previewImages.length > 1 && (
+            <button
+              type="button"
+              aria-label="Gambar berikutnya"
+              className="absolute right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              onClick={(event) => {
+                event.stopPropagation();
+                nextPreview();
+              }}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-white/70">
+            {previewIndex + 1} / {previewImages.length}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
